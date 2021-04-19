@@ -45,21 +45,21 @@ pub use core::time;
 // runtime doesn't require anything human readable).
 
 pub mod collections {
-	pub use alloc::collections::btree_map;
-	pub use alloc::collections::btree_set;
-	pub use alloc::collections::vec_deque;
+    pub use alloc::collections::btree_map;
+    pub use alloc::collections::btree_set;
+    pub use alloc::collections::vec_deque;
 }
 
 pub mod borrow {
-	pub use core::borrow::*;
-	pub use alloc::borrow::*;
+    pub use core::borrow::*;
+    pub use alloc::borrow::*;
 }
 
 pub mod thread {
-	/// Returns if the current thread is panicking.
-	///
-	/// In wasm this always returns `false`, as we abort on any panic.
-	pub fn panicking() -> bool {
-		false
-	}
+    /// Returns if the current thread is panicking.
+    ///
+    /// In wasm this always returns `false`, as we abort on any panic.
+    pub fn panicking() -> bool {
+        false
+    }
 }

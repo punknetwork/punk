@@ -44,18 +44,18 @@ pub mod testing;
 pub struct SubscriptionTaskExecutor(Arc<dyn SpawnNamed>);
 
 impl SubscriptionTaskExecutor {
-	/// Create a new `Self` with the given spawner.
-	pub fn new(spawn: impl SpawnNamed + 'static) -> Self {
-		Self(Arc::new(spawn))
-	}
+    /// Create a new `Self` with the given spawner.
+    pub fn new(spawn: impl SpawnNamed + 'static) -> Self {
+        Self(Arc::new(spawn))
+    }
 }
 
-impl Executor<Box<dyn Future<Item = (), Error = ()> + Send>> for SubscriptionTaskExecutor {
-	fn execute(
-		&self,
-		future: Box<dyn Future<Item = (), Error = ()> + Send>,
-	) -> Result<(), ExecuteError<Box<dyn Future<Item = (), Error = ()> + Send>>> {
-		self.0.spawn("substrate-rpc-subscription", future.compat().map(drop).boxed());
-		Ok(())
-	}
+impl Executor<Box<dyn Future<Item=(), Error=()> + Send>> for SubscriptionTaskExecutor {
+    fn execute(
+        &self,
+        future: Box<dyn Future<Item=(), Error=()> + Send>,
+    ) -> Result<(), ExecuteError<Box<dyn Future<Item=(), Error=()> + Send>>> {
+        self.0.spawn("substrate-rpc-subscription", future.compat().map(drop).boxed());
+        Ok(())
+    }
 }

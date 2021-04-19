@@ -26,54 +26,54 @@ use sp_runtime::transaction_validity::InvalidTransaction;
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Author RPC future Result type.
-pub type FutureResult<T> = Box<dyn rpc::futures::Future<Item = T, Error = Error> + Send>;
+pub type FutureResult<T> = Box<dyn rpc::futures::Future<Item=T, Error=Error> + Send>;
 
 /// Author RPC errors.
 #[derive(Debug, derive_more::Display, derive_more::From)]
 pub enum Error {
-	/// Client error.
-	#[display(fmt="Client error: {}", _0)]
-	#[from(ignore)]
-	Client(Box<dyn std::error::Error + Send>),
-	/// Transaction pool error,
-	#[display(fmt="Transaction pool error: {}", _0)]
-	Pool(sp_transaction_pool::error::Error),
-	/// Verification error
-	#[display(fmt="Extrinsic verification error: {}", _0)]
-	#[from(ignore)]
-	Verification(Box<dyn std::error::Error + Send>),
-	/// Incorrect extrinsic format.
-	#[display(fmt="Invalid extrinsic format: {}", _0)]
-	BadFormat(codec::Error),
-	/// Incorrect seed phrase.
-	#[display(fmt="Invalid seed phrase/SURI")]
-	BadSeedPhrase,
-	/// Key type ID has an unknown format.
-	#[display(fmt="Invalid key type ID format (should be of length four)")]
-	BadKeyType,
-	/// Key type ID has some unsupported crypto.
-	#[display(fmt="The crypto of key type ID is unknown")]
-	UnsupportedKeyType,
-	/// Some random issue with the key store. Shouldn't happen.
-	#[display(fmt="The key store is unavailable")]
-	KeyStoreUnavailable,
-	/// Invalid session keys encoding.
-	#[display(fmt="Session keys are not encoded correctly")]
-	InvalidSessionKeys,
-	/// Call to an unsafe RPC was denied.
-	UnsafeRpcCalled(crate::policy::UnsafeRpcError),
+    /// Client error.
+    #[display(fmt = "Client error: {}", _0)]
+    #[from(ignore)]
+    Client(Box<dyn std::error::Error + Send>),
+    /// Transaction pool error,
+    #[display(fmt = "Transaction pool error: {}", _0)]
+    Pool(sp_transaction_pool::error::Error),
+    /// Verification error
+    #[display(fmt = "Extrinsic verification error: {}", _0)]
+    #[from(ignore)]
+    Verification(Box<dyn std::error::Error + Send>),
+    /// Incorrect extrinsic format.
+    #[display(fmt = "Invalid extrinsic format: {}", _0)]
+    BadFormat(codec::Error),
+    /// Incorrect seed phrase.
+    #[display(fmt = "Invalid seed phrase/SURI")]
+    BadSeedPhrase,
+    /// Key type ID has an unknown format.
+    #[display(fmt = "Invalid key type ID format (should be of length four)")]
+    BadKeyType,
+    /// Key type ID has some unsupported crypto.
+    #[display(fmt = "The crypto of key type ID is unknown")]
+    UnsupportedKeyType,
+    /// Some random issue with the key store. Shouldn't happen.
+    #[display(fmt = "The key store is unavailable")]
+    KeyStoreUnavailable,
+    /// Invalid session keys encoding.
+    #[display(fmt = "Session keys are not encoded correctly")]
+    InvalidSessionKeys,
+    /// Call to an unsafe RPC was denied.
+    UnsafeRpcCalled(crate::policy::UnsafeRpcError),
 }
 
 impl std::error::Error for Error {
-	fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-		match self {
-			Error::Client(ref err) => Some(&**err),
-			Error::Pool(ref err) => Some(err),
-			Error::Verification(ref err) => Some(&**err),
-			Error::UnsafeRpcCalled(ref err) => Some(err),
-			_ => None,
-		}
-	}
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Error::Client(ref err) => Some(&**err),
+            Error::Pool(ref err) => Some(err),
+            Error::Verification(ref err) => Some(&**err),
+            Error::UnsafeRpcCalled(ref err) => Some(err),
+            _ => None,
+        }
+    }
 }
 
 /// Base code for all authorship errors.
@@ -104,81 +104,81 @@ const UNSUPPORTED_KEY_TYPE: i64 = POOL_INVALID_TX + 7;
 const POOL_UNACTIONABLE: i64 = POOL_INVALID_TX + 8;
 
 impl From<Error> for rpc::Error {
-	fn from(e: Error) -> Self {
-		use sp_transaction_pool::error::{Error as PoolError};
+    fn from(e: Error) -> Self {
+        use sp_transaction_pool::error::Error as PoolError;
 
-		match e {
-			Error::BadFormat(e) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(BAD_FORMAT),
-				message: format!("Extrinsic has invalid format: {}", e).into(),
-				data: None,
-			},
-			Error::Verification(e) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(VERIFICATION_ERROR),
-				message: format!("Verification Error: {}", e).into(),
-				data: Some(format!("{:?}", e).into()),
-			},
-			Error::Pool(PoolError::InvalidTransaction(InvalidTransaction::Custom(e))) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_INVALID_TX),
-				message: "Invalid Transaction".into(),
-				data: Some(format!("Custom error: {}", e).into()),
-			},
-			Error::Pool(PoolError::InvalidTransaction(e)) => {
-				let msg: &str = e.into();
-				rpc::Error {
-					code: rpc::ErrorCode::ServerError(POOL_INVALID_TX),
-					message: "Invalid Transaction".into(),
-					data: Some(msg.into()),
-				}
-			},
-			Error::Pool(PoolError::UnknownTransaction(e)) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_UNKNOWN_VALIDITY),
-				message: "Unknown Transaction Validity".into(),
-				data: serde_json::to_value(e).ok(),
-			},
-			Error::Pool(PoolError::TemporarilyBanned) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_TEMPORARILY_BANNED),
-				message: "Transaction is temporarily banned".into(),
-				data: None,
-			},
-			Error::Pool(PoolError::AlreadyImported(hash)) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_ALREADY_IMPORTED),
-				message: "Transaction Already Imported".into(),
-				data: Some(format!("{:?}", hash).into()),
-			},
-			Error::Pool(PoolError::TooLowPriority { old, new }) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_TOO_LOW_PRIORITY),
-				message: format!("Priority is too low: ({} vs {})", old, new),
-				data: Some("The transaction has too low priority to replace another transaction already in the pool.".into()),
-			},
-			Error::Pool(PoolError::CycleDetected) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_CYCLE_DETECTED),
-				message: "Cycle Detected".into(),
-				data: None,
-			},
-			Error::Pool(PoolError::ImmediatelyDropped) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_IMMEDIATELY_DROPPED),
-				message: "Immediately Dropped".into(),
-				data: Some("The transaction couldn't enter the pool because of the limit".into()),
-			},
-			Error::Pool(PoolError::Unactionable) => rpc::Error {
-				code: rpc::ErrorCode::ServerError(POOL_UNACTIONABLE),
-				message: "Unactionable".into(),
-				data: Some(
-					"The transaction is unactionable since it is not propagable and \
+        match e {
+            Error::BadFormat(e) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(BAD_FORMAT),
+                message: format!("Extrinsic has invalid format: {}", e).into(),
+                data: None,
+            },
+            Error::Verification(e) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(VERIFICATION_ERROR),
+                message: format!("Verification Error: {}", e).into(),
+                data: Some(format!("{:?}", e).into()),
+            },
+            Error::Pool(PoolError::InvalidTransaction(InvalidTransaction::Custom(e))) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_INVALID_TX),
+                message: "Invalid Transaction".into(),
+                data: Some(format!("Custom error: {}", e).into()),
+            },
+            Error::Pool(PoolError::InvalidTransaction(e)) => {
+                let msg: &str = e.into();
+                rpc::Error {
+                    code: rpc::ErrorCode::ServerError(POOL_INVALID_TX),
+                    message: "Invalid Transaction".into(),
+                    data: Some(msg.into()),
+                }
+            }
+            Error::Pool(PoolError::UnknownTransaction(e)) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_UNKNOWN_VALIDITY),
+                message: "Unknown Transaction Validity".into(),
+                data: serde_json::to_value(e).ok(),
+            },
+            Error::Pool(PoolError::TemporarilyBanned) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_TEMPORARILY_BANNED),
+                message: "Transaction is temporarily banned".into(),
+                data: None,
+            },
+            Error::Pool(PoolError::AlreadyImported(hash)) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_ALREADY_IMPORTED),
+                message: "Transaction Already Imported".into(),
+                data: Some(format!("{:?}", hash).into()),
+            },
+            Error::Pool(PoolError::TooLowPriority { old, new }) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_TOO_LOW_PRIORITY),
+                message: format!("Priority is too low: ({} vs {})", old, new),
+                data: Some("The transaction has too low priority to replace another transaction already in the pool.".into()),
+            },
+            Error::Pool(PoolError::CycleDetected) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_CYCLE_DETECTED),
+                message: "Cycle Detected".into(),
+                data: None,
+            },
+            Error::Pool(PoolError::ImmediatelyDropped) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_IMMEDIATELY_DROPPED),
+                message: "Immediately Dropped".into(),
+                data: Some("The transaction couldn't enter the pool because of the limit".into()),
+            },
+            Error::Pool(PoolError::Unactionable) => rpc::Error {
+                code: rpc::ErrorCode::ServerError(POOL_UNACTIONABLE),
+                message: "Unactionable".into(),
+                data: Some(
+                    "The transaction is unactionable since it is not propagable and \
 					 the local node does not author blocks".into(),
-				),
-			},
-			Error::UnsupportedKeyType => rpc::Error {
-				code: rpc::ErrorCode::ServerError(UNSUPPORTED_KEY_TYPE),
-				message: "Unknown key type crypto" .into(),
-				data: Some(
-					"The crypto for the given key type is unknown, please add the public key to the \
+                ),
+            },
+            Error::UnsupportedKeyType => rpc::Error {
+                code: rpc::ErrorCode::ServerError(UNSUPPORTED_KEY_TYPE),
+                message: "Unknown key type crypto".into(),
+                data: Some(
+                    "The crypto for the given key type is unknown, please add the public key to the \
 					request to insert the key successfully.".into()
-				),
-			},
-			Error::UnsafeRpcCalled(e) => e.into(),
-			e => errors::internal(e),
-		}
-	}
+                ),
+            },
+            Error::UnsafeRpcCalled(e) => e.into(),
+            e => errors::internal(e),
+        }
+    }
 }

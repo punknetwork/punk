@@ -28,17 +28,17 @@ pub mod babe;
 /// Consensus data provider, manual seal uses this trait object for authoring blocks valid 
 /// for any runtime.
 pub trait ConsensusDataProvider<B: BlockT>: Send + Sync {
-	/// Block import transaction type
-	type Transaction;
+    /// Block import transaction type
+    type Transaction;
 
-	/// Attempt to create a consensus digest.
-	fn create_digest(&self, parent: &B::Header, inherents: &InherentData) -> Result<DigestFor<B>, Error>;
+    /// Attempt to create a consensus digest.
+    fn create_digest(&self, parent: &B::Header, inherents: &InherentData) -> Result<DigestFor<B>, Error>;
 
-	/// set up the neccessary import params.
-	fn append_block_import(
-		&self,
-		parent: &B::Header,
-		params: &mut BlockImportParams<B, Self::Transaction>,
-		inherents: &InherentData
-	) -> Result<(), Error>;
+    /// set up the neccessary import params.
+    fn append_block_import(
+        &self,
+        parent: &B::Header,
+        params: &mut BlockImportParams<B, Self::Transaction>,
+        inherents: &InherentData,
+    ) -> Result<(), Error>;
 }

@@ -163,7 +163,7 @@ use frame_support::{
 	weights::{Weight, DispatchClass, Pays},
 	traits::{
 		Currency, ReservableCurrency, LockableCurrency, WithdrawReasons, LockIdentifier, Get,
-		OnUnbalanced, BalanceStatus, schedule::{Named as ScheduleNamed, DispatchTime}, EnsureOrigin
+		OnUnbalanced, BalanceStatus, schedule::{Named as ScheduleNamed, DispatchTime}, EnsureOrigin,
 	},
 	dispatch::DispatchResultWithPostInfo,
 };
@@ -1207,13 +1207,13 @@ impl<T: Config> Module<T> {
 	pub fn internal_start_referendum(
 		proposal_hash: T::Hash,
 		threshold: VoteThreshold,
-		delay: T::BlockNumber
+		delay: T::BlockNumber,
 	) -> ReferendumIndex {
 		<Module<T>>::inject_referendum(
 			<frame_system::Pallet<T>>::block_number() + T::VotingPeriod::get(),
 			proposal_hash,
 			threshold,
-			delay
+			delay,
 		)
 	}
 
@@ -1279,7 +1279,7 @@ impl<T: Config> Module<T> {
 			DEMOCRACY_ID,
 			who,
 			vote.balance(),
-			WithdrawReasons::TRANSFER
+			WithdrawReasons::TRANSFER,
 		);
 		ReferendumInfoOf::<T>::insert(ref_index, ReferendumInfo::Ongoing(status));
 		Ok(())
@@ -1331,7 +1331,7 @@ impl<T: Config> Module<T> {
 				// We don't support second level delegating, so we don't need to do anything more.
 				*delegations = delegations.saturating_add(amount);
 				1
-			},
+			}
 			Voting::Direct { votes, delegations, .. } => {
 				*delegations = delegations.saturating_add(amount);
 				for &(ref_index, account_vote) in votes.iter() {
@@ -1339,7 +1339,7 @@ impl<T: Config> Module<T> {
 						ReferendumInfoOf::<T>::mutate(ref_index, |maybe_info|
 							if let Some(ReferendumInfo::Ongoing(ref mut status)) = maybe_info {
 								status.tally.increase(vote.aye, amount);
-							}
+							},
 						);
 					}
 				}
@@ -1363,7 +1363,7 @@ impl<T: Config> Module<T> {
 						ReferendumInfoOf::<T>::mutate(ref_index, |maybe_info|
 							if let Some(ReferendumInfo::Ongoing(ref mut status)) = maybe_info {
 								status.tally.reduce(vote.aye, amount);
-							}
+							},
 						);
 					}
 				}
@@ -1411,7 +1411,7 @@ impl<T: Config> Module<T> {
 				DEMOCRACY_ID,
 				&who,
 				balance,
-				WithdrawReasons::TRANSFER
+				WithdrawReasons::TRANSFER,
 			);
 			Ok(votes)
 		})?;

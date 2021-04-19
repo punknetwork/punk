@@ -24,28 +24,28 @@ use super::super::imbalance::{Imbalance, OnUnbalanced};
 
 /// Split an unbalanced amount two ways between a common divisor.
 pub struct SplitTwoWays<
-	Balance,
-	Imbalance,
-	Part1,
-	Target1,
-	Part2,
-	Target2,
+    Balance,
+    Imbalance,
+    Part1,
+    Target1,
+    Part2,
+    Target2,
 >(PhantomData<(Balance, Imbalance, Part1, Target1, Part2, Target2)>);
 
 impl<
-	Balance: From<u32> + Saturating + Div<Output=Balance>,
-	I: Imbalance<Balance>,
-	Part1: U32,
-	Target1: OnUnbalanced<I>,
-	Part2: U32,
-	Target2: OnUnbalanced<I>,
+    Balance: From<u32> + Saturating + Div<Output=Balance>,
+    I: Imbalance<Balance>,
+    Part1: U32,
+    Target1: OnUnbalanced<I>,
+    Part2: U32,
+    Target2: OnUnbalanced<I>,
 > OnUnbalanced<I> for SplitTwoWays<Balance, I, Part1, Target1, Part2, Target2>
 {
-	fn on_nonzero_unbalanced(amount: I) {
-		let total: u32 = Part1::VALUE + Part2::VALUE;
-		let amount1 = amount.peek().saturating_mul(Part1::VALUE.into()) / total.into();
-		let (imb1, imb2) = amount.split(amount1);
-		Target1::on_unbalanced(imb1);
-		Target2::on_unbalanced(imb2);
-	}
+    fn on_nonzero_unbalanced(amount: I) {
+        let total: u32 = Part1::VALUE + Part2::VALUE;
+        let amount1 = amount.peek().saturating_mul(Part1::VALUE.into()) / total.into();
+        let (imb1, imb2) = amount.split(amount1);
+        Target1::on_unbalanced(imb1);
+        Target2::on_unbalanced(imb2);
+    }
 }

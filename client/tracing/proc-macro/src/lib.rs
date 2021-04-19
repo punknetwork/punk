@@ -105,33 +105,33 @@ use syn::{Error, Expr, Ident, ItemFn};
 /// ```
 #[proc_macro_attribute]
 pub fn prefix_logs_with(arg: TokenStream, item: TokenStream) -> TokenStream {
-	let item_fn = syn::parse_macro_input!(item as ItemFn);
+    let item_fn = syn::parse_macro_input!(item as ItemFn);
 
-	if arg.is_empty() {
-		return Error::new(
-			Span::call_site(),
-			"missing argument: name of the node. Example: sc_cli::prefix_logs_with(<expr>)",
-		)
-		.to_compile_error()
-		.into();
-	}
+    if arg.is_empty() {
+        return Error::new(
+            Span::call_site(),
+            "missing argument: name of the node. Example: sc_cli::prefix_logs_with(<expr>)",
+        )
+            .to_compile_error()
+            .into();
+    }
 
-	let name = syn::parse_macro_input!(arg as Expr);
+    let name = syn::parse_macro_input!(arg as Expr);
 
-	let crate_name = match crate_name("sc-tracing") {
-		Ok(FoundCrate::Itself) => Ident::from(Ident::new("sc_tracing", Span::call_site())),
-		Ok(FoundCrate::Name(crate_name)) => Ident::new(&crate_name, Span::call_site()),
-		Err(e) => return Error::new(Span::call_site(), e).to_compile_error().into(),
-	};
+    let crate_name = match crate_name("sc-tracing") {
+        Ok(FoundCrate::Itself) => Ident::from(Ident::new("sc_tracing", Span::call_site())),
+        Ok(FoundCrate::Name(crate_name)) => Ident::new(&crate_name, Span::call_site()),
+        Err(e) => return Error::new(Span::call_site(), e).to_compile_error().into(),
+    };
 
-	let ItemFn {
-		attrs,
-		vis,
-		sig,
-		block,
-	} = item_fn;
+    let ItemFn {
+        attrs,
+        vis,
+        sig,
+        block,
+    } = item_fn;
 
-	(quote! {
+    (quote! {
 		#(#attrs)*
 		#vis #sig {
 			let span = #crate_name::tracing::info_span!(
@@ -143,5 +143,5 @@ pub fn prefix_logs_with(arg: TokenStream, item: TokenStream) -> TokenStream {
 			#block
 		}
 	})
-	.into()
+        .into()
 }

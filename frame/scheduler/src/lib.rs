@@ -475,7 +475,7 @@ impl<T: Config> Module<T> {
 		};
 
 		if when <= now {
-			return Err(Error::<T>::TargetBlockNumberInPast.into())
+			return Err(Error::<T>::TargetBlockNumberInPast.into());
 		}
 
 		Ok(when)
@@ -486,7 +486,7 @@ impl<T: Config> Module<T> {
 		maybe_periodic: Option<schedule::Period<T::BlockNumber>>,
 		priority: schedule::Priority,
 		origin: T::PalletsOrigin,
-		call: <T as Config>::Call
+		call: <T as Config>::Call,
 	) -> Result<TaskAddress<T::BlockNumber>, DispatchError> {
 		let when = Self::resolve_time(when)?;
 
@@ -514,7 +514,7 @@ impl<T: Config> Module<T> {
 
 	fn do_cancel(
 		origin: Option<T::PalletsOrigin>,
-		(when, index): TaskAddress<T::BlockNumber>
+		(when, index): TaskAddress<T::BlockNumber>,
 	) -> Result<(), DispatchError> {
 		let scheduled = Agenda::<T>::try_mutate(
 			when,
@@ -575,7 +575,7 @@ impl<T: Config> Module<T> {
 	) -> Result<TaskAddress<T::BlockNumber>, DispatchError> {
 		// ensure id it is unique
 		if Lookup::<T>::contains_key(&id) {
-			return Err(Error::<T>::FailedToSchedule)?
+			return Err(Error::<T>::FailedToSchedule)?;
 		}
 
 		let when = Self::resolve_time(when)?;
@@ -587,7 +587,7 @@ impl<T: Config> Module<T> {
 			.map(|(p, c)| (p, c - 1));
 
 		let s = Scheduled {
-			maybe_id: Some(id.clone()), priority, call, maybe_periodic, origin, _phantom: Default::default()
+			maybe_id: Some(id.clone()), priority, call, maybe_periodic, origin, _phantom: Default::default(),
 		};
 		Agenda::<T>::append(when, Some(s));
 		let index = Agenda::<T>::decode_len(when).unwrap_or(1) as u32 - 1;
@@ -668,7 +668,7 @@ impl<T: Config> schedule::Anon<T::BlockNumber, <T as Config>::Call, T::PalletsOr
 		maybe_periodic: Option<schedule::Period<T::BlockNumber>>,
 		priority: schedule::Priority,
 		origin: T::PalletsOrigin,
-		call: <T as Config>::Call
+		call: <T as Config>::Call,
 	) -> Result<Self::Address, DispatchError> {
 		Self::do_schedule(when, maybe_periodic, priority, origin, call)
 	}
@@ -977,7 +977,7 @@ mod tests {
 			let call = Call::Logger(logger::Call::log(42, 1000));
 			assert!(!<Test as frame_system::Config>::BaseCallFilter::filter(&call));
 			assert_eq!(Scheduler::do_schedule_named(
-				1u32.encode(), DispatchTime::At(4), None, 127, root(), call
+				1u32.encode(), DispatchTime::At(4), None, 127, root(), call,
 			).unwrap(), (4, 0));
 
 			run_to_block(3);
@@ -1004,7 +1004,7 @@ mod tests {
 			let call = Call::Logger(logger::Call::log(42, 1000));
 			assert!(!<Test as frame_system::Config>::BaseCallFilter::filter(&call));
 			assert_eq!(Scheduler::do_schedule_named(
-				1u32.encode(), DispatchTime::At(4), Some((3, 3)), 127, root(), call
+				1u32.encode(), DispatchTime::At(4), Some((3, 3)), 127, root(), call,
 			).unwrap(), (4, 0));
 
 			run_to_block(3);
@@ -1040,10 +1040,10 @@ mod tests {
 		new_test_ext().execute_with(|| {
 			// at #4.
 			Scheduler::do_schedule_named(
-				1u32.encode(), DispatchTime::At(4), None, 127, root(), Call::Logger(logger::Call::log(69, 1000))
+				1u32.encode(), DispatchTime::At(4), None, 127, root(), Call::Logger(logger::Call::log(69, 1000)),
 			).unwrap();
 			let i = Scheduler::do_schedule(
-				DispatchTime::At(4), None, 127, root(), Call::Logger(logger::Call::log(42, 1000))
+				DispatchTime::At(4), None, 127, root(), Call::Logger(logger::Call::log(42, 1000)),
 			).unwrap();
 			run_to_block(3);
 			assert!(logger::log().is_empty());
@@ -1064,7 +1064,7 @@ mod tests {
 				Some((3, 3)),
 				127,
 				root(),
-				Call::Logger(logger::Call::log(42, 1000))
+				Call::Logger(logger::Call::log(42, 1000)),
 			).unwrap();
 			// same id results in error.
 			assert!(Scheduler::do_schedule_named(
@@ -1073,11 +1073,11 @@ mod tests {
 				None,
 				127,
 				root(),
-				Call::Logger(logger::Call::log(69, 1000))
+				Call::Logger(logger::Call::log(69, 1000)),
 			).is_err());
 			// different id is ok.
 			Scheduler::do_schedule_named(
-				2u32.encode(), DispatchTime::At(8), None, 127, root(), Call::Logger(logger::Call::log(69, 1000))
+				2u32.encode(), DispatchTime::At(8), None, 127, root(), Call::Logger(logger::Call::log(69, 1000)),
 			).unwrap();
 			run_to_block(3);
 			assert!(logger::log().is_empty());

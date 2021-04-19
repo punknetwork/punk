@@ -22,29 +22,29 @@ use quote::quote;
 use super::DeclStorageDefExt;
 
 pub fn decl_and_impl(def: &DeclStorageDefExt) -> TokenStream {
-	let decl_store_items = def.storage_lines.iter()
-		.map(|sline| &sline.name)
-		.fold(TokenStream::new(), |mut items, name| {
-			items.extend(quote!(type #name;));
-			items
-		});
+    let decl_store_items = def.storage_lines.iter()
+        .map(|sline| &sline.name)
+        .fold(TokenStream::new(), |mut items, name| {
+            items.extend(quote!(type #name;));
+            items
+        });
 
-	let impl_store_items = def.storage_lines.iter()
-		.fold(TokenStream::new(), |mut items, line| {
-			let name = &line.name;
-			let storage_struct = &line.storage_struct;
+    let impl_store_items = def.storage_lines.iter()
+        .fold(TokenStream::new(), |mut items, line| {
+            let name = &line.name;
+            let storage_struct = &line.storage_struct;
 
-			items.extend(quote!(type #name = #storage_struct;));
-			items
-		});
+            items.extend(quote!(type #name = #storage_struct;));
+            items
+        });
 
-	let visibility = &def.visibility;
-	let store_trait = &def.store_trait;
-	let module_struct = &def.module_struct;
-	let module_impl = &def.module_impl;
-	let where_clause = &def.where_clause;
+    let visibility = &def.visibility;
+    let store_trait = &def.store_trait;
+    let module_struct = &def.module_struct;
+    let module_impl = &def.module_impl;
+    let where_clause = &def.where_clause;
 
-	quote!(
+    quote!(
 		#visibility trait #store_trait {
 			#decl_store_items
 		}

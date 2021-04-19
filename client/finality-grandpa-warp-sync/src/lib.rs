@@ -35,141 +35,141 @@ pub use proof::{AuthoritySetChangeProof, WarpSyncProof};
 
 /// Generates the appropriate [`RequestResponseConfig`] for a given chain configuration.
 pub fn request_response_config_for_chain<TBlock: BlockT, TBackend: Backend<TBlock> + 'static>(
-	config: &Configuration,
-	spawn_handle: SpawnTaskHandle,
-	backend: Arc<TBackend>,
-	authority_set: SharedAuthoritySet<TBlock::Hash, NumberFor<TBlock>>,
+    config: &Configuration,
+    spawn_handle: SpawnTaskHandle,
+    backend: Arc<TBackend>,
+    authority_set: SharedAuthoritySet<TBlock::Hash, NumberFor<TBlock>>,
 ) -> RequestResponseConfig
-	where NumberFor<TBlock>: sc_finality_grandpa::BlockNumberOps,
+    where NumberFor<TBlock>: sc_finality_grandpa::BlockNumberOps,
 {
-	let protocol_id = config.protocol_id();
+    let protocol_id = config.protocol_id();
 
-	if matches!(config.role, Role::Light) {
-		// Allow outgoing requests but deny incoming requests.
-		generate_request_response_config(protocol_id.clone())
-	} else {
-		// Allow both outgoing and incoming requests.
-		let (handler, request_response_config) = GrandpaWarpSyncRequestHandler::new(
-			protocol_id.clone(),
-			backend.clone(),
-			authority_set,
-		);
-		spawn_handle.spawn("grandpa_warp_sync_request_handler", handler.run());
-		request_response_config
-	}
+    if matches!(config.role, Role::Light) {
+        // Allow outgoing requests but deny incoming requests.
+        generate_request_response_config(protocol_id.clone())
+    } else {
+        // Allow both outgoing and incoming requests.
+        let (handler, request_response_config) = GrandpaWarpSyncRequestHandler::new(
+            protocol_id.clone(),
+            backend.clone(),
+            authority_set,
+        );
+        spawn_handle.spawn("grandpa_warp_sync_request_handler", handler.run());
+        request_response_config
+    }
 }
 
 const LOG_TARGET: &str = "finality-grandpa-warp-sync-request-handler";
 
 /// Generates a [`RequestResponseConfig`] for the grandpa warp sync request protocol, refusing incoming requests.
 pub fn generate_request_response_config(protocol_id: ProtocolId) -> RequestResponseConfig {
-	RequestResponseConfig {
-		name: generate_protocol_name(protocol_id).into(),
-		max_request_size: 32,
-		max_response_size: 16 * 1024 * 1024,
-		request_timeout: Duration::from_secs(10),
-		inbound_queue: None,
-	}
+    RequestResponseConfig {
+        name: generate_protocol_name(protocol_id).into(),
+        max_request_size: 32,
+        max_response_size: 16 * 1024 * 1024,
+        request_timeout: Duration::from_secs(10),
+        inbound_queue: None,
+    }
 }
 
 /// Generate the grandpa warp sync protocol name from chain specific protocol identifier.
 fn generate_protocol_name(protocol_id: ProtocolId) -> String {
-	let mut s = String::new();
-	s.push_str("/");
-	s.push_str(protocol_id.as_ref());
-	s.push_str("/sync/warp");
-	s
+    let mut s = String::new();
+    s.push_str("/");
+    s.push_str(protocol_id.as_ref());
+    s.push_str("/sync/warp");
+    s
 }
 
 #[derive(Decode)]
 struct Request<B: BlockT> {
-	begin: B::Hash,
+    begin: B::Hash,
 }
 
 /// Handler for incoming grandpa warp sync requests from a remote peer.
 pub struct GrandpaWarpSyncRequestHandler<TBackend, TBlock: BlockT> {
-	backend: Arc<TBackend>,
-	authority_set: SharedAuthoritySet<TBlock::Hash, NumberFor<TBlock>>,
-	request_receiver: mpsc::Receiver<IncomingRequest>,
-	_phantom: std::marker::PhantomData<TBlock>,
+    backend: Arc<TBackend>,
+    authority_set: SharedAuthoritySet<TBlock::Hash, NumberFor<TBlock>>,
+    request_receiver: mpsc::Receiver<IncomingRequest>,
+    _phantom: std::marker::PhantomData<TBlock>,
 }
 
 impl<TBlock: BlockT, TBackend: Backend<TBlock>> GrandpaWarpSyncRequestHandler<TBackend, TBlock> {
-	/// Create a new [`GrandpaWarpSyncRequestHandler`].
-	pub fn new(
-		protocol_id: ProtocolId,
-		backend: Arc<TBackend>,
-		authority_set: SharedAuthoritySet<TBlock::Hash, NumberFor<TBlock>>,
-	) -> (Self, RequestResponseConfig) {
-		let (tx, request_receiver) = mpsc::channel(20);
+    /// Create a new [`GrandpaWarpSyncRequestHandler`].
+    pub fn new(
+        protocol_id: ProtocolId,
+        backend: Arc<TBackend>,
+        authority_set: SharedAuthoritySet<TBlock::Hash, NumberFor<TBlock>>,
+    ) -> (Self, RequestResponseConfig) {
+        let (tx, request_receiver) = mpsc::channel(20);
 
-		let mut request_response_config = generate_request_response_config(protocol_id);
-		request_response_config.inbound_queue = Some(tx);
+        let mut request_response_config = generate_request_response_config(protocol_id);
+        request_response_config.inbound_queue = Some(tx);
 
-		(
-			Self {
-				backend,
-				request_receiver,
-				_phantom: std::marker::PhantomData,
-				authority_set,
-			},
-			request_response_config,
-		)
-	}
+        (
+            Self {
+                backend,
+                request_receiver,
+                _phantom: std::marker::PhantomData,
+                authority_set,
+            },
+            request_response_config,
+        )
+    }
 
-	fn handle_request(
-		&self,
-		payload: Vec<u8>,
-		pending_response: oneshot::Sender<OutgoingResponse>
-	) -> Result<(), HandleRequestError>
-		where NumberFor<TBlock>: sc_finality_grandpa::BlockNumberOps,
-	{
-		let request = Request::<TBlock>::decode(&mut &payload[..])?;
+    fn handle_request(
+        &self,
+        payload: Vec<u8>,
+        pending_response: oneshot::Sender<OutgoingResponse>,
+    ) -> Result<(), HandleRequestError>
+        where NumberFor<TBlock>: sc_finality_grandpa::BlockNumberOps,
+    {
+        let request = Request::<TBlock>::decode(&mut &payload[..])?;
 
-		let proof = WarpSyncProof::generate(
-			self.backend.blockchain(),
-			request.begin,
-			&self.authority_set.authority_set_changes(),
-		)?;
+        let proof = WarpSyncProof::generate(
+            self.backend.blockchain(),
+            request.begin,
+            &self.authority_set.authority_set_changes(),
+        )?;
 
-		pending_response.send(OutgoingResponse {
-			result: Ok(proof.encode()),
-			reputation_changes: Vec::new(),
-		}).map_err(|_| HandleRequestError::SendResponse)
-	}
+        pending_response.send(OutgoingResponse {
+            result: Ok(proof.encode()),
+            reputation_changes: Vec::new(),
+        }).map_err(|_| HandleRequestError::SendResponse)
+    }
 
-	/// Run [`GrandpaWarpSyncRequestHandler`].
-	pub async fn run(mut self)
-		where NumberFor<TBlock>: sc_finality_grandpa::BlockNumberOps,
-	{
-		while let Some(request) = self.request_receiver.next().await {
-			let IncomingRequest { peer, payload, pending_response } = request;
+    /// Run [`GrandpaWarpSyncRequestHandler`].
+    pub async fn run(mut self)
+        where NumberFor<TBlock>: sc_finality_grandpa::BlockNumberOps,
+    {
+        while let Some(request) = self.request_receiver.next().await {
+            let IncomingRequest { peer, payload, pending_response } = request;
 
-			match self.handle_request(payload, pending_response) {
-				Ok(()) => debug!(target: LOG_TARGET, "Handled grandpa warp sync request from {}.", peer),
-				Err(e) => debug!(
-					target: LOG_TARGET,
-					"Failed to handle grandpa warp sync request from {}: {}",
-					peer, e,
-				),
-			}
-		}
-	}
+            match self.handle_request(payload, pending_response) {
+                Ok(()) => debug!(target: LOG_TARGET, "Handled grandpa warp sync request from {}.", peer),
+                Err(e) => debug!(
+                    target: LOG_TARGET,
+                    "Failed to handle grandpa warp sync request from {}: {}",
+                    peer, e,
+                ),
+            }
+        }
+    }
 }
 
 #[derive(Debug, derive_more::Display, derive_more::From)]
 pub enum HandleRequestError {
-	#[display(fmt = "Failed to decode request: {}.", _0)]
-	DecodeProto(prost::DecodeError),
-	#[display(fmt = "Failed to encode response: {}.", _0)]
-	EncodeProto(prost::EncodeError),
-	#[display(fmt = "Failed to decode block hash: {}.", _0)]
-	DecodeScale(codec::Error),
-	Client(sp_blockchain::Error),
-	#[from(ignore)]
-	InvalidRequest(String),
-	#[from(ignore)]
-	InvalidProof(String),
-	#[display(fmt = "Failed to send response.")]
-	SendResponse,
+    #[display(fmt = "Failed to decode request: {}.", _0)]
+    DecodeProto(prost::DecodeError),
+    #[display(fmt = "Failed to encode response: {}.", _0)]
+    EncodeProto(prost::EncodeError),
+    #[display(fmt = "Failed to decode block hash: {}.", _0)]
+    DecodeScale(codec::Error),
+    Client(sp_blockchain::Error),
+    #[from(ignore)]
+    InvalidRequest(String),
+    #[from(ignore)]
+    InvalidProof(String),
+    #[display(fmt = "Failed to send response.")]
+    SendResponse,
 }

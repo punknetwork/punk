@@ -103,7 +103,7 @@ fn create_identity_info<T: Config>(num_fields: u32) -> IdentityInfo {
 		twitter: data.clone(),
 	};
 
-	return info
+	return info;
 }
 
 benchmarks! {

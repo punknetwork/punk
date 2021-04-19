@@ -92,7 +92,7 @@ pub struct AbortGuard {
 	/// Value that was in `ABORT` before we created this guard.
 	previous_val: OnPanic,
 	/// Marker so that `AbortGuard` doesn't implement `Send`.
-	_not_send: PhantomData<std::rc::Rc<()>>
+	_not_send: PhantomData<std::rc::Rc<()>>,
 }
 
 impl AbortGuard {
@@ -101,7 +101,7 @@ impl AbortGuard {
 	pub fn force_unwind() -> AbortGuard {
 		AbortGuard {
 			previous_val: set_abort(OnPanic::Unwind),
-			_not_send: PhantomData
+			_not_send: PhantomData,
 		}
 	}
 
@@ -110,7 +110,7 @@ impl AbortGuard {
 	pub fn force_abort() -> AbortGuard {
 		AbortGuard {
 			previous_val: set_abort(OnPanic::Abort),
-			_not_send: PhantomData
+			_not_send: PhantomData,
 		}
 	}
 
@@ -119,7 +119,7 @@ impl AbortGuard {
 	pub fn never_abort() -> AbortGuard {
 		AbortGuard {
 			previous_val: set_abort(OnPanic::NeverAbort),
-			_not_send: PhantomData
+			_not_send: PhantomData,
 		}
 	}
 }

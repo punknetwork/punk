@@ -722,7 +722,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 	fn validate_and_get_proposal(
 		hash: &T::Hash,
 		length_bound: u32,
-		weight_bound: Weight
+		weight_bound: Weight,
 	) -> Result<(<T as Config<I>>::Proposal, usize), DispatchError> {
 		let key = ProposalOf::<T, I>::hashed_key_for(hash);
 		// read the length of the proposal storage entry directly
@@ -833,7 +833,7 @@ impl<T: Config<I>, I: Instance> ChangeMembers<T::AccountId> for Module<T, I> {
 						.filter(|i| outgoing.binary_search(i).is_err())
 						.collect();
 					*v = Some(votes);
-				}
+				},
 			);
 		}
 		Members::<T, I>::put(new);

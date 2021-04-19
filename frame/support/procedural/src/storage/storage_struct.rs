@@ -20,51 +20,51 @@
 use proc_macro2::{TokenStream, Ident, Span};
 use quote::quote;
 use super::{
-	DeclStorageDefExt, StorageLineTypeDef,
-	instance_trait::INHERENT_INSTANCE_NAME,
+    DeclStorageDefExt, StorageLineTypeDef,
+    instance_trait::INHERENT_INSTANCE_NAME,
 };
 
 fn from_optional_value_to_query(is_option: bool, default: &Option<syn::Expr>) -> TokenStream {
-	let default = default.as_ref().map(|d| quote!( #d ))
-		.unwrap_or_else(|| quote!( Default::default() ));
+    let default = default.as_ref().map(|d| quote!( #d ))
+        .unwrap_or_else(|| quote!( Default::default() ));
 
-	if !is_option {
-		// raw type case
-		quote!( v.unwrap_or_else(|| #default ) )
-	} else {
-		// Option<> type case
-		quote!( v.or_else(|| #default ) )
-	}
+    if !is_option {
+        // raw type case
+        quote!( v.unwrap_or_else(|| #default ) )
+    } else {
+        // Option<> type case
+        quote!( v.or_else(|| #default ) )
+    }
 }
 
 fn from_query_to_optional_value(is_option: bool) -> TokenStream {
-	if !is_option {
-		// raw type case
-		quote!( Some(v) )
-	} else {
-		// Option<> type case
-		quote!( v )
-	}
+    if !is_option {
+        // raw type case
+        quote!( Some(v) )
+    } else {
+        // Option<> type case
+        quote!( v )
+    }
 }
 
 pub fn decl_and_impl(scrate: &TokenStream, def: &DeclStorageDefExt) -> TokenStream {
-	let mut impls = TokenStream::new();
+    let mut impls = TokenStream::new();
 
-	for line in &def.storage_lines {
+    for line in &def.storage_lines {
 
-		// Propagate doc attributes.
-		let attrs = &line.doc_attrs;
+        // Propagate doc attributes.
+        let attrs = &line.doc_attrs;
 
-		let visibility = &line.visibility;
-		let optional_storage_runtime_comma = &line.optional_storage_runtime_comma;
-		let optional_storage_runtime_bound_comma = &line.optional_storage_runtime_bound_comma;
-		let optional_storage_where_clause = &line.optional_storage_where_clause;
-		let optional_instance_bound_optional_default = &def.optional_instance_bound_optional_default;
-		let optional_instance_bound = &def.optional_instance_bound;
-		let optional_instance = &def.optional_instance;
-		let name = &line.name;
+        let visibility = &line.visibility;
+        let optional_storage_runtime_comma = &line.optional_storage_runtime_comma;
+        let optional_storage_runtime_bound_comma = &line.optional_storage_runtime_bound_comma;
+        let optional_storage_where_clause = &line.optional_storage_where_clause;
+        let optional_instance_bound_optional_default = &def.optional_instance_bound_optional_default;
+        let optional_instance_bound = &def.optional_instance_bound;
+        let optional_instance = &def.optional_instance;
+        let name = &line.name;
 
-		let struct_decl = quote!(
+        let struct_decl = quote!(
 			#( #[ #attrs ] )*
 			#visibility struct #name<
 				#optional_storage_runtime_bound_comma #optional_instance_bound_optional_default
@@ -75,31 +75,31 @@ pub fn decl_and_impl(scrate: &TokenStream, def: &DeclStorageDefExt) -> TokenStre
 			) #optional_storage_where_clause;
 		);
 
-		let from_query_to_optional_value = from_query_to_optional_value(line.is_option);
-		let from_optional_value_to_query =
-			from_optional_value_to_query(line.is_option, &line.default_value);
+        let from_query_to_optional_value = from_query_to_optional_value(line.is_option);
+        let from_optional_value_to_query =
+            from_optional_value_to_query(line.is_option, &line.default_value);
 
-		// Contains accessor to instance, used to get prefixes
-		let instance_or_inherent = if let Some(instance) = def.module_instance.as_ref() {
-			instance.instance_generic.clone()
-		} else {
-			Ident::new(INHERENT_INSTANCE_NAME, Span::call_site())
-		};
+        // Contains accessor to instance, used to get prefixes
+        let instance_or_inherent = if let Some(instance) = def.module_instance.as_ref() {
+            instance.instance_generic.clone()
+        } else {
+            Ident::new(INHERENT_INSTANCE_NAME, Span::call_site())
+        };
 
-		let storage_name_bstr = syn::LitByteStr::new(
-			line.name.to_string().as_ref(),
-			line.name.span()
-		);
+        let storage_name_bstr = syn::LitByteStr::new(
+            line.name.to_string().as_ref(),
+            line.name.span(),
+        );
 
-		let storage_generator_trait = &line.storage_generator_trait;
-		let storage_struct = &line.storage_struct;
-		let impl_trait = quote!( #optional_storage_runtime_bound_comma #optional_instance_bound );
-		let value_type = &line.value_type;
-		let query_type = &line.query_type;
+        let storage_generator_trait = &line.storage_generator_trait;
+        let storage_struct = &line.storage_struct;
+        let impl_trait = quote!( #optional_storage_runtime_bound_comma #optional_instance_bound );
+        let value_type = &line.value_type;
+        let query_type = &line.query_type;
 
-		let struct_impl = match &line.storage_type {
-			StorageLineTypeDef::Simple(_) => {
-				quote!(
+        let struct_impl = match &line.storage_type {
+            StorageLineTypeDef::Simple(_) => {
+                quote!(
 					impl<#impl_trait> #scrate::#storage_generator_trait for #storage_struct
 					#optional_storage_where_clause
 					{
@@ -122,10 +122,10 @@ pub fn decl_and_impl(scrate: &TokenStream, def: &DeclStorageDefExt) -> TokenStre
 						}
 					}
 				)
-			},
-			StorageLineTypeDef::Map(map) => {
-				let hasher = map.hasher.to_storage_hasher_struct();
-				quote!(
+            }
+            StorageLineTypeDef::Map(map) => {
+                let hasher = map.hasher.to_storage_hasher_struct();
+                quote!(
 					impl<#impl_trait> #scrate::storage::StoragePrefixedMap<#value_type>
 						for #storage_struct #optional_storage_where_clause
 					{
@@ -161,11 +161,11 @@ pub fn decl_and_impl(scrate: &TokenStream, def: &DeclStorageDefExt) -> TokenStre
 						}
 					}
 				)
-			},
-			StorageLineTypeDef::DoubleMap(map) => {
-				let hasher1 = map.hasher1.to_storage_hasher_struct();
-				let hasher2 = map.hasher2.to_storage_hasher_struct();
-				quote!(
+            }
+            StorageLineTypeDef::DoubleMap(map) => {
+                let hasher1 = map.hasher1.to_storage_hasher_struct();
+                let hasher2 = map.hasher2.to_storage_hasher_struct();
+                quote!(
 					impl<#impl_trait> #scrate::storage::StoragePrefixedMap<#value_type>
 						for #storage_struct #optional_storage_where_clause
 					{
@@ -204,14 +204,14 @@ pub fn decl_and_impl(scrate: &TokenStream, def: &DeclStorageDefExt) -> TokenStre
 						}
 					}
 				)
-			}
-		};
+            }
+        };
 
-		impls.extend(quote!(
+        impls.extend(quote!(
 			#struct_decl
 			#struct_impl
 		))
-	}
+    }
 
-	impls
+    impls
 }

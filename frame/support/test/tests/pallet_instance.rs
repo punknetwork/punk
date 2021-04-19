@@ -92,7 +92,7 @@ pub mod pallet {
 		#[frame_support::transactional]
 		fn foo_transactional(
 			origin: OriginFor<T>,
-			#[pallet::compact] _foo: u32
+			#[pallet::compact] _foo: u32,
 		) -> DispatchResultWithPostInfo {
 			let _ = origin;
 			Ok(().into())
@@ -154,7 +154,7 @@ pub mod pallet {
 		type Call = Call<T, I>;
 		fn validate_unsigned(
 			_source: TransactionSource,
-			_call: &Self::Call
+			_call: &Self::Call,
 		) -> TransactionValidity {
 			Err(TransactionValidityError::Invalid(InvalidTransaction::Call))
 		}
@@ -685,7 +685,7 @@ fn metadata() {
 	match expected_pallet_instance1_metadata.storage {
 		Some(DecodeDifferent::Decoded(ref mut storage_meta)) => {
 			storage_meta.prefix = DecodeDifferent::Decoded("Instance1Example".to_string());
-		},
+		}
 		_ => unreachable!(),
 	}
 

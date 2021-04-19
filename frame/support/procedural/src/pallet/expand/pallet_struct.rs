@@ -24,43 +24,43 @@ use crate::pallet::{Def, parse::helper::get_doc_literals};
 /// * declare Module type alias for construct_runtime
 /// * replace the first field type of `struct Pallet` with `PhantomData` if it is `_`
 pub fn expand_pallet_struct(def: &mut Def) -> proc_macro2::TokenStream {
-	let frame_support = &def.frame_support;
-	let frame_system = &def.frame_system;
-	let type_impl_gen = &def.type_impl_generics(def.pallet_struct.attr_span);
-	let type_use_gen = &def.type_use_generics(def.pallet_struct.attr_span);
-	let type_decl_gen = &def.type_decl_generics(def.pallet_struct.attr_span);
-	let pallet_ident = &def.pallet_struct.pallet;
-	let config_where_clause = &def.config.where_clause;
+    let frame_support = &def.frame_support;
+    let frame_system = &def.frame_system;
+    let type_impl_gen = &def.type_impl_generics(def.pallet_struct.attr_span);
+    let type_use_gen = &def.type_use_generics(def.pallet_struct.attr_span);
+    let type_decl_gen = &def.type_decl_generics(def.pallet_struct.attr_span);
+    let pallet_ident = &def.pallet_struct.pallet;
+    let config_where_clause = &def.config.where_clause;
 
-	let pallet_item = {
-		let pallet_module_items = &mut def.item.content.as_mut().expect("Checked by def").1;
-		let item = &mut pallet_module_items[def.pallet_struct.index];
-		if let syn::Item::Struct(item) = item {
-			item
-		} else {
-			unreachable!("Checked by pallet struct parser")
-		}
-	};
+    let pallet_item = {
+        let pallet_module_items = &mut def.item.content.as_mut().expect("Checked by def").1;
+        let item = &mut pallet_module_items[def.pallet_struct.index];
+        if let syn::Item::Struct(item) = item {
+            item
+        } else {
+            unreachable!("Checked by pallet struct parser")
+        }
+    };
 
-	// If the first field type is `_` then we replace with `PhantomData`
-	if let Some(field) = pallet_item.fields.iter_mut().next() {
-		if field.ty == syn::parse_quote!(_) {
-			field.ty = syn::parse_quote!(
+    // If the first field type is `_` then we replace with `PhantomData`
+    if let Some(field) = pallet_item.fields.iter_mut().next() {
+        if field.ty == syn::parse_quote!(_) {
+            field.ty = syn::parse_quote!(
 				#frame_support::sp_std::marker::PhantomData<(#type_use_gen)>
 			);
-		}
-	}
+        }
+    }
 
-	if get_doc_literals(&pallet_item.attrs).is_empty() {
-		pallet_item.attrs.push(syn::parse_quote!(
+    if get_doc_literals(&pallet_item.attrs).is_empty() {
+        pallet_item.attrs.push(syn::parse_quote!(
 			#[doc = r"
 			The [pallet](https://substrate.dev/docs/en/knowledgebase/runtime/pallets) implementing
 			the on-chain logic.
 			"]
 		));
-	}
+    }
 
-	pallet_item.attrs.push(syn::parse_quote!(
+    pallet_item.attrs.push(syn::parse_quote!(
 		#[derive(
 			#frame_support::CloneNoBound,
 			#frame_support::EqNoBound,
@@ -69,9 +69,9 @@ pub fn expand_pallet_struct(def: &mut Def) -> proc_macro2::TokenStream {
 		)]
 	));
 
-	let module_error_metadata = if let Some(error_def) = &def.error {
-		let error_ident = &error_def.error;
-		quote::quote_spanned!(def.pallet_struct.attr_span =>
+    let module_error_metadata = if let Some(error_def) = &def.error {
+        let error_ident = &error_def.error;
+        quote::quote_spanned!(def.pallet_struct.attr_span =>
 			impl<#type_impl_gen> #frame_support::error::ModuleErrorMetadata
 				for #pallet_ident<#type_use_gen>
 				#config_where_clause
@@ -83,8 +83,8 @@ pub fn expand_pallet_struct(def: &mut Def) -> proc_macro2::TokenStream {
 				}
 			}
 		)
-	} else {
-		quote::quote_spanned!(def.pallet_struct.attr_span =>
+    } else {
+        quote::quote_spanned!(def.pallet_struct.attr_span =>
 			impl<#type_impl_gen> #frame_support::error::ModuleErrorMetadata
 				for #pallet_ident<#type_use_gen>
 				#config_where_clause
@@ -94,9 +94,9 @@ pub fn expand_pallet_struct(def: &mut Def) -> proc_macro2::TokenStream {
 				}
 			}
 		)
-	};
+    };
 
-	quote::quote_spanned!(def.pallet_struct.attr_span =>
+    quote::quote_spanned!(def.pallet_struct.attr_span =>
 		#module_error_metadata
 
 		/// Type alias to `Pallet`, to be used by `construct_runtime`.

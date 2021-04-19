@@ -30,24 +30,24 @@ use proc_macro2::{TokenStream, Span};
 
 /// The derive implementation for `PassBy` with `Inner` and `PassByInner`.
 pub fn derive_impl(mut input: DeriveInput) -> Result<TokenStream> {
-	add_trait_bounds(&mut input.generics);
-	let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-	let crate_include = generate_runtime_interface_include();
-	let crate_ = generate_crate_access();
-	let ident = input.ident;
-	let (inner_ty, inner_name) = extract_inner_ty_and_name(&input.data)?;
+    add_trait_bounds(&mut input.generics);
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    let crate_include = generate_runtime_interface_include();
+    let crate_ = generate_crate_access();
+    let ident = input.ident;
+    let (inner_ty, inner_name) = extract_inner_ty_and_name(&input.data)?;
 
-	let access_inner = match inner_name {
-		Some(ref name) => quote!(self.#name),
-		None => quote!(self.0),
-	};
+    let access_inner = match inner_name {
+        Some(ref name) => quote!(self.#name),
+        None => quote!(self.0),
+    };
 
-	let from_inner = match inner_name {
-		Some(name) => quote!(Self { #name: inner }),
-		None => quote!(Self(inner)),
-	};
+    let from_inner = match inner_name {
+        Some(name) => quote!(Self { #name: inner }),
+        None => quote!(Self(inner)),
+    };
 
-	let res = quote! {
+    let res = quote! {
 		const _: () = {
 			#crate_include
 
@@ -73,39 +73,39 @@ pub fn derive_impl(mut input: DeriveInput) -> Result<TokenStream> {
 		};
 	};
 
-	Ok(res)
+    Ok(res)
 }
 
 /// Add the `RIType` trait bound to every type parameter.
 fn add_trait_bounds(generics: &mut Generics) {
-	let crate_ = generate_crate_access();
+    let crate_ = generate_crate_access();
 
-	generics.type_params_mut()
-		.for_each(|type_param| type_param.bounds.push(parse_quote!(#crate_::RIType)));
+    generics.type_params_mut()
+        .for_each(|type_param| type_param.bounds.push(parse_quote!(#crate_::RIType)));
 }
 
 /// Extract the inner type and optional name from given input data.
 ///
 /// It also checks that the input data is a newtype struct.
 fn extract_inner_ty_and_name(data: &Data) -> Result<(Type, Option<Ident>)> {
-	if let Data::Struct(ref struct_data) = data {
-		match struct_data.fields {
-			Fields::Named(ref named) if named.named.len() == 1 => {
-				let field = &named.named[0];
-				return Ok((field.ty.clone(), field.ident.clone()))
-			},
-			Fields::Unnamed(ref unnamed) if unnamed.unnamed.len() == 1 => {
-				let field = &unnamed.unnamed[0];
-				return Ok((field.ty.clone(), field.ident.clone()))
-			}
-			_ => {},
-		}
-	}
+    if let Data::Struct(ref struct_data) = data {
+        match struct_data.fields {
+            Fields::Named(ref named) if named.named.len() == 1 => {
+                let field = &named.named[0];
+                return Ok((field.ty.clone(), field.ident.clone()));
+            }
+            Fields::Unnamed(ref unnamed) if unnamed.unnamed.len() == 1 => {
+                let field = &unnamed.unnamed[0];
+                return Ok((field.ty.clone(), field.ident.clone()));
+            }
+            _ => {}
+        }
+    }
 
-	Err(
-		Error::new(
-			Span::call_site(),
-			"Only newtype/one field structs are supported by `PassByInner`!",
-		)
-	)
+    Err(
+        Error::new(
+            Span::call_site(),
+            "Only newtype/one field structs are supported by `PassByInner`!",
+        )
+    )
 }

@@ -30,13 +30,13 @@ use proc_macro2::TokenStream;
 
 /// The derive implementation for `PassBy` with `Codec`.
 pub fn derive_impl(mut input: DeriveInput) -> Result<TokenStream> {
-	add_trait_bounds(&mut input.generics);
-	let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-	let crate_include = generate_runtime_interface_include();
-	let crate_ = generate_crate_access();
-	let ident = input.ident;
+    add_trait_bounds(&mut input.generics);
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    let crate_include = generate_runtime_interface_include();
+    let crate_ = generate_crate_access();
+    let ident = input.ident;
 
-	let res = quote! {
+    let res = quote! {
 		const _: () = {
 			#crate_include
 
@@ -46,14 +46,14 @@ pub fn derive_impl(mut input: DeriveInput) -> Result<TokenStream> {
 		};
 	};
 
-	Ok(res)
+    Ok(res)
 }
 
 /// Add the `codec::Codec` trait bound to every type parameter.
 fn add_trait_bounds(generics: &mut Generics) {
-	let crate_ = generate_crate_access();
+    let crate_ = generate_crate_access();
 
-	generics.type_params_mut()
-		.for_each(|type_param| type_param.bounds.push(parse_quote!(#crate_::codec::Codec)));
+    generics.type_params_mut()
+        .for_each(|type_param| type_param.bounds.push(parse_quote!(#crate_::codec::Codec)));
 }
 

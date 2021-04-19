@@ -46,6 +46,7 @@ use honggfuzz::fuzz;
 use structopt::StructOpt;
 
 mod common;
+
 use common::{generate_random_npos_inputs, to_range};
 use rand::{self, SeedableRng};
 use sp_npos_elections::{pjr_check_core, seq_phragmen_core, setup_inputs, standard_threshold};
@@ -59,60 +60,60 @@ const MAX_VOTERS: usize = 2500;
 
 #[cfg(fuzzing)]
 fn main() {
-	loop {
-		fuzz!(|data: (usize, usize, u64)| {
+    loop {
+        fuzz!(|data: (usize, usize, u64)| {
 			let (candidate_count, voter_count, seed) = data;
 			iteration(candidate_count, voter_count, seed);
 		});
-	}
+    }
 }
 
 #[cfg(not(fuzzing))]
 #[derive(Debug, StructOpt)]
 struct Opt {
-	/// How many candidates participate in this election
-	#[structopt(short, long)]
-	candidates: Option<usize>,
+    /// How many candidates participate in this election
+    #[structopt(short, long)]
+    candidates: Option<usize>,
 
-	/// How many voters participate in this election
-	#[structopt(short, long)]
-	voters: Option<usize>,
+    /// How many voters participate in this election
+    #[structopt(short, long)]
+    voters: Option<usize>,
 
-	/// Random seed to use in this election
-	#[structopt(long)]
-	seed: Option<u64>,
+    /// Random seed to use in this election
+    #[structopt(long)]
+    seed: Option<u64>,
 }
 
 #[cfg(not(fuzzing))]
 fn main() {
-	let opt = Opt::from_args();
-	// candidates and voters by default use the maxima, which turn out to be one less than
-	// the constant.
-	iteration(
-		opt.candidates.unwrap_or(MAX_CANDIDATES - 1),
-		opt.voters.unwrap_or(MAX_VOTERS - 1),
-		opt.seed.unwrap_or_default(),
-	);
+    let opt = Opt::from_args();
+    // candidates and voters by default use the maxima, which turn out to be one less than
+    // the constant.
+    iteration(
+        opt.candidates.unwrap_or(MAX_CANDIDATES - 1),
+        opt.voters.unwrap_or(MAX_VOTERS - 1),
+        opt.seed.unwrap_or_default(),
+    );
 }
 
 fn iteration(mut candidate_count: usize, mut voter_count: usize, seed: u64) {
-	let rng = rand::rngs::SmallRng::seed_from_u64(seed);
-	candidate_count = to_range(candidate_count, MIN_CANDIDATES, MAX_CANDIDATES);
-	voter_count = to_range(voter_count, MIN_VOTERS, MAX_VOTERS);
+    let rng = rand::rngs::SmallRng::seed_from_u64(seed);
+    candidate_count = to_range(candidate_count, MIN_CANDIDATES, MAX_CANDIDATES);
+    voter_count = to_range(voter_count, MIN_VOTERS, MAX_VOTERS);
 
-	let (rounds, candidates, voters) =
-		generate_random_npos_inputs(candidate_count, voter_count, rng);
+    let (rounds, candidates, voters) =
+        generate_random_npos_inputs(candidate_count, voter_count, rng);
 
-	let (candidates, voters) = setup_inputs(candidates, voters);
+    let (candidates, voters) = setup_inputs(candidates, voters);
 
-	// Run seq-phragmen
-	let (candidates, voters) = seq_phragmen_core::<AccountId>(rounds, candidates, voters)
-		.expect("seq_phragmen must succeed");
+    // Run seq-phragmen
+    let (candidates, voters) = seq_phragmen_core::<AccountId>(rounds, candidates, voters)
+        .expect("seq_phragmen must succeed");
 
-	let threshold = standard_threshold(rounds, voters.iter().map(|voter| voter.budget()));
+    let threshold = standard_threshold(rounds, voters.iter().map(|voter| voter.budget()));
 
-	assert!(
-		pjr_check_core(&candidates, &voters, threshold).is_ok(),
-		"unbalanced sequential phragmen must satisfy PJR",
-	);
+    assert!(
+        pjr_check_core(&candidates, &voters, threshold).is_ok(),
+        "unbalanced sequential phragmen must satisfy PJR",
+    );
 }

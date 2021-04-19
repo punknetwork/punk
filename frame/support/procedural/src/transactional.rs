@@ -21,10 +21,10 @@ use syn::{ItemFn, Result};
 use frame_support_procedural_tools::generate_crate_access_2018;
 
 pub fn transactional(_attr: TokenStream, input: TokenStream) -> Result<TokenStream> {
-	let ItemFn { attrs, vis, sig, block } = syn::parse(input)?;
+    let ItemFn { attrs, vis, sig, block } = syn::parse(input)?;
 
-	let crate_ = generate_crate_access_2018("frame-support")?;
-	let output = quote! {
+    let crate_ = generate_crate_access_2018("frame-support")?;
+    let output = quote! {
 		#(#attrs)*
 		#vis #sig {
 			use #crate_::storage::{with_transaction, TransactionOutcome};
@@ -39,14 +39,14 @@ pub fn transactional(_attr: TokenStream, input: TokenStream) -> Result<TokenStre
 		}
 	};
 
-	Ok(output.into())
+    Ok(output.into())
 }
 
 pub fn require_transactional(_attr: TokenStream, input: TokenStream) -> Result<TokenStream> {
-	let ItemFn { attrs, vis, sig, block } = syn::parse(input)?;
+    let ItemFn { attrs, vis, sig, block } = syn::parse(input)?;
 
-	let crate_ = generate_crate_access_2018("frame-support")?;
-	let output = quote! {
+    let crate_ = generate_crate_access_2018("frame-support")?;
+    let output = quote! {
 		#(#attrs)*
 		#vis #sig {
 			#crate_::storage::require_transaction();
@@ -54,5 +54,5 @@ pub fn require_transactional(_attr: TokenStream, input: TokenStream) -> Result<T
 		}
 	};
 
-	Ok(output.into())
+    Ok(output.into())
 }

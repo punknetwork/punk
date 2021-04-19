@@ -55,58 +55,58 @@ use core::convert::TryFrom;
 ///   inflation at the cost of greater volatility for validators.
 ///   Must be more than 0.01.
 pub fn compute_inflation<P: PerThing>(
-	stake: P,
-	ideal_stake: P,
-	falloff: P,
+    stake: P,
+    ideal_stake: P,
+    falloff: P,
 ) -> P {
-	if stake < ideal_stake {
-		// ideal_stake is more than 0 because it is strictly more than stake
-		return stake / ideal_stake
-	}
+    if stake < ideal_stake {
+        // ideal_stake is more than 0 because it is strictly more than stake
+        return stake / ideal_stake;
+    }
 
-	if falloff < P::from_percent(1.into()) {
-		log::error!("Invalid inflation computation: falloff less than 1% is not supported");
-		return PerThing::zero()
-	}
+    if falloff < P::from_percent(1.into()) {
+        log::error!("Invalid inflation computation: falloff less than 1% is not supported");
+        return PerThing::zero();
+    }
 
-	let accuracy = {
-		let mut a = BigUint::from(Into::<u128>::into(P::ACCURACY));
-		a.lstrip();
-		a
-	};
+    let accuracy = {
+        let mut a = BigUint::from(Into::<u128>::into(P::ACCURACY));
+        a.lstrip();
+        a
+    };
 
-	let mut falloff = BigUint::from(falloff.deconstruct().into());
-	falloff.lstrip();
+    let mut falloff = BigUint::from(falloff.deconstruct().into());
+    falloff.lstrip();
 
-	let ln2 = {
-		/// `ln(2)` expressed in as perquintillionth.
-		const LN2: u64 = 0_693_147_180_559_945_309;
-		let ln2 = P::from_rational(LN2.into(), Perquintill::ACCURACY.into());
-		BigUint::from(ln2.deconstruct().into())
-	};
+    let ln2 = {
+        /// `ln(2)` expressed in as perquintillionth.
+        const LN2: u64 = 0_693_147_180_559_945_309;
+        let ln2 = P::from_rational(LN2.into(), Perquintill::ACCURACY.into());
+        BigUint::from(ln2.deconstruct().into())
+    };
 
-	// falloff is stripped above.
-	let ln2_div_d = div_by_stripped(ln2.mul(&accuracy), &falloff);
+    // falloff is stripped above.
+    let ln2_div_d = div_by_stripped(ln2.mul(&accuracy), &falloff);
 
-	let inpos_param = INPoSParam {
-		x_ideal: BigUint::from(ideal_stake.deconstruct().into()),
-		x: BigUint::from(stake.deconstruct().into()),
-		accuracy,
-		ln2_div_d,
-	};
+    let inpos_param = INPoSParam {
+        x_ideal: BigUint::from(ideal_stake.deconstruct().into()),
+        x: BigUint::from(stake.deconstruct().into()),
+        accuracy,
+        ln2_div_d,
+    };
 
-	let res = compute_taylor_serie_part(&inpos_param);
+    let res = compute_taylor_serie_part(&inpos_param);
 
-	match u128::try_from(res.clone()) {
-		Ok(res) if res <= Into::<u128>::into(P::ACCURACY) => {
-			P::from_parts(res.saturated_into())
-		},
-		// If result is beyond bounds there is nothing we can do
-		_ => {
-			log::error!("Invalid inflation computation: unexpected result {:?}", res);
-			P::zero()
-		},
-	}
+    match u128::try_from(res.clone()) {
+        Ok(res) if res <= Into::<u128>::into(P::ACCURACY) => {
+            P::from_parts(res.saturated_into())
+        }
+        // If result is beyond bounds there is nothing we can do
+        _ => {
+            log::error!("Invalid inflation computation: unexpected result {:?}", res);
+            P::zero()
+        }
+    }
 }
 
 
@@ -114,11 +114,11 @@ pub fn compute_inflation<P: PerThing>(
 ///
 /// All expressed in part from `accuracy`
 struct INPoSParam {
-	ln2_div_d: BigUint,
-	x_ideal: BigUint,
-	x: BigUint,
-	/// Must be stripped and have no leading zeros.
-	accuracy: BigUint,
+    ln2_div_d: BigUint,
+    x_ideal: BigUint,
+    x: BigUint,
+    /// Must be stripped and have no leading zeros.
+    accuracy: BigUint,
 }
 
 /// Compute `2^((x_ideal - x) / d)` using taylor serie.
@@ -127,46 +127,46 @@ struct INPoSParam {
 ///
 /// result is expressed with accuracy `INPoSParam.accuracy`
 fn compute_taylor_serie_part(p: &INPoSParam) -> BigUint {
-	// The last computed taylor term.
-	let mut last_taylor_term = p.accuracy.clone();
+    // The last computed taylor term.
+    let mut last_taylor_term = p.accuracy.clone();
 
-	// Whereas taylor sum is positive.
-	let mut taylor_sum_positive = true;
+    // Whereas taylor sum is positive.
+    let mut taylor_sum_positive = true;
 
-	// The sum of all taylor term.
-	let mut taylor_sum = last_taylor_term.clone();
+    // The sum of all taylor term.
+    let mut taylor_sum = last_taylor_term.clone();
 
-	for k in 1..300 {
-		last_taylor_term = compute_taylor_term(k, &last_taylor_term, p);
+    for k in 1..300 {
+        last_taylor_term = compute_taylor_term(k, &last_taylor_term, p);
 
-		if last_taylor_term.is_zero() {
-			break
-		}
+        if last_taylor_term.is_zero() {
+            break;
+        }
 
-		let last_taylor_term_positive = k % 2 == 0;
+        let last_taylor_term_positive = k % 2 == 0;
 
-		if taylor_sum_positive == last_taylor_term_positive {
-			taylor_sum = taylor_sum.add(&last_taylor_term);
-		} else {
-			if taylor_sum >= last_taylor_term {
-				taylor_sum = taylor_sum.sub(&last_taylor_term)
-					// NOTE: Should never happen as checked above
-					.unwrap_or_else(|e| e);
-			} else {
-				taylor_sum_positive = !taylor_sum_positive;
-				taylor_sum = last_taylor_term.clone().sub(&taylor_sum)
-					// NOTE: Should never happen as checked above
-					.unwrap_or_else(|e| e);
-			}
-		}
-	}
+        if taylor_sum_positive == last_taylor_term_positive {
+            taylor_sum = taylor_sum.add(&last_taylor_term);
+        } else {
+            if taylor_sum >= last_taylor_term {
+                taylor_sum = taylor_sum.sub(&last_taylor_term)
+                    // NOTE: Should never happen as checked above
+                    .unwrap_or_else(|e| e);
+            } else {
+                taylor_sum_positive = !taylor_sum_positive;
+                taylor_sum = last_taylor_term.clone().sub(&taylor_sum)
+                    // NOTE: Should never happen as checked above
+                    .unwrap_or_else(|e| e);
+            }
+        }
+    }
 
-	if !taylor_sum_positive {
-		return BigUint::zero()
-	}
+    if !taylor_sum_positive {
+        return BigUint::zero();
+    }
 
-	taylor_sum.lstrip();
-	taylor_sum
+    taylor_sum.lstrip();
+    taylor_sum
 }
 
 /// Return the absolute value of k-th taylor term of `2^((x_ideal - x))/d` i.e.
@@ -180,57 +180,57 @@ fn compute_taylor_serie_part(p: &INPoSParam) -> BigUint {
 ///
 /// `previous_taylor_term` and result are expressed with accuracy `INPoSParam.accuracy`
 fn compute_taylor_term(k: u32, previous_taylor_term: &BigUint, p: &INPoSParam) -> BigUint {
-	let x_minus_x_ideal = p.x.clone().sub(&p.x_ideal)
-		// NOTE: Should never happen, as x must be more than x_ideal
-		.unwrap_or_else(|_| BigUint::zero());
+    let x_minus_x_ideal = p.x.clone().sub(&p.x_ideal)
+        // NOTE: Should never happen, as x must be more than x_ideal
+        .unwrap_or_else(|_| BigUint::zero());
 
-	let res = previous_taylor_term.clone()
-		.mul(&x_minus_x_ideal)
-		.mul(&p.ln2_div_d)
-		.div_unit(k);
+    let res = previous_taylor_term.clone()
+        .mul(&x_minus_x_ideal)
+        .mul(&p.ln2_div_d)
+        .div_unit(k);
 
-	// p.accuracy is stripped by definition.
-	let res = div_by_stripped(res, &p.accuracy);
-	let mut res = div_by_stripped(res, &p.accuracy);
+    // p.accuracy is stripped by definition.
+    let res = div_by_stripped(res, &p.accuracy);
+    let mut res = div_by_stripped(res, &p.accuracy);
 
-	res.lstrip();
-	res
+    res.lstrip();
+    res
 }
 
 /// Compute a div b.
 ///
 /// requires `b` to be stripped and have no leading zeros.
 fn div_by_stripped(mut a: BigUint, b: &BigUint) -> BigUint {
-	a.lstrip();
+    a.lstrip();
 
-	if b.len() == 0 {
-		log::error!("Computation error: Invalid division");
-		return BigUint::zero()
-	}
+    if b.len() == 0 {
+        log::error!("Computation error: Invalid division");
+        return BigUint::zero();
+    }
 
-	if b.len() == 1 {
-		return a.div_unit(b.checked_get(0).unwrap_or(1))
-	}
+    if b.len() == 1 {
+        return a.div_unit(b.checked_get(0).unwrap_or(1));
+    }
 
-	if b.len() > a.len() {
-		return BigUint::zero()
-	}
+    if b.len() > a.len() {
+        return BigUint::zero();
+    }
 
-	if b.len() == a.len() {
-		// 100_000^2 is more than 2^32-1, thus `new_a` has more limbs than `b`.
-		let mut new_a = a.mul(&BigUint::from(100_000u64.pow(2)));
-		new_a.lstrip();
+    if b.len() == a.len() {
+        // 100_000^2 is more than 2^32-1, thus `new_a` has more limbs than `b`.
+        let mut new_a = a.mul(&BigUint::from(100_000u64.pow(2)));
+        new_a.lstrip();
 
-		debug_assert!(new_a.len() > b.len());
-		return new_a
-			.div(b, false)
-			.map(|res| res.0)
-			.unwrap_or_else(|| BigUint::zero())
-			.div_unit(100_000)
-			.div_unit(100_000)
-	}
+        debug_assert!(new_a.len() > b.len());
+        return new_a
+            .div(b, false)
+            .map(|res| res.0)
+            .unwrap_or_else(|| BigUint::zero())
+            .div_unit(100_000)
+            .div_unit(100_000);
+    }
 
-	a.div(b, false)
-		.map(|res| res.0)
-		.unwrap_or_else(|| BigUint::zero())
+    a.div(b, false)
+        .map(|res| res.0)
+        .unwrap_or_else(|| BigUint::zero())
 }

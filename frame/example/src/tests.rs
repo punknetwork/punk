@@ -20,7 +20,7 @@
 use crate::*;
 use frame_support::{
 	assert_ok, parameter_types,
-	weights::{DispatchInfo, GetDispatchInfo}, traits::OnInitialize
+	weights::{DispatchInfo, GetDispatchInfo}, traits::OnInitialize,
 };
 use sp_core::H256;
 // The testing primitives are very useful for avoiding having to work with signatures

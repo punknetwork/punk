@@ -32,8 +32,8 @@ use sp_arithmetic::biguint::{BigUint, Single};
 use std::convert::TryFrom;
 
 fn main() {
-	loop {
-		fuzz!(|data: (Vec<Single>, Vec<Single>, bool)| {
+    loop {
+        fuzz!(|data: (Vec<Single>, Vec<Single>, bool)| {
 			let (mut digits_u, mut digits_v, return_remainder) = data;
 
 			let mut u = BigUint::from_limbs(&digits_u);
@@ -162,21 +162,21 @@ fn main() {
 				}
 			}
 		});
-	}
+    }
 }
 
 fn check_digit_lengths(u: &BigUint, v: &BigUint, max_limbs: usize) -> bool {
-	1 <= u.len() && u.len() <= max_limbs && 1 <= v.len() && v.len() <= max_limbs
+    1 <= u.len() && u.len() <= max_limbs && 1 <= v.len() && v.len() <= max_limbs
 }
 
 fn assert_biguints_eq(a: &BigUint, b: &num_bigint::BigUint) {
-	let mut a = a.clone();
-	a.lstrip();
+    let mut a = a.clone();
+    a.lstrip();
 
-	// `num_bigint::BigUint` doesn't expose it's internals, so we need to convert into that to
-	// compare.
-	let limbs = (0 .. a.len()).map(|i| a.get(i)).collect();
-	let num_a = num_bigint::BigUint::new(limbs);
+    // `num_bigint::BigUint` doesn't expose it's internals, so we need to convert into that to
+    // compare.
+    let limbs = (0..a.len()).map(|i| a.get(i)).collect();
+    let num_a = num_bigint::BigUint::new(limbs);
 
-	assert!(&num_a == b, "\narithmetic: {:?}\nnum-bigint: {:?}", a, b);
+    assert!(&num_a == b, "\narithmetic: {:?}\nnum-bigint: {:?}", a, b);
 }

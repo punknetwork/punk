@@ -19,24 +19,24 @@
 //! This file was not auto-generated.
 
 use frame_support::weights::{
-	Weight, constants::{WEIGHT_PER_NANOS, RocksDbWeight as DbWeight},
+    Weight, constants::{WEIGHT_PER_NANOS, RocksDbWeight as DbWeight},
 };
 
 impl crate::WeightInfo for () {
-	fn on_initialize(peaks: u64) -> Weight {
-		// Reading the parent hash.
-		let leaf_weight = DbWeight::get().reads(1);
-		// Blake2 hash cost.
-		let hash_weight = 2 * WEIGHT_PER_NANOS;
-		// No-op hook.
-		let hook_weight = 0;
+    fn on_initialize(peaks: u64) -> Weight {
+        // Reading the parent hash.
+        let leaf_weight = DbWeight::get().reads(1);
+        // Blake2 hash cost.
+        let hash_weight = 2 * WEIGHT_PER_NANOS;
+        // No-op hook.
+        let hook_weight = 0;
 
-		leaf_weight
-			.saturating_add(hash_weight)
-			.saturating_add(hook_weight)
-			.saturating_add(DbWeight::get().reads_writes(
-				2 + peaks,
-				2 + peaks,
-			))
-	}
+        leaf_weight
+            .saturating_add(hash_weight)
+            .saturating_add(hook_weight)
+            .saturating_add(DbWeight::get().reads_writes(
+                2 + peaks,
+                2 + peaks,
+            ))
+    }
 }

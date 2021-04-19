@@ -257,14 +257,14 @@ use codec::{Encode, Decode};
 use sp_runtime::{Percent, ModuleId, RuntimeDebug,
 	traits::{
 		StaticLookup, AccountIdConversion, Saturating, Zero, IntegerSquareRoot, Hash,
-		TrailingZeroInput, CheckedSub
-	}
+		TrailingZeroInput, CheckedSub,
+	},
 };
 use frame_support::{decl_error, decl_module, decl_storage, decl_event, ensure, dispatch::DispatchResult};
 use frame_support::weights::Weight;
 use frame_support::traits::{
 	Currency, ReservableCurrency, Randomness, Get, ChangeMembers, BalanceStatus,
-	ExistenceRequirement::AllowDeath, EnsureOrigin, OnUnbalanced, Imbalance
+	ExistenceRequirement::AllowDeath, EnsureOrigin, OnUnbalanced, Imbalance,
 };
 use frame_system::{self as system, ensure_signed, ensure_root};
 
@@ -1197,7 +1197,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 		mut bids: Vec<Bid<T::AccountId, BalanceOf<T, I>>>,
 		who: &T::AccountId,
 		value: BalanceOf<T, I>,
-		bid_kind: BidKind<T::AccountId, BalanceOf<T, I>>
+		bid_kind: BidKind<T::AccountId, BalanceOf<T, I>>,
 	) {
 		const MAX_BID_COUNT: usize = 1000;
 
@@ -1230,7 +1230,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 						kind: bid_kind,
 					});
 				}
-			},
+			}
 			Err(pos) => bids.insert(pos, Bid {
 				value,
 				who: who.clone(),
@@ -1284,7 +1284,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 				T::MembershipChanged::change_members_sorted(&[who.clone()], &[], &members);
 				<Members<T, I>>::put(members);
 				Ok(())
-			},
+			}
 			// User is already a member, do nothing.
 			Ok(_) => Ok(()),
 		}
@@ -1658,7 +1658,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 								selected.push(bid.clone());
 								zero_selected = true;
 								count += 1;
-								return false
+								return false;
 							}
 						} else {
 							total_cost += bid.value;
@@ -1666,7 +1666,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 							if total_cost <= pot {
 								selected.push(bid.clone());
 								count += 1;
-								return false
+								return false;
 							}
 						}
 					}

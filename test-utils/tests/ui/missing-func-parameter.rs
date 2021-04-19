@@ -18,7 +18,7 @@
 
 #[substrate_test_utils::test]
 async fn missing_func_parameter() {
-	assert!(true);
+    assert!(true);
 }
 
 fn main() {}

@@ -23,21 +23,21 @@ use quote::quote;
 use super::{DeclStorageDefExt, StorageLineDefExt, StorageLineTypeDef};
 
 fn storage_line_metadata_type(scrate: &TokenStream, line: &StorageLineDefExt) -> TokenStream {
-	let value_type = &line.value_type;
-	let value_type = clean_type_string(&quote!( #value_type ).to_string());
-	match &line.storage_type {
-		StorageLineTypeDef::Simple(_) => {
-			quote!{
+    let value_type = &line.value_type;
+    let value_type = clean_type_string(&quote!( #value_type ).to_string());
+    match &line.storage_type {
+        StorageLineTypeDef::Simple(_) => {
+            quote! {
 				#scrate::metadata::StorageEntryType::Plain(
 					#scrate::metadata::DecodeDifferent::Encode(#value_type),
 				)
 			}
-		},
-		StorageLineTypeDef::Map(map) => {
-			let hasher = map.hasher.into_metadata();
-			let key = &map.key;
-			let key = clean_type_string(&quote!(#key).to_string());
-			quote!{
+        }
+        StorageLineTypeDef::Map(map) => {
+            let hasher = map.hasher.into_metadata();
+            let key = &map.key;
+            let key = clean_type_string(&quote!(#key).to_string());
+            quote! {
 				#scrate::metadata::StorageEntryType::Map {
 					hasher: #scrate::metadata::#hasher,
 					key: #scrate::metadata::DecodeDifferent::Encode(#key),
@@ -45,15 +45,15 @@ fn storage_line_metadata_type(scrate: &TokenStream, line: &StorageLineDefExt) ->
 					unused: false,
 				}
 			}
-		},
-		StorageLineTypeDef::DoubleMap(map) => {
-			let hasher1 = map.hasher1.into_metadata();
-			let hasher2 = map.hasher2.into_metadata();
-			let key1 = &map.key1;
-			let key1 = clean_type_string(&quote!(#key1).to_string());
-			let key2 = &map.key2;
-			let key2 = clean_type_string(&quote!(#key2).to_string());
-			quote!{
+        }
+        StorageLineTypeDef::DoubleMap(map) => {
+            let hasher1 = map.hasher1.into_metadata();
+            let hasher2 = map.hasher2.into_metadata();
+            let key1 = &map.key1;
+            let key1 = clean_type_string(&quote!(#key1).to_string());
+            let key2 = &map.key2;
+            let key2 = clean_type_string(&quote!(#key2).to_string());
+            quote! {
 				#scrate::metadata::StorageEntryType::DoubleMap {
 					hasher: #scrate::metadata::#hasher1,
 					key1: #scrate::metadata::DecodeDifferent::Encode(#key1),
@@ -62,33 +62,33 @@ fn storage_line_metadata_type(scrate: &TokenStream, line: &StorageLineDefExt) ->
 					key2_hasher: #scrate::metadata::#hasher2,
 				}
 			}
-		},
-	}
+        }
+    }
 }
 
 fn default_byte_getter(
-	scrate: &TokenStream,
-	line: &StorageLineDefExt,
-	def: &DeclStorageDefExt,
+    scrate: &TokenStream,
+    line: &StorageLineDefExt,
+    def: &DeclStorageDefExt,
 ) -> (TokenStream, TokenStream) {
-	let default = line.default_value.as_ref().map(|d| quote!( #d ))
-		.unwrap_or_else(|| quote!( Default::default() ));
+    let default = line.default_value.as_ref().map(|d| quote!( #d ))
+        .unwrap_or_else(|| quote!( Default::default() ));
 
-	let str_name = line.name.to_string();
-	let struct_name = syn::Ident::new(&("__GetByteStruct".to_string() + &str_name), line.name.span());
-	let cache_name = syn::Ident::new(&("__CACHE_GET_BYTE_STRUCT_".to_string() + &str_name), line.name.span());
+    let str_name = line.name.to_string();
+    let struct_name = syn::Ident::new(&("__GetByteStruct".to_string() + &str_name), line.name.span());
+    let cache_name = syn::Ident::new(&("__CACHE_GET_BYTE_STRUCT_".to_string() + &str_name), line.name.span());
 
-	let runtime_generic = &def.module_runtime_generic;
-	let runtime_trait = &def.module_runtime_trait;
-	let optional_instance_bound_optional_default = &def.optional_instance_bound_optional_default;
-	let optional_instance_bound = &def.optional_instance_bound;
-	let optional_instance = &def.optional_instance;
-	let optional_comma_instance = optional_instance.as_ref().map(|i| quote!(, #i));
-	let where_clause = &def.where_clause;
+    let runtime_generic = &def.module_runtime_generic;
+    let runtime_trait = &def.module_runtime_trait;
+    let optional_instance_bound_optional_default = &def.optional_instance_bound_optional_default;
+    let optional_instance_bound = &def.optional_instance_bound;
+    let optional_instance = &def.optional_instance;
+    let optional_comma_instance = optional_instance.as_ref().map(|i| quote!(, #i));
+    let where_clause = &def.where_clause;
 
-	let query_type = &line.query_type;
+    let query_type = &line.query_type;
 
-	let struct_def = quote! {
+    let struct_def = quote! {
 		#[doc(hidden)]
 		pub struct #struct_name<
 			#runtime_generic, #optional_instance_bound_optional_default
@@ -133,44 +133,44 @@ fn default_byte_getter(
 			}
 		}
 	};
-	let struct_instance = quote!(
+    let struct_instance = quote!(
 		#struct_name::<#runtime_generic, #optional_instance>(#scrate::sp_std::marker::PhantomData)
 	);
 
-	(struct_def, struct_instance)
+    (struct_def, struct_instance)
 }
 
 pub fn impl_metadata(scrate: &TokenStream, def: &DeclStorageDefExt) -> TokenStream {
-	let mut entries = TokenStream::new();
-	let mut default_byte_getter_struct_defs = TokenStream::new();
+    let mut entries = TokenStream::new();
+    let mut default_byte_getter_struct_defs = TokenStream::new();
 
-	for line in def.storage_lines.iter() {
-		let str_name = line.name.to_string();
+    for line in def.storage_lines.iter() {
+        let str_name = line.name.to_string();
 
-		let modifier = if line.is_option {
-			quote!(#scrate::metadata::StorageEntryModifier::Optional)
-		} else {
-			quote!(#scrate::metadata::StorageEntryModifier::Default)
-		};
+        let modifier = if line.is_option {
+            quote!(#scrate::metadata::StorageEntryModifier::Optional)
+        } else {
+            quote!(#scrate::metadata::StorageEntryModifier::Default)
+        };
 
-		let ty = storage_line_metadata_type(scrate, line);
+        let ty = storage_line_metadata_type(scrate, line);
 
-		let (
-			default_byte_getter_struct_def,
-			default_byte_getter_struct_instance,
-		) = default_byte_getter(scrate, line, def);
+        let (
+            default_byte_getter_struct_def,
+            default_byte_getter_struct_instance,
+        ) = default_byte_getter(scrate, line, def);
 
-		let mut docs = TokenStream::new();
-		for attr in line.attrs.iter().filter_map(|v| v.parse_meta().ok()) {
-			if let syn::Meta::NameValue(meta) = attr {
-				if meta.path.is_ident("doc") {
-					let lit = meta.lit;
-					docs.extend(quote!(#lit,));
-				}
-			}
-		}
+        let mut docs = TokenStream::new();
+        for attr in line.attrs.iter().filter_map(|v| v.parse_meta().ok()) {
+            if let syn::Meta::NameValue(meta) = attr {
+                if meta.path.is_ident("doc") {
+                    let lit = meta.lit;
+                    docs.extend(quote!(#lit,));
+                }
+            }
+        }
 
-		let entry = quote! {
+        let entry = quote! {
 			#scrate::metadata::StorageEntryMetadata {
 				name: #scrate::metadata::DecodeDifferent::Encode(#str_name),
 				modifier: #modifier,
@@ -182,30 +182,30 @@ pub fn impl_metadata(scrate: &TokenStream, def: &DeclStorageDefExt) -> TokenStre
 			},
 		};
 
-		default_byte_getter_struct_defs.extend(default_byte_getter_struct_def);
-		entries.extend(entry);
-	}
+        default_byte_getter_struct_defs.extend(default_byte_getter_struct_def);
+        entries.extend(entry);
+    }
 
-	let prefix = if let Some(instance) = &def.module_instance {
-		let instance_generic = &instance.instance_generic;
-		quote!(#instance_generic::PREFIX)
-	} else {
-		let prefix = def.crate_name.to_string();
-		quote!(#prefix)
-	};
+    let prefix = if let Some(instance) = &def.module_instance {
+        let instance_generic = &instance.instance_generic;
+        quote!(#instance_generic::PREFIX)
+    } else {
+        let prefix = def.crate_name.to_string();
+        quote!(#prefix)
+    };
 
-	let store_metadata = quote!(
+    let store_metadata = quote!(
 		#scrate::metadata::StorageMetadata {
 			prefix: #scrate::metadata::DecodeDifferent::Encode(#prefix),
 			entries: #scrate::metadata::DecodeDifferent::Encode(&[ #entries ][..]),
 		}
 	);
 
-	let module_struct = &def.module_struct;
-	let module_impl = &def.module_impl;
-	let where_clause = &def.where_clause;
+    let module_struct = &def.module_struct;
+    let module_impl = &def.module_impl;
+    let where_clause = &def.where_clause;
 
-	quote!(
+    quote!(
 		#default_byte_getter_struct_defs
 
 		impl#module_impl #module_struct #where_clause {

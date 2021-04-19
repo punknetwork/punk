@@ -27,7 +27,7 @@ use sp_core::H256;
 use sp_io;
 use frame_support::parameter_types;
 use frame_support::traits::StorageMapShim;
-use frame_support::weights::{IdentityFee};
+use frame_support::weights::IdentityFee;
 use crate::{
 	self as pallet_balances,
 	Pallet, Config,
@@ -39,7 +39,7 @@ use frame_support::{
 	assert_ok,
 	traits::{
 		Currency, ReservableCurrency,
-	}
+	},
 };
 use frame_system::RawOrigin;
 

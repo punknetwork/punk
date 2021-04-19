@@ -25,12 +25,12 @@
 
 use honggfuzz::fuzz;
 use sp_arithmetic::{
-	PerThing, PerU16, Percent, Perbill, Perquintill, traits::SaturatedConversion,
+    PerThing, PerU16, Percent, Perbill, Perquintill, traits::SaturatedConversion,
 };
 
 fn main() {
-	loop {
-		fuzz!(|
+    loop {
+        fuzz!(|
 			data: ((u16, u16), (u32, u32), (u64, u64))
 		| {
 
@@ -111,12 +111,12 @@ fn main() {
 			);
 
 		})
-	}
+    }
 }
 
 fn assert_per_thing_equal_error<P: PerThing>(a: P, b: P, err: u128) {
-	let a_abs = a.deconstruct().saturated_into::<u128>();
-	let b_abs = b.deconstruct().saturated_into::<u128>();
-	let diff = a_abs.max(b_abs) - a_abs.min(b_abs);
-	assert!(diff <= err, "{:?} !~ {:?}", a, b);
+    let a_abs = a.deconstruct().saturated_into::<u128>();
+    let b_abs = b.deconstruct().saturated_into::<u128>();
+    let diff = a_abs.max(b_abs) - a_abs.min(b_abs);
+    assert!(diff <= err, "{:?} !~ {:?}", a, b);
 }

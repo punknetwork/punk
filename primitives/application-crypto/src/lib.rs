@@ -35,9 +35,9 @@ pub use codec;
 pub use serde;
 #[doc(hidden)]
 pub use sp_std::{
-	convert::TryFrom,
-	ops::Deref,
-	vec::Vec,
+    convert::TryFrom,
+    ops::Deref,
+    vec::Vec,
 };
 
 pub mod ed25519;

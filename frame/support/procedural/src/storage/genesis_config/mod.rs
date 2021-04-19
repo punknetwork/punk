@@ -30,43 +30,43 @@ mod builder_def;
 const DEFAULT_INSTANCE_NAME: &str = "__GeneratedInstance";
 
 fn decl_genesis_config_and_impl_default(
-	scrate: &TokenStream,
-	genesis_config: &GenesisConfigDef,
+    scrate: &TokenStream,
+    genesis_config: &GenesisConfigDef,
 ) -> TokenStream {
-	let config_fields = genesis_config.fields.iter().map(|field| {
-		let (name, typ, attrs) = (&field.name, &field.typ, &field.attrs);
-		quote!( #( #[ #attrs] )* pub #name: #typ, )
-	});
+    let config_fields = genesis_config.fields.iter().map(|field| {
+        let (name, typ, attrs) = (&field.name, &field.typ, &field.attrs);
+        quote!( #( #[ #attrs] )* pub #name: #typ, )
+    });
 
-	let config_field_defaults = genesis_config.fields.iter().map(|field| {
-		let (name, default) = (&field.name, &field.default);
-		quote!( #name: #default, )
-	});
+    let config_field_defaults = genesis_config.fields.iter().map(|field| {
+        let (name, default) = (&field.name, &field.default);
+        quote!( #name: #default, )
+    });
 
-	let serde_bug_bound = if !genesis_config.fields.is_empty() {
-		let mut b_ser = String::new();
-		let mut b_dser = String::new();
+    let serde_bug_bound = if !genesis_config.fields.is_empty() {
+        let mut b_ser = String::new();
+        let mut b_dser = String::new();
 
-		for typ in genesis_config.fields.iter().map(|c| &c.typ) {
-			let typ = quote!( #typ );
-			b_ser.push_str(&format!("{} : {}::serde::Serialize, ", typ, scrate));
-			b_dser.push_str(&format!("{} : {}::serde::de::DeserializeOwned, ", typ, scrate));
-		}
+        for typ in genesis_config.fields.iter().map(|c| &c.typ) {
+            let typ = quote!( #typ );
+            b_ser.push_str(&format!("{} : {}::serde::Serialize, ", typ, scrate));
+            b_dser.push_str(&format!("{} : {}::serde::de::DeserializeOwned, ", typ, scrate));
+        }
 
-		quote! {
+        quote! {
 			#[serde(bound(serialize = #b_ser))]
 			#[serde(bound(deserialize = #b_dser))]
 		}
-	} else {
-		quote!()
-	};
+    } else {
+        quote!()
+    };
 
-	let genesis_struct_decl = &genesis_config.genesis_struct_decl;
-	let genesis_struct = &genesis_config.genesis_struct;
-	let genesis_impl = &genesis_config.genesis_impl;
-	let genesis_where_clause = &genesis_config.genesis_where_clause;
+    let genesis_struct_decl = &genesis_config.genesis_struct_decl;
+    let genesis_struct = &genesis_config.genesis_struct;
+    let genesis_impl = &genesis_config.genesis_impl;
+    let genesis_where_clause = &genesis_config.genesis_where_clause;
 
-	quote!(
+    quote!(
 		/// Genesis config for the module, allow to build genesis storage.
 		#[derive(#scrate::Serialize, #scrate::Deserialize)]
 		#[cfg(feature = "std")]
@@ -89,54 +89,54 @@ fn decl_genesis_config_and_impl_default(
 }
 
 fn impl_build_storage(
-	scrate: &TokenStream,
-	def: &DeclStorageDefExt,
-	genesis_config: &GenesisConfigDef,
-	builders: &BuilderDef,
+    scrate: &TokenStream,
+    def: &DeclStorageDefExt,
+    genesis_config: &GenesisConfigDef,
+    builders: &BuilderDef,
 ) -> TokenStream {
-	let runtime_generic = &def.module_runtime_generic;
-	let runtime_trait = &def.module_runtime_trait;
-	let optional_instance = &def.optional_instance;
-	let optional_instance_bound = &def.optional_instance_bound;
-	let where_clause = &def.where_clause;
+    let runtime_generic = &def.module_runtime_generic;
+    let runtime_trait = &def.module_runtime_trait;
+    let optional_instance = &def.optional_instance;
+    let optional_instance_bound = &def.optional_instance_bound;
+    let where_clause = &def.where_clause;
 
-	let inherent_instance = def.optional_instance.clone().unwrap_or_else(|| {
-		let name = syn::Ident::new(DEFAULT_INSTANCE_NAME, Span::call_site());
-		quote!( #name )
-	});
-	let inherent_instance_bound = quote!(
+    let inherent_instance = def.optional_instance.clone().unwrap_or_else(|| {
+        let name = syn::Ident::new(DEFAULT_INSTANCE_NAME, Span::call_site());
+        quote!( #name )
+    });
+    let inherent_instance_bound = quote!(
 		#inherent_instance: #scrate::traits::Instance
 	);
 
-	let build_storage_impl = quote!(
+    let build_storage_impl = quote!(
 		<#runtime_generic: #runtime_trait, #inherent_instance_bound>
 	);
 
-	let genesis_struct = &genesis_config.genesis_struct;
-	let genesis_impl = &genesis_config.genesis_impl;
-	let genesis_where_clause = &genesis_config.genesis_where_clause;
+    let genesis_struct = &genesis_config.genesis_struct;
+    let genesis_impl = &genesis_config.genesis_impl;
+    let genesis_where_clause = &genesis_config.genesis_where_clause;
 
-	let (
-		fn_generic,
-		fn_traitinstance,
-		fn_where_clause
-	) = if !genesis_config.is_generic && builders.is_generic {
-		(
-			quote!( <#runtime_generic: #runtime_trait, #optional_instance_bound> ),
-			quote!( #runtime_generic, #optional_instance ),
-			Some(&def.where_clause),
-		)
-	} else {
-		(quote!(), quote!(), None)
-	};
+    let (
+        fn_generic,
+        fn_traitinstance,
+        fn_where_clause
+    ) = if !genesis_config.is_generic && builders.is_generic {
+        (
+            quote!( <#runtime_generic: #runtime_trait, #optional_instance_bound> ),
+            quote!( #runtime_generic, #optional_instance ),
+            Some(&def.where_clause),
+        )
+    } else {
+        (quote!(), quote!(), None)
+    };
 
-	let builder_blocks = &builders.blocks;
+    let builder_blocks = &builders.blocks;
 
-	let build_storage_impl_trait = quote!(
+    let build_storage_impl_trait = quote!(
 		#scrate::sp_runtime::BuildModuleGenesisStorage<#runtime_generic, #inherent_instance>
 	);
 
-	quote!{
+    quote! {
 		#[cfg(feature = "std")]
 		impl#genesis_impl GenesisConfig#genesis_struct #genesis_where_clause {
 			/// Build the storage for this module.
@@ -176,24 +176,24 @@ fn impl_build_storage(
 }
 
 pub fn genesis_config_and_build_storage(
-	scrate: &TokenStream,
-	def: &DeclStorageDefExt,
+    scrate: &TokenStream,
+    def: &DeclStorageDefExt,
 ) -> TokenStream {
-	let builders = BuilderDef::from_def(scrate, def);
-	if !builders.blocks.is_empty() {
-		let genesis_config = match GenesisConfigDef::from_def(def) {
-			Ok(genesis_config) => genesis_config,
-			Err(err) => return err.to_compile_error(),
-		};
-		let decl_genesis_config_and_impl_default =
-			decl_genesis_config_and_impl_default(scrate, &genesis_config);
-		let impl_build_storage = impl_build_storage(scrate, def, &genesis_config, &builders);
+    let builders = BuilderDef::from_def(scrate, def);
+    if !builders.blocks.is_empty() {
+        let genesis_config = match GenesisConfigDef::from_def(def) {
+            Ok(genesis_config) => genesis_config,
+            Err(err) => return err.to_compile_error(),
+        };
+        let decl_genesis_config_and_impl_default =
+            decl_genesis_config_and_impl_default(scrate, &genesis_config);
+        let impl_build_storage = impl_build_storage(scrate, def, &genesis_config, &builders);
 
-		quote!{
+        quote! {
 			#decl_genesis_config_and_impl_default
 			#impl_build_storage
 		}
-	} else {
-		quote!()
-	}
+    } else {
+        quote!()
+    }
 }

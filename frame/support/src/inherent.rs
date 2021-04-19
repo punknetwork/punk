@@ -140,156 +140,158 @@ macro_rules! impl_outer_inherent {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use sp_runtime::{traits, testing::{Header, self}};
-	use crate::traits::IsSubType;
+    use super::*;
+    use sp_runtime::{traits, testing::{Header, self}};
+    use crate::traits::IsSubType;
 
-	#[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
-	enum Call {
-		Test(CallTest),
-		Test2(CallTest2),
-	}
+    #[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
+    enum Call {
+        Test(CallTest),
+        Test2(CallTest2),
+    }
 
-	impl From<CallTest> for Call {
-		fn from(call: CallTest) -> Self {
-			Self::Test(call)
-		}
-	}
+    impl From<CallTest> for Call {
+        fn from(call: CallTest) -> Self {
+            Self::Test(call)
+        }
+    }
 
-	impl From<CallTest2> for Call {
-		fn from(call: CallTest2) -> Self {
-			Self::Test2(call)
-		}
-	}
+    impl From<CallTest2> for Call {
+        fn from(call: CallTest2) -> Self {
+            Self::Test2(call)
+        }
+    }
 
-	impl IsSubType<CallTest> for Call {
-		fn is_sub_type(&self) -> Option<&CallTest> {
-			match self {
-				Self::Test(test) => Some(test),
-				_ => None,
-			}
-		}
-	}
+    impl IsSubType<CallTest> for Call {
+        fn is_sub_type(&self) -> Option<&CallTest> {
+            match self {
+                Self::Test(test) => Some(test),
+                _ => None,
+            }
+        }
+    }
 
-	impl IsSubType<CallTest2> for Call {
-		fn is_sub_type(&self) -> Option<&CallTest2> {
-			match self {
-				Self::Test2(test) => Some(test),
-				_ => None,
-			}
-		}
-	}
+    impl IsSubType<CallTest2> for Call {
+        fn is_sub_type(&self) -> Option<&CallTest2> {
+            match self {
+                Self::Test2(test) => Some(test),
+                _ => None,
+            }
+        }
+    }
 
-	#[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
-	enum CallTest {
-		Something,
-		SomethingElse,
-	}
+    #[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
+    enum CallTest {
+        Something,
+        SomethingElse,
+    }
 
-	#[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
-	enum CallTest2 {
-		Something,
-	}
+    #[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
+    enum CallTest2 {
+        Something,
+    }
 
-	struct ModuleTest;
-	impl ProvideInherent for ModuleTest {
-		type Call = CallTest;
-		type Error = sp_inherents::MakeFatalError<()>;
-		const INHERENT_IDENTIFIER: sp_inherents::InherentIdentifier = *b"test1235";
+    struct ModuleTest;
 
-		fn create_inherent(_: &InherentData) -> Option<Self::Call> {
-			Some(CallTest::Something)
-		}
+    impl ProvideInherent for ModuleTest {
+        type Call = CallTest;
+        type Error = sp_inherents::MakeFatalError<()>;
+        const INHERENT_IDENTIFIER: sp_inherents::InherentIdentifier = *b"test1235";
 
-		fn check_inherent(call: &Self::Call, _: &InherentData) -> Result<(), Self::Error> {
-			match call {
-				CallTest::Something => Ok(()),
-				CallTest::SomethingElse => Err(().into()),
-			}
-		}
-	}
+        fn create_inherent(_: &InherentData) -> Option<Self::Call> {
+            Some(CallTest::Something)
+        }
 
-	struct ModuleTest2;
-	impl ProvideInherent for ModuleTest2 {
-		type Call = CallTest2;
-		type Error = sp_inherents::MakeFatalError<()>;
-		const INHERENT_IDENTIFIER: sp_inherents::InherentIdentifier = *b"test1234";
+        fn check_inherent(call: &Self::Call, _: &InherentData) -> Result<(), Self::Error> {
+            match call {
+                CallTest::Something => Ok(()),
+                CallTest::SomethingElse => Err(().into()),
+            }
+        }
+    }
 
-		fn create_inherent(_: &InherentData) -> Option<Self::Call> {
-			Some(CallTest2::Something)
-		}
+    struct ModuleTest2;
 
-		fn is_inherent_required(_: &InherentData) -> Result<Option<Self::Error>, Self::Error> { 
-			Ok(Some(().into()))
-		}
-	}
+    impl ProvideInherent for ModuleTest2 {
+        type Call = CallTest2;
+        type Error = sp_inherents::MakeFatalError<()>;
+        const INHERENT_IDENTIFIER: sp_inherents::InherentIdentifier = *b"test1234";
 
-	type Block = testing::Block<Extrinsic>;
+        fn create_inherent(_: &InherentData) -> Option<Self::Call> {
+            Some(CallTest2::Something)
+        }
 
-	#[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
-	struct Extrinsic {
-		function: Call,
-	}
+        fn is_inherent_required(_: &InherentData) -> Result<Option<Self::Error>, Self::Error> {
+            Ok(Some(().into()))
+        }
+    }
 
-	impl traits::Extrinsic for Extrinsic {
-		type Call = Call;
-		type SignaturePayload = ();
+    type Block = testing::Block<Extrinsic>;
 
-		fn new(function: Call, _: Option<()>) -> Option<Self> {
-			Some(Self { function })
-		}
-	}
+    #[derive(codec::Encode, codec::Decode, Clone, PartialEq, Eq, Debug, serde::Serialize)]
+    struct Extrinsic {
+        function: Call,
+    }
 
-	parity_util_mem::malloc_size_of_is_0!(Extrinsic);
+    impl traits::Extrinsic for Extrinsic {
+        type Call = Call;
+        type SignaturePayload = ();
 
-	impl_outer_inherent! {
+        fn new(function: Call, _: Option<()>) -> Option<Self> {
+            Some(Self { function })
+        }
+    }
+
+    parity_util_mem::malloc_size_of_is_0!(Extrinsic);
+
+    impl_outer_inherent! {
 		impl Inherents where Block = Block, UncheckedExtrinsic = Extrinsic {
 			ModuleTest,
 			ModuleTest2,
 		}
 	}
 
-	#[test]
-	fn create_inherents_works() {
-		let inherents = InherentData::new().create_extrinsics();
+    #[test]
+    fn create_inherents_works() {
+        let inherents = InherentData::new().create_extrinsics();
 
-		let expected = vec![
-			Extrinsic { function: Call::Test(CallTest::Something) },
-			Extrinsic { function: Call::Test2(CallTest2::Something) },
-		];
-		assert_eq!(expected, inherents);
-	}
+        let expected = vec![
+            Extrinsic { function: Call::Test(CallTest::Something) },
+            Extrinsic { function: Call::Test2(CallTest2::Something) },
+        ];
+        assert_eq!(expected, inherents);
+    }
 
-	#[test]
-	fn check_inherents_works() {
-		let block = Block::new(
-			Header::new_from_number(1),
-			vec![
-				Extrinsic { function: Call::Test2(CallTest2::Something) },
-				Extrinsic { function: Call::Test(CallTest::Something) },
-			],
-		);
+    #[test]
+    fn check_inherents_works() {
+        let block = Block::new(
+            Header::new_from_number(1),
+            vec![
+                Extrinsic { function: Call::Test2(CallTest2::Something) },
+                Extrinsic { function: Call::Test(CallTest::Something) },
+            ],
+        );
 
-		assert!(InherentData::new().check_extrinsics(&block).ok());
+        assert!(InherentData::new().check_extrinsics(&block).ok());
 
-		let block = Block::new(
-			Header::new_from_number(1),
-			vec![
-				Extrinsic { function: Call::Test2(CallTest2::Something) },
-				Extrinsic { function: Call::Test(CallTest::SomethingElse) },
-			],
-		);
+        let block = Block::new(
+            Header::new_from_number(1),
+            vec![
+                Extrinsic { function: Call::Test2(CallTest2::Something) },
+                Extrinsic { function: Call::Test(CallTest::SomethingElse) },
+            ],
+        );
 
-		assert!(InherentData::new().check_extrinsics(&block).fatal_error());
-	}
+        assert!(InherentData::new().check_extrinsics(&block).fatal_error());
+    }
 
-	#[test]
-	fn required_inherents_enforced() {
-		let block = Block::new(
-			Header::new_from_number(1),
-			vec![Extrinsic { function: Call::Test(CallTest::Something) }],
-		);
+    #[test]
+    fn required_inherents_enforced() {
+        let block = Block::new(
+            Header::new_from_number(1),
+            vec![Extrinsic { function: Call::Test(CallTest::Something) }],
+        );
 
-		assert!(InherentData::new().check_extrinsics(&block).fatal_error());
-	}
+        assert!(InherentData::new().check_extrinsics(&block).fatal_error());
+    }
 }

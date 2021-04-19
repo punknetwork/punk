@@ -61,12 +61,12 @@ pub mod weights;
 use sp_std::prelude::*;
 use frame_support::{decl_module, decl_storage, decl_event, ensure, decl_error, Parameter};
 use frame_support::traits::{
-	Currency, Get, ExistenceRequirement::{KeepAlive},
-	ReservableCurrency
+	Currency, Get, ExistenceRequirement::KeepAlive,
+	ReservableCurrency,
 };
 
 use sp_runtime::{ Percent, RuntimeDebug, traits::{
-	Zero, AccountIdConversion, Hash, BadOrigin
+	Zero, AccountIdConversion, Hash, BadOrigin,
 }};
 use frame_support::traits::{Contains, ContainsLengthBound, OnUnbalanced, EnsureOrigin};
 use codec::{Encode, Decode};
@@ -483,7 +483,7 @@ impl<T: Config> Module<T> {
 				Some(m) => {
 					member = members_iter.next();
 					if m < a {
-						continue
+						continue;
 					} else {
 						break true;
 					}
@@ -562,10 +562,10 @@ impl<T: Config> Module<T> {
 			let (finder, deposit, finders_fee) = match old_tip.finder {
 				Some((finder, deposit)) => {
 					(finder, deposit, true)
-				},
+				}
 				None => {
 					(T::AccountId::default(), Zero::zero(), false)
-				},
+				}
 			};
 			let new_tip = OpenTip {
 				reason: old_tip.reason,
@@ -574,7 +574,7 @@ impl<T: Config> Module<T> {
 				deposit,
 				closes: old_tip.closes,
 				tips: old_tip.tips,
-				finders_fee
+				finders_fee,
 			};
 			Tips::<T>::insert(hash, new_tip)
 		}

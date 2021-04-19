@@ -298,7 +298,7 @@ pub use sp_runtime_interface_proc_macro::runtime_interface;
 #[doc(hidden)]
 #[cfg(feature = "std")]
 pub use sp_externalities::{
-	set_and_run_with_externalities, with_externalities, Externalities, ExternalitiesExt, ExtensionStore,
+    set_and_run_with_externalities, with_externalities, Externalities, ExternalitiesExt, ExtensionStore,
 };
 
 #[doc(hidden)]
@@ -321,11 +321,11 @@ pub use util::{unpack_ptr_and_len, pack_ptr_and_len};
 /// Every type that should be used in a runtime interface function signature needs to implement
 /// this trait.
 pub trait RIType {
-	/// The ffi type that is used to represent `Self`.
-	#[cfg(feature = "std")]
-	type FFIType: sp_wasm_interface::IntoValue + sp_wasm_interface::TryFromValue;
-	#[cfg(not(feature = "std"))]
-	type FFIType;
+    /// The ffi type that is used to represent `Self`.
+    #[cfg(feature = "std")]
+    type FFIType: sp_wasm_interface::IntoValue + sp_wasm_interface::TryFromValue;
+    #[cfg(not(feature = "std"))]
+    type FFIType;
 }
 
 /// A pointer that can be used in a runtime interface function signature.

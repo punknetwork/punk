@@ -24,8 +24,8 @@
 /// E.g. for module MyModule default instance will have prefix "MyModule" and other instances
 /// "InstanceNMyModule".
 pub trait Instance: 'static {
-	/// Unique module prefix. E.g. "InstanceNMyModule" or "MyModule"
-	const PREFIX: &'static str;
+    /// Unique module prefix. E.g. "InstanceNMyModule" or "MyModule"
+    const PREFIX: &'static str;
 }
 
 /// An instance of a storage in a pallet.
@@ -37,9 +37,9 @@ pub trait Instance: 'static {
 /// NOTE: These information can be used to define storages in pallet such as a `StorageMap` which
 /// can use keys after `twox_128(pallet_prefix())++twox_128(STORAGE_PREFIX)`
 pub trait StorageInstance {
-	/// Prefix of a pallet to isolate it from other pallets.
-	fn pallet_prefix() -> &'static str;
+    /// Prefix of a pallet to isolate it from other pallets.
+    fn pallet_prefix() -> &'static str;
 
-	/// Prefix given to a storage to isolate from other storages in the pallet.
-	const STORAGE_PREFIX: &'static str;
+    /// Prefix given to a storage to isolate from other storages in the pallet.
+    const STORAGE_PREFIX: &'static str;
 }

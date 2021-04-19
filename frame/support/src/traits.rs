@@ -20,47 +20,57 @@
 //! NOTE: If you're looking for `parameter_types`, it has moved in to the top-level module.
 
 pub mod tokens;
+
 pub use tokens::fungible;
 pub use tokens::fungibles;
 pub use tokens::currency::{
-	Currency, LockIdentifier, LockableCurrency, ReservableCurrency, VestingSchedule,
+    Currency, LockIdentifier, LockableCurrency, ReservableCurrency, VestingSchedule,
 };
 pub use tokens::imbalance::{Imbalance, OnUnbalanced, SignedImbalance};
 pub use tokens::{ExistenceRequirement, WithdrawReasons, BalanceStatus};
 
 mod members;
+
 pub use members::{Contains, ContainsLengthBound, InitializeMembers, ChangeMembers};
 
 mod validation;
+
 pub use validation::{
-	ValidatorSet, ValidatorSetWithIdentification, OneSessionHandler, FindAuthor, VerifySeal,
-	EstimateNextNewSession, EstimateNextSessionRotation, KeyOwnerProofSystem, ValidatorRegistration,
-	Lateness,
+    ValidatorSet, ValidatorSetWithIdentification, OneSessionHandler, FindAuthor, VerifySeal,
+    EstimateNextNewSession, EstimateNextSessionRotation, KeyOwnerProofSystem, ValidatorRegistration,
+    Lateness,
 };
 
 mod filter;
+
 pub use filter::{
-	Filter, FilterStack, FilterStackGuard, ClearFilterGuard, InstanceFilter, IntegrityTest,
+    Filter, FilterStack, FilterStackGuard, ClearFilterGuard, InstanceFilter, IntegrityTest,
 };
 
 mod misc;
+
 pub use misc::{
-	Len, Get, GetDefault, HandleLifetime, TryDrop, Time, UnixTime, IsType, IsSubType, ExecuteBlock,
-	SameOrOther, OnNewAccount, OnKilledAccount, OffchainWorker,
+    Len, Get, GetDefault, HandleLifetime, TryDrop, Time, UnixTime, IsType, IsSubType, ExecuteBlock,
+    SameOrOther, OnNewAccount, OnKilledAccount, OffchainWorker,
 };
 
 mod stored_map;
+
 pub use stored_map::{StoredMap, StorageMapShim};
+
 mod randomness;
+
 pub use randomness::Randomness;
 
 mod metadata;
+
 pub use metadata::{
-	CallMetadata, GetCallMetadata, GetCallName, PalletInfo, PalletVersion, GetPalletVersion,
-	PALLET_VERSION_STORAGE_KEY_POSTFIX,
+    CallMetadata, GetCallMetadata, GetCallName, PalletInfo, PalletVersion, GetPalletVersion,
+    PALLET_VERSION_STORAGE_KEY_POSTFIX,
 };
 
 mod hooks;
+
 pub use hooks::{Hooks, OnGenesis, OnInitialize, OnFinalize, OnIdle, OnRuntimeUpgrade, OnTimestampSet};
 #[cfg(feature = "try-runtime")]
 pub use hooks::{OnRuntimeUpgradeHelpersExt, ON_RUNTIME_UPGRADE_PREFIX};
@@ -69,10 +79,13 @@ pub use hooks::GenesisBuild;
 
 pub mod schedule;
 mod storage;
+
 pub use storage::{Instance, StorageInstance};
 
 mod dispatch;
+
 pub use dispatch::{EnsureOrigin, OriginTrait, UnfilteredDispatchable};
 
 mod voting;
+
 pub use voting::{CurrencyToVote, SaturatingCurrencyToVote, U128CurrencyToVote};

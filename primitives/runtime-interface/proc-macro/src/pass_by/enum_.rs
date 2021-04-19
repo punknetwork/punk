@@ -29,21 +29,21 @@ use proc_macro2::{TokenStream, Span};
 
 /// The derive implementation for `PassBy` with `Enum`.
 pub fn derive_impl(input: DeriveInput) -> Result<TokenStream> {
-	let crate_include = generate_runtime_interface_include();
-	let crate_ = generate_crate_access();
-	let ident = input.ident;
-	let enum_fields = get_enum_field_idents(&input.data)?
-		.enumerate()
-		.map(|(i, v)| {
-			let i = i as u8;
+    let crate_include = generate_runtime_interface_include();
+    let crate_ = generate_crate_access();
+    let ident = input.ident;
+    let enum_fields = get_enum_field_idents(&input.data)?
+        .enumerate()
+        .map(|(i, v)| {
+            let i = i as u8;
 
-			v.map(|v| (quote!(#i => Ok(#ident::#v)), quote!(#ident::#v => #i)))
-		})
-		.collect::<Result<Vec<_>>>()?;
-	let try_from_variants = enum_fields.iter().map(|i| &i.0);
-	let into_variants = enum_fields.iter().map(|i| &i.1);
+            v.map(|v| (quote!(#i => Ok(#ident::#v)), quote!(#ident::#v => #i)))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let try_from_variants = enum_fields.iter().map(|i| &i.0);
+    let into_variants = enum_fields.iter().map(|i| &i.1);
 
-	let res = quote! {
+    let res = quote! {
 		const _: () = {
 			#crate_include
 
@@ -72,31 +72,31 @@ pub fn derive_impl(input: DeriveInput) -> Result<TokenStream> {
 		};
 	};
 
-	Ok(res)
+    Ok(res)
 }
 
 /// Get the enum fields idents of the given `data` object as iterator.
 ///
 /// Returns an error if the number of variants is greater than `256`, the given `data` is not an
 /// enum or a variant is not an unit.
-fn get_enum_field_idents<'a>(data: &'a Data) -> Result<impl Iterator<Item = Result<&'a Ident>>> {
-	match data {
-		Data::Enum(d) => {
-			if d.variants.len() <= 256 {
-				Ok(
-					d.variants.iter().map(|v| if let Fields::Unit = v.fields {
-						Ok(&v.ident)
-					} else {
-						Err(Error::new(
-							Span::call_site(),
-							"`PassByEnum` only supports unit variants.",
-						))
-					})
-				)
-			} else {
-				Err(Error::new(Span::call_site(), "`PassByEnum` only supports `256` variants."))
-			}
-		},
-		_ => Err(Error::new(Span::call_site(), "`PassByEnum` only supports enums as input type."))
-	}
+fn get_enum_field_idents<'a>(data: &'a Data) -> Result<impl Iterator<Item=Result<&'a Ident>>> {
+    match data {
+        Data::Enum(d) => {
+            if d.variants.len() <= 256 {
+                Ok(
+                    d.variants.iter().map(|v| if let Fields::Unit = v.fields {
+                        Ok(&v.ident)
+                    } else {
+                        Err(Error::new(
+                            Span::call_site(),
+                            "`PassByEnum` only supports unit variants.",
+                        ))
+                    })
+                )
+            } else {
+                Err(Error::new(Span::call_site(), "`PassByEnum` only supports `256` variants."))
+            }
+        }
+        _ => Err(Error::new(Span::call_site(), "`PassByEnum` only supports enums as input type."))
+    }
 }

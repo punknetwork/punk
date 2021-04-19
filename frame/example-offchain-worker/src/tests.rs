@@ -212,7 +212,7 @@ fn should_submit_signed_transaction_on_chain() {
 	SyncCryptoStore::sr25519_generate_new(
 		&keystore,
 		crate::crypto::Public::ID,
-		Some(&format!("{}/hunter1", PHRASE))
+		Some(&format!("{}/hunter1", PHRASE)),
 	).unwrap();
 
 
@@ -246,7 +246,7 @@ fn should_submit_unsigned_transaction_on_chain_for_any_account() {
 	SyncCryptoStore::sr25519_generate_new(
 		&keystore,
 		crate::crypto::Public::ID,
-		Some(&format!("{}/hunter1", PHRASE))
+		Some(&format!("{}/hunter1", PHRASE)),
 	).unwrap();
 
 	let public_key = SyncCryptoStore::sr25519_public_keys(&keystore, crate::crypto::Public::ID)
@@ -299,7 +299,7 @@ fn should_submit_unsigned_transaction_on_chain_for_all_accounts() {
 	SyncCryptoStore::sr25519_generate_new(
 		&keystore,
 		crate::crypto::Public::ID,
-		Some(&format!("{}/hunter1", PHRASE))
+		Some(&format!("{}/hunter1", PHRASE)),
 	).unwrap();
 
 	let public_key = SyncCryptoStore::sr25519_public_keys(&keystore, crate::crypto::Public::ID)

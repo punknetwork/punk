@@ -391,7 +391,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 	/// type function to invoke at the end of the method.
 	fn refresh_members(
 		pool: PoolT<T, I>,
-		notify: ChangeReceiver
+		notify: ChangeReceiver,
 	) {
 		let count = <MemberCount<I>>::get();
 
@@ -424,7 +424,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 	fn remove_member(
 		mut pool: PoolT<T, I>,
 		remove: T::AccountId,
-		index: u32
+		index: u32,
 	) -> Result<(), Error<T, I>> {
 		// all callers of this function in this module also check
 		// the index for validity before calling this function.
@@ -454,7 +454,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 	fn ensure_index(
 		pool: &PoolT<T, I>,
 		who: &T::AccountId,
-		index: u32
+		index: u32,
 	) -> Result<(), Error<T, I>> {
 		ensure!(index < pool.len() as u32, Error::<T, I>::InvalidIndex);
 

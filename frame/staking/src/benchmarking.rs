@@ -35,7 +35,7 @@ const MAX_SLASHES: u32 = 1000;
 // Add slashing spans to a user account. Not relevant for actual use, only to benchmark
 // read and write operations.
 fn add_slashing_spans<T: Config>(who: &T::AccountId, spans: u32) {
-	if spans == 0 { return }
+	if spans == 0 { return; }
 
 	// For the first slashing span, we initialize
 	let mut slashing_spans = crate::slashing::SlashingSpans::new(0);
@@ -55,7 +55,7 @@ pub fn create_validator_with_nominators<T: Config>(
 	n: u32,
 	upper_bound: u32,
 	dead: bool,
-	destination: RewardDestination<T::AccountId>
+	destination: RewardDestination<T::AccountId>,
 ) -> Result<(T::AccountId, Vec<(T::AccountId, T::AccountId)>), &'static str> {
 	// Clean up any existing state.
 	clear_validators_and_nominators::<T>();
@@ -689,7 +689,7 @@ mod tests {
 				<SelectedBenchmark as frame_benchmarking::BenchmarkingSetup<Test>>::instance(
 					&selected_benchmark,
 					&c,
-					true
+					true,
 				).unwrap();
 
 			assert_ok!(closure_to_benchmark());

@@ -342,7 +342,7 @@ fn get_module_instance(
 				instance_trait: instantiable,
 				instance_default: default_instance,
 			}))
-		},
+		}
 		(None, None, None) => Ok(None),
 		(Some(instance), None, _) => Err(
 			syn::Error::new(
@@ -351,7 +351,7 @@ fn get_module_instance(
 					"Expect instantiable trait bound for instance: {}. {}",
 					instance,
 					right_syntax,
-				)
+				),
 			)
 		),
 		(None, Some(instantiable), _) => Err(
@@ -361,7 +361,7 @@ fn get_module_instance(
 					"Expect instance generic for bound instantiable: {}. {}",
 					instantiable,
 					right_syntax,
-				)
+				),
 			)
 		),
 		(None, _, Some(default_instance)) => Err(
@@ -371,7 +371,7 @@ fn get_module_instance(
 					"Expect instance generic for default instance: {}. {}",
 					default_instance,
 					right_syntax,
-				)
+				),
 			)
 		),
 	}
@@ -407,8 +407,8 @@ pub fn parse(input: syn::parse::ParseStream) -> syn::Result<super::DeclStorageDe
 				if extra_genesis_build.is_some() {
 					return Err(syn::Error::new(
 						def.span(),
-						"Only one build expression allowed for extra genesis"
-					))
+						"Only one build expression allowed for extra genesis",
+					));
 				}
 
 				extra_genesis_build = Some(def.expr.content);
@@ -453,7 +453,7 @@ fn parse_storage_line_defs(
 					"Invalid storage definition, couldn't find config identifier: storage must \
 					either have a get identifier `get(fn ident)` or a defined config identifier \
 					`config(ident)`",
-				))
+				));
 			}
 		} else {
 			None
@@ -475,7 +475,7 @@ fn parse_storage_line_defs(
 		let span = line.storage_type.span();
 		let no_hasher_error = || syn::Error::new(
 			span,
-			"Default hasher has been removed, use explicit hasher(blake2_128_concat) instead."
+			"Default hasher has been removed, use explicit hasher(blake2_128_concat) instead.",
 		);
 
 		let storage_type = match line.storage_type {

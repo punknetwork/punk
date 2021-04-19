@@ -53,9 +53,9 @@ mod block_rules;
 mod wasm_override;
 
 pub use self::{
-	call_executor::LocalCallExecutor,
-	client::{Client, ClientConfig},
+    call_executor::LocalCallExecutor,
+    client::{Client, ClientConfig},
 };
 
-#[cfg(feature="test-helpers")]
+#[cfg(feature = "test-helpers")]
 pub use self::client::{new_with_backend, new_in_mem};

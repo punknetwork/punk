@@ -2,7 +2,7 @@ use sp_runtime_interface::runtime_interface;
 
 #[runtime_interface]
 trait Test {
-	fn test();
+    fn test();
 }
 
 fn main() {}

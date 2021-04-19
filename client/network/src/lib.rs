@@ -270,8 +270,8 @@ pub mod transactions;
 pub use libp2p::{multiaddr, Multiaddr, PeerId};
 pub use protocol::{event::{DhtEvent, Event, ObservedRole}, sync::SyncState, PeerInfo};
 pub use service::{
-	NetworkService, NetworkWorker, RequestFailure, OutboundFailure, NotificationSender,
-	NotificationSenderReady, IfDisconnected,
+    NetworkService, NetworkWorker, RequestFailure, OutboundFailure, NotificationSender,
+    NotificationSenderReady, IfDisconnected,
 };
 
 pub use sc_peerset::ReputationChange;
@@ -297,28 +297,28 @@ impl<T> ExHashT for T where T: std::hash::Hash + Eq + std::fmt::Debug + Clone + 
 
 /// Trait for providing information about the local network state
 pub trait NetworkStateInfo {
-	/// Returns the local external addresses.
-	fn external_addresses(&self) -> Vec<Multiaddr>;
+    /// Returns the local external addresses.
+    fn external_addresses(&self) -> Vec<Multiaddr>;
 
-	/// Returns the local Peer ID.
-	fn local_peer_id(&self) -> PeerId;
+    /// Returns the local Peer ID.
+    fn local_peer_id(&self) -> PeerId;
 }
 
 /// Overview status of the network.
 #[derive(Clone)]
 pub struct NetworkStatus<B: BlockT> {
-	/// Current global sync state.
-	pub sync_state: SyncState,
-	/// Target sync block number.
-	pub best_seen_block: Option<NumberFor<B>>,
-	/// Number of peers participating in syncing.
-	pub num_sync_peers: u32,
-	/// Total number of connected peers
-	pub num_connected_peers: usize,
-	/// Total number of active peers.
-	pub num_active_peers: usize,
-	/// The total number of bytes received.
-	pub total_bytes_inbound: u64,
-	/// The total number of bytes sent.
-	pub total_bytes_outbound: u64,
+    /// Current global sync state.
+    pub sync_state: SyncState,
+    /// Target sync block number.
+    pub best_seen_block: Option<NumberFor<B>>,
+    /// Number of peers participating in syncing.
+    pub num_sync_peers: u32,
+    /// Total number of connected peers
+    pub num_connected_peers: usize,
+    /// Total number of active peers.
+    pub num_active_peers: usize,
+    /// The total number of bytes received.
+    pub total_bytes_inbound: u64,
+    /// The total number of bytes sent.
+    pub total_bytes_outbound: u64,
 }

@@ -487,7 +487,7 @@ impl<
 			total,
 			active: self.active,
 			unlocking,
-			claimed_rewards: self.claimed_rewards
+			claimed_rewards: self.claimed_rewards,
 		}
 	}
 
@@ -509,7 +509,7 @@ impl<
 			}
 
 			if unlocking_balance >= value {
-				break
+				break;
 			}
 		}
 
@@ -2025,7 +2025,7 @@ impl<T: Config> Module<T> {
 
 		// Nothing to do if they have no reward points.
 		if validator_reward_points.is_zero() {
-			return Ok(Some(T::WeightInfo::payout_stakers_alive_staked(0)).into())
+			return Ok(Some(T::WeightInfo::payout_stakers_alive_staked(0)).into());
 		}
 
 		// This is the fraction of the total reward that the validator and the
@@ -2054,7 +2054,7 @@ impl<T: Config> Module<T> {
 		// We can now make total validator payout:
 		if let Some(imbalance) = Self::make_payout(
 			&ledger.stash,
-			validator_staking_payout + validator_commission_payout
+			validator_staking_payout + validator_commission_payout,
 		) {
 			Self::deposit_event(RawEvent::Reward(ledger.stash, imbalance.peek()));
 		}
@@ -2089,7 +2089,7 @@ impl<T: Config> Module<T> {
 	/// This will also update the stash lock.
 	fn update_ledger(
 		controller: &T::AccountId,
-		ledger: &StakingLedger<T::AccountId, BalanceOf<T>>
+		ledger: &StakingLedger<T::AccountId, BalanceOf<T>>,
 	) {
 		T::Currency::set_lock(
 			STAKING_ID,
@@ -2128,7 +2128,7 @@ impl<T: Config> Module<T> {
 				}),
 			RewardDestination::Account(dest_account) => {
 				Some(T::Currency::deposit_creating(&dest_account, amount))
-			},
+			}
 			RewardDestination::None => None,
 		}
 	}
@@ -2157,8 +2157,8 @@ impl<T: Config> Module<T> {
 				_ => {
 					// either `Forcing::ForceNone`,
 					// or `Forcing::NotForcing if era_length >= T::SessionsPerEra::get()`.
-					return None
-				},
+					return None;
+				}
 			}
 
 			// new era.
@@ -2801,7 +2801,7 @@ where
 			add_db_reads_writes(1, 0);
 			if active_era.is_none() {
 				// this offence need not be re-submitted.
-				return Ok(consumed_weight)
+				return Ok(consumed_weight);
 			}
 			active_era.expect("value checked not to be `None`; qed").index
 		};
@@ -2847,7 +2847,7 @@ where
 
 			// Skip if the validator is invulnerable.
 			if invulnerables.contains(stash) {
-				continue
+				continue;
 			}
 
 			let unapplied = slashing::compute_slash::<T>(slashing::SlashParams {
@@ -2878,7 +2878,7 @@ where
 						let reward_cost = (2, 2);
 						add_db_reads_writes(
 							(1 + nominators_len) * slash_cost.0 + reward_cost.0 * reporters_len,
-							(1 + nominators_len) * slash_cost.1 + reward_cost.1 * reporters_len
+							(1 + nominators_len) * slash_cost.1 + reward_cost.1 * reporters_len,
 						);
 					}
 				} else {

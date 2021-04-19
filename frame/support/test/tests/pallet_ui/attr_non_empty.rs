@@ -1,6 +1,4 @@
 #[frame_support::pallet [foo]]
-mod foo {
-}
+mod foo {}
 
-fn main() {
-}
+fn main() {}

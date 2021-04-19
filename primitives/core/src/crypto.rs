@@ -270,9 +270,9 @@ pub trait Ss58Codec: Sized + AsMut<[u8]> + AsRef<[u8]> + Default {
 			}
 			_ => Err(PublicError::UnknownVersion)?,
 		};
-		if data.len() != prefix_len + body_len + CHECKSUM_LEN { return Err(PublicError::BadLength) }
+		if data.len() != prefix_len + body_len + CHECKSUM_LEN { return Err(PublicError::BadLength); }
 		let format = ident.try_into().map_err(|_: ()| PublicError::UnknownVersion)?;
-		if !Self::format_is_allowed(format) { return Err(PublicError::FormatNotAllowed) }
+		if !Self::format_is_allowed(format) { return Err(PublicError::FormatNotAllowed); }
 
 		let hash = ss58hash(&data[0..body_len + prefix_len]);
 		let checksum = &hash.as_bytes()[0..CHECKSUM_LEN];
@@ -870,7 +870,7 @@ mod dummy {
 		fn as_slice(&self) -> &[u8] { b"" }
 		fn to_public_crypto_pair(&self) -> CryptoTypePublicPair {
 			CryptoTypePublicPair(
-				CryptoTypeId(*b"dumm"), Public::to_raw_vec(self)
+				CryptoTypeId(*b"dumm"), Public::to_raw_vec(self),
 			)
 		}
 	}
@@ -1256,7 +1256,7 @@ mod tests {
 		{
 			Ok((TestPair::GeneratedFromPhrase {
 				phrase: phrase.to_owned(),
-				password: password.map(Into::into)
+				password: password.map(Into::into),
 			}, [0u8; 8]))
 		}
 		fn derive<Iter: Iterator<Item=DeriveJunction>>(&self, path_iter: Iter, _: Option<[u8; 8]>)
@@ -1267,7 +1267,7 @@ mod tests {
 					TestPair::Standard { phrase, password, path: path.into_iter().chain(path_iter).collect() },
 				TestPair::GeneratedFromPhrase {phrase, password} =>
 					TestPair::Standard { phrase, password, path: path_iter.collect() },
-				x => if path_iter.count() == 0 { x } else { return Err(()) },
+				x => if path_iter.count() == 0 { x } else { return Err(()); },
 			}, None))
 		}
 		fn from_seed(_seed: &<TestPair as Pair>::Seed) -> Self { TestPair::Seed(_seed.as_ref().to_owned()) }
@@ -1276,7 +1276,7 @@ mod tests {
 		fn verify_weak<P: AsRef<[u8]>, M: AsRef<[u8]>>(
 			_sig: &[u8],
 			_message: M,
-			_pubkey: P
+			_pubkey: P,
 		) -> bool { true }
 		fn public(&self) -> Self::Public { TestPublic }
 		fn from_seed_slice(seed: &[u8])

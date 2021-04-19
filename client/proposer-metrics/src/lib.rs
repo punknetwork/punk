@@ -25,45 +25,45 @@ use prometheus_endpoint::{register, PrometheusError, Registry, Histogram, Histog
 pub struct MetricsLink(Option<Metrics>);
 
 impl MetricsLink {
-	pub fn new(registry: Option<&Registry>) -> Self {
-		Self(
-			registry.and_then(|registry|
-				Metrics::register(registry)
-					.map_err(|err| log::warn!("Failed to register proposer prometheus metrics: {}", err))
-					.ok()
-			)
-		)
-	}
+    pub fn new(registry: Option<&Registry>) -> Self {
+        Self(
+            registry.and_then(|registry|
+                Metrics::register(registry)
+                    .map_err(|err| log::warn!("Failed to register proposer prometheus metrics: {}", err))
+                    .ok()
+            )
+        )
+    }
 
-	pub fn report<O>(&self, do_this: impl FnOnce(&Metrics) -> O) -> Option<O> {
-		Some(do_this(self.0.as_ref()?))
-	}
+    pub fn report<O>(&self, do_this: impl FnOnce(&Metrics) -> O) -> Option<O> {
+        Some(do_this(self.0.as_ref()?))
+    }
 }
 
 /// Authorship metrics.
 #[derive(Clone)]
 pub struct Metrics {
-	pub block_constructed: Histogram,
-	pub number_of_transactions: Gauge<U64>,
+    pub block_constructed: Histogram,
+    pub number_of_transactions: Gauge<U64>,
 }
 
 impl Metrics {
-	pub fn register(registry: &Registry) -> Result<Self, PrometheusError> {
-		Ok(Self {
-			block_constructed: register(
-				Histogram::with_opts(HistogramOpts::new(
-					"proposer_block_constructed",
-					"Histogram of time taken to construct new block",
-				))?,
-				registry,
-			)?,
-			number_of_transactions: register(
-				Gauge::new(
-					"proposer_number_of_transactions",
-					"Number of transactions included in block",
-				)?,
-				registry,
-			)?,
-		})
-	}
+    pub fn register(registry: &Registry) -> Result<Self, PrometheusError> {
+        Ok(Self {
+            block_constructed: register(
+                Histogram::with_opts(HistogramOpts::new(
+                    "proposer_block_constructed",
+                    "Histogram of time taken to construct new block",
+                ))?,
+                registry,
+            )?,
+            number_of_transactions: register(
+                Gauge::new(
+                    "proposer_number_of_transactions",
+                    "Number of transactions included in block",
+                )?,
+                registry,
+            )?,
+        })
+    }
 }

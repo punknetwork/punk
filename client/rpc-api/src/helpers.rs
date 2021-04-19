@@ -24,10 +24,10 @@ use futures::{channel::oneshot, compat::Compat};
 pub struct Receiver<T>(pub Compat<oneshot::Receiver<T>>);
 
 impl<T> Future for Receiver<T> {
-	type Item = T;
-	type Error = jsonrpc_core::Error;
+    type Item = T;
+    type Error = jsonrpc_core::Error;
 
-	fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-		self.0.poll().map_err(|_| jsonrpc_core::Error::internal_error())
-	}
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.0.poll().map_err(|_| jsonrpc_core::Error::internal_error())
+    }
 }

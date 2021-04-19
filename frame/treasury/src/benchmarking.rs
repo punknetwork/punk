@@ -50,7 +50,7 @@ fn create_approved_proposals<T: Config<I>, I: Instance>(n: u32) -> Result<(), &'
 		Treasury::<T, I>::propose_spend(
 			RawOrigin::Signed(caller).into(),
 			value,
-			lookup
+			lookup,
 		)?;
 		let proposal_id = <ProposalCount<I>>::get() - 1;
 		Treasury::<T, I>::approve_proposal(RawOrigin::Root.into(), proposal_id)?;

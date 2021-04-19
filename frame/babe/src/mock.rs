@@ -22,7 +22,7 @@ use crate::{self as pallet_babe, Config, CurrentSlot};
 use sp_runtime::{
 	Perbill, impl_opaque_keys,
 	curve::PiecewiseLinear,
-	testing::{Digest, DigestItem, Header, TestXt,},
+	testing::{Digest, DigestItem, Header, TestXt},
 	traits::{Header as _, IdentityLookup, OpaqueKeys},
 };
 use frame_system::InitKind;
@@ -350,7 +350,7 @@ pub fn make_secondary_vrf_pre_digest(
 
 pub fn make_vrf_output(
 	slot: Slot,
-	pair: &sp_consensus_babe::AuthorityPair
+	pair: &sp_consensus_babe::AuthorityPair,
 ) -> (VRFOutput, VRFProof, [u8; 32]) {
 	let pair = sp_core::sr25519::Pair::from_ref(pair).as_ref();
 	let transcript = sp_consensus_babe::make_transcript(&Babe::randomness(), slot, 0);

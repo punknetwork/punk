@@ -24,22 +24,22 @@ use std::{io, net::SocketAddr};
 
 /// Configuration for a [`WsServer`].
 pub struct Config {
-	/// IP address to try to bind to.
-	pub bind_address: SocketAddr,
+    /// IP address to try to bind to.
+    pub bind_address: SocketAddr,
 
-	/// Maximum size, in bytes, of a frame sent by the remote.
-	///
-	/// Since the messages are entirely buffered before being returned, a maximum value is
-	/// necessary in order to prevent malicious clients from sending huge frames that would
-	/// occupy a lot of memory.
-	pub max_frame_size: usize,
+    /// Maximum size, in bytes, of a frame sent by the remote.
+    ///
+    /// Since the messages are entirely buffered before being returned, a maximum value is
+    /// necessary in order to prevent malicious clients from sending huge frames that would
+    /// occupy a lot of memory.
+    pub max_frame_size: usize,
 
-	/// Number of pending messages to buffer up for sending before the socket is considered
-	/// unresponsive.
-	pub send_buffer_len: usize,
+    /// Number of pending messages to buffer up for sending before the socket is considered
+    /// unresponsive.
+    pub send_buffer_len: usize,
 
-	/// Pre-allocated capacity for the list of connections.
-	pub capacity: usize,
+    /// Pre-allocated capacity for the list of connections.
+    pub capacity: usize,
 }
 
 /// Identifier for a connection with regard to a [`WsServer`].
@@ -50,118 +50,118 @@ pub struct ConnectionId(u64);
 
 /// A WebSocket message.
 pub enum Message {
-	Text(String),
-	Binary(Vec<u8>),
+    Text(String),
+    Binary(Vec<u8>),
 }
 
 /// WebSockets listening socket and list of open connections.
 pub struct WsServer {
-	/// Value passed through [`Config::max_frame_size`].
-	max_frame_size: usize,
+    /// Value passed through [`Config::max_frame_size`].
+    max_frame_size: usize,
 
-	/// Endpoint for incoming TCP sockets.
-	listener: TcpListener,
+    /// Endpoint for incoming TCP sockets.
+    listener: TcpListener,
 
-	/// Pending incoming connection to accept. Accepted by calling [`WsServer::accept`].
-	pending_incoming: Option<TcpStream>,
+    /// Pending incoming connection to accept. Accepted by calling [`WsServer::accept`].
+    pending_incoming: Option<TcpStream>,
 
-	/// List of TCP connections that are currently negotiating the WebSocket handshake.
-	///
-	/// The output can be an error if the handshake fails.
-	negotiating: stream::FuturesUnordered<
-		Pin<
-			Box<
-				dyn Future<Output = Result<Server<'static, TcpStream>, Box<dyn std::error::Error>>>
-					+ Send,
-			>,
-		>,
-	>,
+    /// List of TCP connections that are currently negotiating the WebSocket handshake.
+    ///
+    /// The output can be an error if the handshake fails.
+    negotiating: stream::FuturesUnordered<
+        Pin<
+            Box<
+                dyn Future<Output=Result<Server<'static, TcpStream>, Box<dyn std::error::Error>>>
+                + Send,
+            >,
+        >,
+    >,
 
-	/// List of streams of incoming messages for all connections.
-	incoming_messages: stream::SelectAll<
-		Pin<Box<dyn Stream<Item = Result<Message, Box<dyn std::error::Error>>> + Send>>,
-	>,
+    /// List of streams of incoming messages for all connections.
+    incoming_messages: stream::SelectAll<
+        Pin<Box<dyn Stream<Item=Result<Message, Box<dyn std::error::Error>>> + Send>>,
+    >,
 
-	/// Tasks dedicated to closing sockets that have been rejected.
-	rejected_sockets: stream::FuturesUnordered<Pin<Box<dyn Future<Output = ()> + Send>>>,
+    /// Tasks dedicated to closing sockets that have been rejected.
+    rejected_sockets: stream::FuturesUnordered<Pin<Box<dyn Future<Output=()> + Send>>>,
 }
 
 impl WsServer {
-	/// Try opening a TCP listening socket.
-	///
-	/// Returns an error if the listening socket fails to open.
-	pub async fn new(config: Config) -> Result<Self, io::Error> {
-		let listener = TcpListener::bind(config.bind_address).await?;
+    /// Try opening a TCP listening socket.
+    ///
+    /// Returns an error if the listening socket fails to open.
+    pub async fn new(config: Config) -> Result<Self, io::Error> {
+        let listener = TcpListener::bind(config.bind_address).await?;
 
-		Ok(WsServer {
-			max_frame_size: config.max_frame_size,
-			listener,
-			pending_incoming: None,
-			negotiating: stream::FuturesUnordered::new(),
-			incoming_messages: stream::SelectAll::new(),
-			rejected_sockets: stream::FuturesUnordered::new(),
-		})
-	}
+        Ok(WsServer {
+            max_frame_size: config.max_frame_size,
+            listener,
+            pending_incoming: None,
+            negotiating: stream::FuturesUnordered::new(),
+            incoming_messages: stream::SelectAll::new(),
+            rejected_sockets: stream::FuturesUnordered::new(),
+        })
+    }
 
-	/// Address of the local TCP listening socket, as provided by the operating system.
-	pub fn local_addr(&self) -> Result<SocketAddr, io::Error> {
-		self.listener.local_addr()
-	}
+    /// Address of the local TCP listening socket, as provided by the operating system.
+    pub fn local_addr(&self) -> Result<SocketAddr, io::Error> {
+        self.listener.local_addr()
+    }
 
-	/// Accepts the pending connection.
-	///
-	/// Either [`WsServer::accept`] or [`WsServer::reject`] must be called after a
-	/// [`Event::ConnectionOpen`] event is returned.
-	///
-	/// # Panic
-	///
-	/// Panics if no connection is pending.
-	///
-	pub fn accept(&mut self) {
-		let pending_incoming = self.pending_incoming.take().expect("no pending socket");
+    /// Accepts the pending connection.
+    ///
+    /// Either [`WsServer::accept`] or [`WsServer::reject`] must be called after a
+    /// [`Event::ConnectionOpen`] event is returned.
+    ///
+    /// # Panic
+    ///
+    /// Panics if no connection is pending.
+    ///
+    pub fn accept(&mut self) {
+        let pending_incoming = self.pending_incoming.take().expect("no pending socket");
 
-		self.negotiating.push(Box::pin(async move {
-			let mut server = Server::new(pending_incoming);
+        self.negotiating.push(Box::pin(async move {
+            let mut server = Server::new(pending_incoming);
 
-			let websocket_key = match server.receive_request().await {
-				Ok(req) => req.into_key(),
-				Err(err) => return Err(Box::new(err) as Box<_>),
-			};
+            let websocket_key = match server.receive_request().await {
+                Ok(req) => req.into_key(),
+                Err(err) => return Err(Box::new(err) as Box<_>),
+            };
 
-			match server
-				.send_response(&{
-					Response::Accept {
-						key: &websocket_key,
-						protocol: None,
-					}
-				})
-				.await
-			{
-				Ok(()) => {}
-				Err(err) => return Err(Box::new(err) as Box<_>),
-			};
+            match server
+                .send_response(&{
+                    Response::Accept {
+                        key: &websocket_key,
+                        protocol: None,
+                    }
+                })
+                .await
+                {
+                    Ok(()) => {}
+                    Err(err) => return Err(Box::new(err) as Box<_>),
+                };
 
-			Ok(server)
-		}));
-	}
+            Ok(server)
+        }));
+    }
 
-	/// Reject the pending connection.
-	///
-	/// Either [`WsServer::accept`] or [`WsServer::reject`] must be called after a
-	/// [`Event::ConnectionOpen`] event is returned.
-	///
-	/// # Panic
-	///
-	/// Panics if no connection is pending.
-	///
-	pub fn reject(&mut self) {
-		let _ = self.pending_incoming.take().expect("no pending socket");
-	}
+    /// Reject the pending connection.
+    ///
+    /// Either [`WsServer::accept`] or [`WsServer::reject`] must be called after a
+    /// [`Event::ConnectionOpen`] event is returned.
+    ///
+    /// # Panic
+    ///
+    /// Panics if no connection is pending.
+    ///
+    pub fn reject(&mut self) {
+        let _ = self.pending_incoming.take().expect("no pending socket");
+    }
 
-	/// Returns the next event happening on the server.
-	pub async fn next_event(&mut self) -> Event {
-		loop {
-			futures::select! {
+    /// Returns the next event happening on the server.
+    pub async fn next_event(&mut self) -> Event {
+        loop {
+            futures::select! {
 				// Only try to fetch a new incoming connection if none is pending.
 				socket = {
 					let listener = &self.listener;
@@ -243,39 +243,39 @@ impl WsServer {
 				_ = self.rejected_sockets.select_next_some() => {
 				}
 			}
-		}
-	}
+        }
+    }
 }
 
 /// Event that has happened on a [`WsServer`].
 #[derive(Debug)]
 pub enum Event {
-	/// A new TCP connection has arrived on the listening socket.
-	///
-	/// The connection *must* be accepted or rejected using [`WsServer::accept`] or
-	/// [`WsServer::reject`].
-	/// No other [`Event::ConnectionOpen`] event will be generated until the current pending
-	/// connection has been either accepted or rejected.
-	ConnectionOpen {
-		/// Address of the remote, as provided by the operating system.
-		address: SocketAddr,
-	},
+    /// A new TCP connection has arrived on the listening socket.
+    ///
+    /// The connection *must* be accepted or rejected using [`WsServer::accept`] or
+    /// [`WsServer::reject`].
+    /// No other [`Event::ConnectionOpen`] event will be generated until the current pending
+    /// connection has been either accepted or rejected.
+    ConnectionOpen {
+        /// Address of the remote, as provided by the operating system.
+        address: SocketAddr,
+    },
 
-	/// An error has happened on a connection. The connection is now closed and its
-	/// [`ConnectionId`] is now invalid.
-	ConnectionError { error: Box<dyn std::error::Error> },
+    /// An error has happened on a connection. The connection is now closed and its
+    /// [`ConnectionId`] is now invalid.
+    ConnectionError { error: Box<dyn std::error::Error> },
 
-	/// A text frame has been received on a connection.
-	TextFrame {
-		/// Message sent by the remote. Its content is entirely decided by the client, and
-		/// nothing must be assumed about the validity of this message.
-		message: String,
-	},
+    /// A text frame has been received on a connection.
+    TextFrame {
+        /// Message sent by the remote. Its content is entirely decided by the client, and
+        /// nothing must be assumed about the validity of this message.
+        message: String,
+    },
 
-	/// A text frame has been received on a connection.
-	BinaryFrame {
-		/// Message sent by the remote. Its content is entirely decided by the client, and
-		/// nothing must be assumed about the validity of this message.
-		message: Vec<u8>,
-	},
+    /// A text frame has been received on a connection.
+    BinaryFrame {
+        /// Message sent by the remote. Its content is entirely decided by the client, and
+        /// nothing must be assumed about the validity of this message.
+        message: Vec<u8>,
+    },
 }

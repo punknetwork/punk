@@ -207,12 +207,12 @@ pub fn run_to_block(n: u64) {
 pub fn create_bid<AccountId, Balance>(
 	value: Balance,
 	who: AccountId,
-	kind: BidKind<AccountId, Balance>
+	kind: BidKind<AccountId, Balance>,
 ) -> Bid<AccountId, Balance>
 {
 	Bid {
 		who,
 		kind,
-		value
+		value,
 	}
 }

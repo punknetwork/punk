@@ -162,7 +162,7 @@ pub enum StoredState<N> {
 		/// Block at which the intention to pause was scheduled.
 		scheduled_at: N,
 		/// Number of blocks after which the change will be enacted.
-		delay: N
+		delay: N,
 	},
 	/// The current GRANDPA authority set is paused.
 	Paused,

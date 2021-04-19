@@ -18,12 +18,12 @@
 
 pub use self::collec::UpgradeCollec;
 pub use self::notifications::{
-	NotificationsIn,
-	NotificationsInSubstream,
-	NotificationsOut,
-	NotificationsOutSubstream,
-	NotificationsHandshakeError,
-	NotificationsOutError,
+    NotificationsIn,
+    NotificationsInSubstream,
+    NotificationsOut,
+    NotificationsOutSubstream,
+    NotificationsHandshakeError,
+    NotificationsOutError,
 };
 
 mod collec;

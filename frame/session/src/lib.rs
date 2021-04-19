@@ -623,14 +623,14 @@ impl<T: Config> Module<T> {
 
 			let mut now_session_keys = session_keys.iter();
 			let mut check_next_changed = |keys: &T::Keys| {
-				if changed { return }
+				if changed { return; }
 				// since a new validator set always leads to `changed` starting
 				// as true, we can ensure that `now_session_keys` and `next_validators`
 				// have the same length. this function is called once per iteration.
 				if let Some(&(_, ref old_keys)) = now_session_keys.next() {
 					if old_keys != keys {
 						changed = true;
-						return
+						return;
 					}
 				}
 			};

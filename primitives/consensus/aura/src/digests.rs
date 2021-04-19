@@ -29,36 +29,36 @@ use sp_std::fmt::Debug;
 
 /// A digest item which is usable with aura consensus.
 pub trait CompatibleDigestItem<Signature>: Sized {
-	/// Construct a digest item which contains a signature on the hash.
-	fn aura_seal(signature: Signature) -> Self;
+    /// Construct a digest item which contains a signature on the hash.
+    fn aura_seal(signature: Signature) -> Self;
 
-	/// If this item is an Aura seal, return the signature.
-	fn as_aura_seal(&self) -> Option<Signature>;
+    /// If this item is an Aura seal, return the signature.
+    fn as_aura_seal(&self) -> Option<Signature>;
 
-	/// Construct a digest item which contains the slot number
-	fn aura_pre_digest(slot: Slot) -> Self;
+    /// Construct a digest item which contains the slot number
+    fn aura_pre_digest(slot: Slot) -> Self;
 
-	/// If this item is an AuRa pre-digest, return the slot number
-	fn as_aura_pre_digest(&self) -> Option<Slot>;
+    /// If this item is an AuRa pre-digest, return the slot number
+    fn as_aura_pre_digest(&self) -> Option<Slot>;
 }
 
 impl<Signature, Hash> CompatibleDigestItem<Signature> for DigestItem<Hash> where
-	Signature: Codec,
-	Hash: Debug + Send + Sync + Eq + Clone + Codec + 'static
+    Signature: Codec,
+    Hash: Debug + Send + Sync + Eq + Clone + Codec + 'static
 {
-	fn aura_seal(signature: Signature) -> Self {
-		DigestItem::Seal(AURA_ENGINE_ID, signature.encode())
-	}
+    fn aura_seal(signature: Signature) -> Self {
+        DigestItem::Seal(AURA_ENGINE_ID, signature.encode())
+    }
 
-	fn as_aura_seal(&self) -> Option<Signature> {
-		self.seal_try_to(&AURA_ENGINE_ID)
-	}
+    fn as_aura_seal(&self) -> Option<Signature> {
+        self.seal_try_to(&AURA_ENGINE_ID)
+    }
 
-	fn aura_pre_digest(slot: Slot) -> Self {
-		DigestItem::PreRuntime(AURA_ENGINE_ID, slot.encode())
-	}
+    fn aura_pre_digest(slot: Slot) -> Self {
+        DigestItem::PreRuntime(AURA_ENGINE_ID, slot.encode())
+    }
 
-	fn as_aura_pre_digest(&self) -> Option<Slot> {
-		self.pre_runtime_try_to(&AURA_ENGINE_ID)
-	}
+    fn as_aura_pre_digest(&self) -> Option<Slot> {
+        self.pre_runtime_try_to(&AURA_ENGINE_ID)
+    }
 }
