@@ -30,21 +30,21 @@ use crate::traits::misc::TryDrop;
 /// - Someone got slashed.
 /// - Someone paid for a transaction to be included.
 pub trait OnUnbalanced<Imbalance: TryDrop> {
-    /// Handler for some imbalances. The different imbalances might have different origins or
-    /// meanings, dependent on the context. Will default to simply calling on_unbalanced for all
-    /// of them. Infallible.
-    fn on_unbalanceds<B>(amounts: impl Iterator<Item=Imbalance>) where Imbalance: crate::traits::Imbalance<B> {
-        Self::on_unbalanced(amounts.fold(Imbalance::zero(), |i, x| x.merge(i)))
-    }
+	/// Handler for some imbalances. The different imbalances might have different origins or
+	/// meanings, dependent on the context. Will default to simply calling on_unbalanced for all
+	/// of them. Infallible.
+	fn on_unbalanceds<B>(amounts: impl Iterator<Item=Imbalance>) where Imbalance: crate::traits::Imbalance<B> {
+		Self::on_unbalanced(amounts.fold(Imbalance::zero(), |i, x| x.merge(i)))
+	}
 
-    /// Handler for some imbalance. Infallible.
-    fn on_unbalanced(amount: Imbalance) {
-        amount.try_drop().unwrap_or_else(Self::on_nonzero_unbalanced)
-    }
+	/// Handler for some imbalance. Infallible.
+	fn on_unbalanced(amount: Imbalance) {
+		amount.try_drop().unwrap_or_else(Self::on_nonzero_unbalanced)
+	}
 
-    /// Actually handle a non-zero imbalance. You probably want to implement this rather than
-    /// `on_unbalanced`.
-    fn on_nonzero_unbalanced(amount: Imbalance) { drop(amount); }
+	/// Actually handle a non-zero imbalance. You probably want to implement this rather than
+	/// `on_unbalanced`.
+	fn on_nonzero_unbalanced(amount: Imbalance) { drop(amount); }
 }
 
 impl<Imbalance: TryDrop> OnUnbalanced<Imbalance> for () {}

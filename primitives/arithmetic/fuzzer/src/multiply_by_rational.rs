@@ -31,8 +31,8 @@ use honggfuzz::fuzz;
 use sp_arithmetic::{helpers_128bit::multiply_by_rational, traits::Zero};
 
 fn main() {
-    loop {
-        fuzz!(|data: ([u8; 16], [u8; 16], [u8; 16])| {
+	loop {
+		fuzz!(|data: ([u8; 16], [u8; 16], [u8; 16])| {
 			let (a_bytes, b_bytes, c_bytes) = data;
 			let (a, b, c) = (
 				u128::from_be_bytes(a_bytes),
@@ -54,25 +54,25 @@ fn main() {
 				}
 			}
 		})
-    }
+	}
 }
 
 fn mul_div(a: u128, b: u128, c: u128) -> u128 {
-    use primitive_types::U256;
-    if a.is_zero() {
-        return Zero::zero();
-    }
-    let c = c.max(1);
+	use primitive_types::U256;
+	if a.is_zero() {
+		return Zero::zero();
+	}
+	let c = c.max(1);
 
-    // e for extended
-    let ae: U256 = a.into();
-    let be: U256 = b.into();
-    let ce: U256 = c.into();
+	// e for extended
+	let ae: U256 = a.into();
+	let be: U256 = b.into();
+	let ce: U256 = c.into();
 
-    let r = ae * be / ce;
-    if r > u128::max_value().into() {
-        a
-    } else {
-        r.as_u128()
-    }
+	let r = ae * be / ce;
+	if r > u128::max_value().into() {
+		a
+	} else {
+		r.as_u128()
+	}
 }

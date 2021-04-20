@@ -108,7 +108,7 @@ impl ChainInfo for NodeTemplateChainInfo {
 				client.clone(),
 				&(client.clone() as Arc<_>),
 				select_chain.clone(),
-				None,
+				None
 			)?;
 
 		let (block_import, babe_link) = sc_consensus_babe::block_import(

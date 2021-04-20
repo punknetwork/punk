@@ -386,7 +386,7 @@ impl<T: Config> Module<T> {
 	fn call_to_index(call: &<T as Config>::Call) -> Result<CallIndex, DispatchError> {
 		let encoded_call = call.encode();
 		if encoded_call.len() < 2 { Err(Error::<T>::EncodingFailed)? }
-		return Ok((encoded_call[0], encoded_call[1]));
+		return Ok((encoded_call[0], encoded_call[1]))
 	}
 
 	// Logic for buying a ticket.

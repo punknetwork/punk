@@ -1199,16 +1199,16 @@ macro_rules! impl_benchmark_test_suite {
 /// show error message and debugging info for the case of an error happening
 /// during a benchmark
 pub fn show_benchmark_debug_info(
-    instance_string: &[u8],
-    benchmark: &[u8],
-    lowest_range_values: &sp_std::prelude::Vec<u32>,
-    highest_range_values: &sp_std::prelude::Vec<u32>,
-    steps: &sp_std::prelude::Vec<u32>,
-    repeat: &u32,
-    verify: &bool,
-    error_message: &str,
+	instance_string: &[u8],
+	benchmark: &[u8],
+	lowest_range_values: &sp_std::prelude::Vec<u32>,
+	highest_range_values: &sp_std::prelude::Vec<u32>,
+	steps: &sp_std::prelude::Vec<u32>,
+	repeat: &u32,
+	verify: &bool,
+	error_message: &str,
 ) -> sp_runtime::RuntimeString {
-    sp_runtime::format_runtime_string!(
+	sp_runtime::format_runtime_string!(
 		"\n* Pallet: {}\n\
 		* Benchmark: {}\n\
 		* Lowest_range_values: {:?}\n\
@@ -1292,6 +1292,7 @@ pub fn show_benchmark_debug_info(
 /// type Council2 = TechnicalCommittee;
 /// add_benchmark!(params, batches, pallet_collective, Council2); // pallet_collective_council_2.rs
 /// ```
+
 #[macro_export]
 macro_rules! add_benchmark {
 	( $params:ident, $batches:ident, $name:path, $( $location:tt )* ) => (

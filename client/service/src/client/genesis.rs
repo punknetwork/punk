@@ -22,22 +22,22 @@ use sp_runtime::traits::{Block as BlockT, Header as HeaderT, Hash as HashT, Zero
 
 /// Create a genesis block, given the initial storage.
 pub fn construct_genesis_block<
-    Block: BlockT
->(
-    state_root: Block::Hash
+	Block: BlockT
+> (
+	state_root: Block::Hash
 ) -> Block {
-    let extrinsics_root = <<<Block as BlockT>::Header as HeaderT>::Hashing as HashT>::trie_root(
-        Vec::new(),
-    );
+	let extrinsics_root = <<<Block as BlockT>::Header as HeaderT>::Hashing as HashT>::trie_root(
+		Vec::new(),
+	);
 
-    Block::new(
-        <<Block as BlockT>::Header as HeaderT>::new(
-            Zero::zero(),
-            extrinsics_root,
-            state_root,
-            Default::default(),
-            Default::default(),
-        ),
-        Default::default(),
-    )
+	Block::new(
+		<<Block as BlockT>::Header as HeaderT>::new(
+			Zero::zero(),
+			extrinsics_root,
+			state_root,
+			Default::default(),
+			Default::default()
+		),
+		Default::default()
+	)
 }

@@ -437,14 +437,14 @@ impl<T: Config> Module<T> where
 				inclusion_fee: Some(InclusionFee {
 					base_fee,
 					len_fee: fixed_len_fee,
-					adjusted_weight_fee,
+					adjusted_weight_fee
 				}),
-				tip,
+				tip
 			}
 		} else {
 			FeeDetails {
 				inclusion_fee: None,
-				tip,
+				tip
 			}
 		}
 	}
@@ -572,7 +572,7 @@ impl<T: Config> SignedExtension for ChargeTransactionPayment<T> where
 		who: &Self::AccountId,
 		call: &Self::Call,
 		info: &DispatchInfoOf<Self::Call>,
-		len: usize,
+		len: usize
 	) -> Result<Self::Pre, TransactionValidityError> {
 		let (_fee, imbalance) = self.withdraw_fee(who, call, info, len)?;
 		Ok((self.0, who.clone(), imbalance))
@@ -727,7 +727,7 @@ mod tests {
 		balance_factor: u64,
 		base_weight: u64,
 		byte_fee: u64,
-		weight_to_fee: u64,
+		weight_to_fee: u64
 	}
 
 	impl Default for ExtBuilder {
@@ -988,7 +988,7 @@ mod tests {
 					partial_fee:
 						5 * 2 /* base * weight_fee */
 						+ len as u64  /* len * 1 */
-						+ info.weight.min(BlockWeights::get().max_block) as u64 * 2 * 3 / 2, /* weight */
+						+ info.weight.min(BlockWeights::get().max_block) as u64 * 2 * 3 / 2 /* weight */
 				},
 			);
 
@@ -1121,7 +1121,7 @@ mod tests {
 				Module::<Runtime>::compute_fee(
 					<u32>::max_value(),
 					&dispatch_info,
-					<u64>::max_value(),
+					<u64>::max_value()
 				),
 				<u64>::max_value()
 			);

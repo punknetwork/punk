@@ -21,7 +21,7 @@ use sc_service::TaskExecutor;
 
 #[substrate_test_utils::test]
 async fn too_many_func_parameters(task_executor_1: TaskExecutor, task_executor_2: TaskExecutor) {
-    assert!(true);
+	assert!(true);
 }
 
 fn main() {}

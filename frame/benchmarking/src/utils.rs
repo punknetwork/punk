@@ -147,7 +147,7 @@ pub trait Benchmarking {
 					has_been_read: item.has_been_read || add.has_been_read,
 					has_been_written: item.has_been_written || add.has_been_written,
 				}
-			}
+			},
 			// If the key does not exist, add it.
 			None => {
 				whitelist.push(add);
@@ -206,7 +206,7 @@ pub trait BenchmarkingSetup<T, I = ()> {
 	fn instance(
 		&self,
 		components: &[(BenchmarkParameter, u32)],
-		verify: bool,
+		verify: bool
 	) -> Result<Box<dyn FnOnce() -> Result<(), &'static str>>, &'static str>;
 }
 

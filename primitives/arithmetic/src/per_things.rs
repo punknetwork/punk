@@ -322,7 +322,7 @@ where
 	let mut rem_mul_div_inner = (rem_mul_upper / denom_upper).saturated_into::<P::Inner>();
 	match rounding {
 		// Already rounded down
-		Rounding::Down => {}
+		Rounding::Down => {},
 		// Round up if the fractional part of the result is non-zero.
 		Rounding::Up => if rem_mul_upper % denom_upper > 0.into() {
 			// `rem * numer / denom` is less than `numer`, so this will not overflow.

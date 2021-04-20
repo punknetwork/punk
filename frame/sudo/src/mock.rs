@@ -51,7 +51,7 @@ pub mod logger {
 		pub(crate) fn privileged_i32_log(
 			origin: OriginFor<T>,
 			i: i32,
-			weight: Weight,
+			weight: Weight
 		) -> DispatchResultWithPostInfo {
 			// Ensure that the `origin` is `Root`.
 			ensure_root(origin)?;
@@ -64,7 +64,7 @@ pub mod logger {
 		pub(crate) fn non_privileged_log(
 			origin: OriginFor<T>,
 			i: i32,
-			weight: Weight,
+			weight: Weight
 		) -> DispatchResultWithPostInfo {
 			// Ensure that the `origin` is some signed account.
 			let sender = ensure_signed(origin)?;

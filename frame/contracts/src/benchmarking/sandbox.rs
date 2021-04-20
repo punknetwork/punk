@@ -20,40 +20,40 @@
 ///! environment that provides the seal interface as imported functions.
 
 use super::{
-    Config,
-    code::WasmModule,
+	Config,
+	code::WasmModule,
 };
 use sp_core::crypto::UncheckedFrom;
 use sp_sandbox::{EnvironmentDefinitionBuilder, Instance, Memory};
 
 /// Minimal execution environment without any exported functions.
 pub struct Sandbox {
-    instance: Instance<()>,
-    _memory: Option<Memory>,
+	instance: Instance<()>,
+	_memory: Option<Memory>,
 }
 
 impl Sandbox {
-    /// Invoke the `call` function of a contract code and panic on any execution error.
-    pub fn invoke(&mut self) {
-        self.instance.invoke("call", &[], &mut ()).unwrap();
-    }
+	/// Invoke the `call` function of a contract code and panic on any execution error.
+	pub fn invoke(&mut self) {
+		self.instance.invoke("call", &[], &mut ()).unwrap();
+	}
 }
 
 impl<T: Config> From<&WasmModule<T>> for Sandbox
-    where
-        T: Config,
-        T::AccountId: UncheckedFrom<T::Hash> + AsRef<[u8]>,
+where
+	T: Config,
+	T::AccountId: UncheckedFrom<T::Hash> + AsRef<[u8]>,
 {
-    /// Creates an instance from the supplied module and supplies as much memory
-    /// to the instance as the module declares as imported.
-    fn from(module: &WasmModule<T>) -> Self {
-        let mut env_builder = EnvironmentDefinitionBuilder::new();
-        let memory = module.add_memory(&mut env_builder);
-        let instance = Instance::new(&module.code, &env_builder, &mut ())
-            .expect("Failed to create benchmarking Sandbox instance");
-        Self {
-            instance,
-            _memory: memory,
-        }
-    }
+	/// Creates an instance from the supplied module and supplies as much memory
+	/// to the instance as the module declares as imported.
+	fn from(module: &WasmModule<T>) -> Self {
+		let mut env_builder = EnvironmentDefinitionBuilder::new();
+		let memory = module.add_memory(&mut env_builder);
+		let instance = Instance::new(&module.code, &env_builder, &mut ())
+			.expect("Failed to create benchmarking Sandbox instance");
+		Self {
+			instance,
+			_memory: memory,
+		}
+	}
 }

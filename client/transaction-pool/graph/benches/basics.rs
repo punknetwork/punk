@@ -68,9 +68,9 @@ impl ChainApi for TestApi {
 			Ok(Some(num)) if num > 5 => {
 				return ready(
 					Ok(Err(InvalidTransaction::Stale.into()))
-				);
-			}
-			_ => {}
+				)
+			},
+			_ => {},
 		}
 
 		ready(

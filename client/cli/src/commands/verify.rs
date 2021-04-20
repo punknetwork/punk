@@ -25,78 +25,78 @@ use structopt::StructOpt;
 /// The `verify` command
 #[derive(Debug, StructOpt)]
 #[structopt(
-name = "verify",
-about = "Verify a signature for a message, provided on STDIN, with a given (public or secret) key"
+	name = "verify",
+	about = "Verify a signature for a message, provided on STDIN, with a given (public or secret) key"
 )]
 pub struct VerifyCmd {
-    /// Signature, hex-encoded.
-    sig: String,
+	/// Signature, hex-encoded.
+	sig: String,
 
-    /// The public or secret key URI.
-    /// If the value is a file, the file content is used as URI.
-    /// If not given, you will be prompted for the URI.
-    uri: Option<String>,
+	/// The public or secret key URI.
+	/// If the value is a file, the file content is used as URI.
+	/// If not given, you will be prompted for the URI.
+	uri: Option<String>,
 
-    /// Message to verify, if not provided you will be prompted to
-    /// pass the message via STDIN
-    #[structopt(long)]
-    message: Option<String>,
+	/// Message to verify, if not provided you will be prompted to
+	/// pass the message via STDIN
+	#[structopt(long)]
+	message: Option<String>,
 
-    /// The message on STDIN is hex-encoded data
-    #[structopt(long)]
-    hex: bool,
+	/// The message on STDIN is hex-encoded data
+	#[structopt(long)]
+	hex: bool,
 
-    #[allow(missing_docs)]
-    #[structopt(flatten)]
-    pub crypto_scheme: CryptoSchemeFlag,
+	#[allow(missing_docs)]
+	#[structopt(flatten)]
+	pub crypto_scheme: CryptoSchemeFlag,
 }
 
 impl VerifyCmd {
-    /// Run the command
-    pub fn run(&self) -> error::Result<()> {
-        let message = utils::read_message(self.message.as_ref(), self.hex)?;
-        let sig_data = utils::decode_hex(&self.sig)?;
-        let uri = utils::read_uri(self.uri.as_ref())?;
-        let uri = if uri.starts_with("0x") {
-            &uri[2..]
-        } else {
-            &uri
-        };
+	/// Run the command
+	pub fn run(&self) -> error::Result<()> {
+		let message = utils::read_message(self.message.as_ref(), self.hex)?;
+		let sig_data = utils::decode_hex(&self.sig)?;
+		let uri = utils::read_uri(self.uri.as_ref())?;
+		let uri = if uri.starts_with("0x") {
+			&uri[2..]
+		} else {
+			&uri
+		};
 
-        with_crypto_scheme!(
+		with_crypto_scheme!(
 			self.crypto_scheme.scheme,
 			verify(sig_data, message, uri)
 		)
-    }
+	}
 }
 
 fn verify<Pair>(sig_data: Vec<u8>, message: Vec<u8>, uri: &str) -> error::Result<()>
-    where
-        Pair: sp_core::Pair,
-        Pair::Signature: Default + AsMut<[u8]>,
+	where
+		Pair: sp_core::Pair,
+		Pair::Signature: Default + AsMut<[u8]>,
 {
-    let mut signature = Pair::Signature::default();
-    if sig_data.len() != signature.as_ref().len() {
-        return Err(
-            error::Error::SignatureInvalidLength {
-                read: sig_data.len(),
-                expected: signature.as_ref().len(),
-            }
-        );
-    }
-    signature.as_mut().copy_from_slice(&sig_data);
+	let mut signature = Pair::Signature::default();
+	if sig_data.len() != signature.as_ref().len() {
+		return Err(
+			error::Error::SignatureInvalidLength {
+				read: sig_data.len(),
+				expected: signature.as_ref().len(),
+			}
+		);
+	}
+	signature.as_mut().copy_from_slice(&sig_data);
 
-    let pubkey = if let Ok(pubkey_vec) = hex::decode(uri) {
-        Pair::Public::from_slice(pubkey_vec.as_slice())
-    } else {
-        Pair::Public::from_string(uri)?
-    };
+	let pubkey = if let Ok(pubkey_vec) = hex::decode(uri) {
+		Pair::Public::from_slice(pubkey_vec.as_slice())
+	} else {
+		Pair::Public::from_string(uri)?
+	};
 
-    if Pair::verify(&signature, &message, &pubkey) {
-        println!("Signature verifies correctly.");
-    } else {
-        return Err(error::Error::SignatureInvalid);
-    }
+	if Pair::verify(&signature, &message, &pubkey) {
+		println!("Signature verifies correctly.");
+	} else {
+		return Err(error::Error::SignatureInvalid)
+	}
 
-    Ok(())
+	Ok(())
 }

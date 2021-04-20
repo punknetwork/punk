@@ -130,7 +130,7 @@ mod encoding {
 		fn encode_to<T: codec::Output + ?Sized>(&self, dest: &mut T) {
 			match self {
 				Self::Data(l) => l.using_encoded(
-					|data| Either::<&[u8], &H::Output>::Left(data).encode_to(dest), false,
+					|data| Either::<&[u8], &H::Output>::Left(data).encode_to(dest), false
 				),
 				Self::Hash(h) => Either::<&[u8], &H::Output>::Right(h).encode_to(dest),
 			}

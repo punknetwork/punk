@@ -41,7 +41,7 @@ use frame_benchmarking::{benchmarks, account, whitelisted_caller, impl_benchmark
 use frame_system::{Pallet as System, RawOrigin};
 use parity_wasm::elements::{Instruction, ValueType, BlockType};
 use sp_runtime::traits::{Hash, Bounded, Zero};
-use sp_std::{default::Default, convert::TryInto, vec::Vec, vec};
+use sp_std::{default::Default, convert::{TryInto}, vec::Vec, vec};
 use pallet_contracts_primitives::RentProjection;
 use frame_support::weights::Weight;
 
@@ -125,7 +125,7 @@ where
 					.saturating_add(T::DepositPerContract::get());
 
 				(storage_size, endowment)
-			}
+			},
 			Endow::Max => (0u32.into(), Endow::max::<T>()),
 		};
 		T::Currency::make_free_balance_be(&caller, caller_funding::<T>());
@@ -260,7 +260,7 @@ where
 /// Generate `stor_num` storage items. Each has the size `stor_size`.
 fn create_storage<T: Config>(
 	stor_num: u32,
-	stor_size: u32,
+	stor_size: u32
 ) -> Result<Vec<(StorageKey, Vec<u8>)>, &'static str> {
 	(0..stor_num).map(|i| {
 		let hash = T::Hashing::hash_of(&i)

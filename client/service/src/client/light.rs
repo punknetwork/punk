@@ -34,44 +34,44 @@ use sc_light::{Backend, GenesisCallExecutor};
 
 /// Create an instance of light client.
 pub fn new_light<B, S, RA, E>(
-    backend: Arc<Backend<S, HashFor<B>>>,
-    genesis_storage: &dyn BuildStorage,
-    code_executor: E,
-    spawn_handle: Box<dyn SpawnNamed>,
-    prometheus_registry: Option<Registry>,
-    telemetry: Option<TelemetryHandle>,
+	backend: Arc<Backend<S, HashFor<B>>>,
+	genesis_storage: &dyn BuildStorage,
+	code_executor: E,
+	spawn_handle: Box<dyn SpawnNamed>,
+	prometheus_registry: Option<Registry>,
+	telemetry: Option<TelemetryHandle>,
 ) -> ClientResult<
-    Client<
-        Backend<S, HashFor<B>>,
-        GenesisCallExecutor<
-            Backend<S, HashFor<B>>,
-            LocalCallExecutor<Backend<S, HashFor<B>>, E>
-        >,
-        B,
-        RA
-    >
->
-    where
-        B: BlockT,
-        S: BlockchainStorage<B> + 'static,
-        E: CodeExecutor + RuntimeInfo + Clone + 'static,
+		Client<
+			Backend<S, HashFor<B>>,
+			GenesisCallExecutor<
+				Backend<S, HashFor<B>>,
+				LocalCallExecutor<Backend<S, HashFor<B>>, E>
+			>,
+			B,
+			RA
+		>
+	>
+	where
+		B: BlockT,
+		S: BlockchainStorage<B> + 'static,
+		E: CodeExecutor + RuntimeInfo + Clone + 'static,
 {
-    let local_executor = LocalCallExecutor::new(
-        backend.clone(),
-        code_executor,
-        spawn_handle.clone(),
-        ClientConfig::default(),
-    )?;
-    let executor = GenesisCallExecutor::new(backend.clone(), local_executor);
-    Client::new(
-        backend,
-        executor,
-        genesis_storage,
-        Default::default(),
-        Default::default(),
-        Default::default(),
-        prometheus_registry,
-        telemetry,
-        ClientConfig::default(),
-    )
+	let local_executor = LocalCallExecutor::new(
+		backend.clone(),
+		code_executor,
+		spawn_handle.clone(),
+		ClientConfig::default()
+	)?;
+	let executor = GenesisCallExecutor::new(backend.clone(), local_executor);
+	Client::new(
+		backend,
+		executor,
+		genesis_storage,
+		Default::default(),
+		Default::default(),
+		Default::default(),
+		prometheus_registry,
+		telemetry,
+		ClientConfig::default(),
+	)
 }

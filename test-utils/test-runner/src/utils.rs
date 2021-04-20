@@ -23,34 +23,34 @@ use log::LevelFilter;
 
 /// Base db path gotten from env
 pub fn base_path() -> Option<String> {
-    std::env::var("DB_BASE_PATH").ok()
+	std::env::var("DB_BASE_PATH").ok()
 }
 
 /// Builds the global logger.
 pub fn logger<S>(
-    log_targets: Vec<(&'static str, LevelFilter)>,
-    executor: tokio::runtime::Handle,
-    log_sink: S,
+	log_targets: Vec<(&'static str, LevelFilter)>,
+	executor: tokio::runtime::Handle,
+	log_sink: S,
 )
-    where
-        S: Sink<String> + Clone + Unpin + Send + Sync + 'static,
-        S::Error: Send + Sync + fmt::Debug,
+where
+	S: Sink<String> + Clone + Unpin + Send + Sync + 'static,
+	S::Error: Send + Sync + fmt::Debug,
 {
-    let mut builder = env_logger::builder();
-    builder.format(move |buf: &mut env_logger::fmt::Formatter, record: &log::Record| {
-        let entry = format!("{} {} {}", record.level(), record.target(), record.args());
-        let res = writeln!(buf, "{}", entry);
+	let mut builder = env_logger::builder();
+	builder.format(move |buf: &mut env_logger::fmt::Formatter, record: &log::Record| {
+		let entry = format!("{} {} {}", record.level(), record.target(), record.args());
+		let res = writeln!(buf, "{}", entry);
 
-        let mut log_sink_clone = log_sink.clone();
-        let _ = executor.spawn(async move {
-            log_sink_clone.send(entry).await.expect("log_stream is dropped");
-        });
-        res
-    });
-    builder.write_style(env_logger::WriteStyle::Always);
+		let mut log_sink_clone = log_sink.clone();
+		let _ = executor.spawn(async move {
+			log_sink_clone.send(entry).await.expect("log_stream is dropped");
+		});
+		res
+	});
+	builder.write_style(env_logger::WriteStyle::Always);
 
-    for (module, level) in log_targets {
-        builder.filter_module(module, level);
-    }
-    let _ = builder.is_test(true).try_init();
+	for (module, level) in log_targets {
+		builder.filter_module(module, level);
+	}
+	let _ = builder.is_test(true).try_init();
 }

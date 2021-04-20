@@ -612,7 +612,7 @@ impl<T: Config> Module<T> {
 				// we are still waiting for inclusion.
 				Some(Some(status)) if status.is_recent(session_index, now) => {
 					Err(OffchainErr::WaitingForInclusion(status.sent_at))
-				}
+				},
 				// attempt to set new status
 				_ => Ok(HeartbeatStatus {
 					session_index,

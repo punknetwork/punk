@@ -94,12 +94,12 @@ mod types;
 use tracing;
 
 pub use tracing::{
-    debug, debug_span, error, error_span, info, info_span, trace, trace_span, warn, warn_span,
-    span, event, Level, Span,
+	debug, debug_span, error, error_span, info, info_span, trace, trace_span, warn, warn_span,
+	span, event, Level, Span,
 };
 
 pub use crate::types::{
-    WasmMetadata, WasmEntryAttributes, WasmValuesSet, WasmValue, WasmFields, WasmLevel, WasmFieldName,
+	WasmMetadata, WasmEntryAttributes, WasmValuesSet, WasmValue, WasmFields, WasmLevel, WasmFieldName
 };
 
 
@@ -107,14 +107,14 @@ pub use crate::types::{
 /// Ignores any error. Useful for testing.
 #[cfg(feature = "std")]
 pub fn try_init_simple() {
-    let _ = tracing_subscriber::fmt()
-        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-        .with_writer(std::io::stderr).try_init();
+	let _ = tracing_subscriber::fmt()
+		.with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+		.with_writer(std::io::stderr).try_init();
 }
 
 #[cfg(feature = "std")]
 pub use crate::types::{
-    WASM_NAME_KEY, WASM_TARGET_KEY, WASM_TRACE_IDENTIFIER,
+	WASM_NAME_KEY, WASM_TARGET_KEY, WASM_TRACE_IDENTIFIER
 };
 
 

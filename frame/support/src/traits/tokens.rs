@@ -22,8 +22,7 @@ pub mod fungibles;
 pub mod currency;
 pub mod imbalance;
 mod misc;
-
 pub use misc::{
-    WithdrawConsequence, DepositConsequence, ExistenceRequirement, BalanceStatus, WithdrawReasons,
+	WithdrawConsequence, DepositConsequence, ExistenceRequirement, BalanceStatus, WithdrawReasons,
 };
 pub use imbalance::Imbalance;

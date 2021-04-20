@@ -22,64 +22,64 @@ use syn::spanned::Spanned;
 /// * Generate enum call and implement various trait on it.
 /// * Implement Callable and call_function on `Pallet`
 pub fn expand_call(def: &mut Def) -> proc_macro2::TokenStream {
-    let frame_support = &def.frame_support;
-    let frame_system = &def.frame_system;
-    let type_impl_gen = &def.type_impl_generics(def.call.attr_span);
-    let type_decl_bounded_gen = &def.type_decl_bounded_generics(def.call.attr_span);
-    let type_use_gen = &def.type_use_generics(def.call.attr_span);
-    let call_ident = syn::Ident::new("Call", def.call.attr_span);
-    let pallet_ident = &def.pallet_struct.pallet;
-    let where_clause = &def.call.where_clause;
+	let frame_support = &def.frame_support;
+	let frame_system = &def.frame_system;
+	let type_impl_gen = &def.type_impl_generics(def.call.attr_span);
+	let type_decl_bounded_gen = &def.type_decl_bounded_generics(def.call.attr_span);
+	let type_use_gen = &def.type_use_generics(def.call.attr_span);
+	let call_ident = syn::Ident::new("Call", def.call.attr_span);
+	let pallet_ident = &def.pallet_struct.pallet;
+	let where_clause = &def.call.where_clause;
 
-    let fn_name = def.call.methods.iter().map(|method| &method.name).collect::<Vec<_>>();
+	let fn_name = def.call.methods.iter().map(|method| &method.name).collect::<Vec<_>>();
 
-    let fn_weight = def.call.methods.iter().map(|method| &method.weight);
+	let fn_weight = def.call.methods.iter().map(|method| &method.weight);
 
-    let fn_doc = def.call.methods.iter().map(|method| &method.docs).collect::<Vec<_>>();
+	let fn_doc = def.call.methods.iter().map(|method| &method.docs).collect::<Vec<_>>();
 
-    let args_name = def.call.methods.iter()
-        .map(|method| method.args.iter().map(|(_, name, _)| name.clone()).collect::<Vec<_>>())
-        .collect::<Vec<_>>();
+	let args_name = def.call.methods.iter()
+		.map(|method| method.args.iter().map(|(_, name, _)| name.clone()).collect::<Vec<_>>())
+		.collect::<Vec<_>>();
 
-    let args_type = def.call.methods.iter()
-        .map(|method| method.args.iter().map(|(_, _, type_)| type_.clone()).collect::<Vec<_>>())
-        .collect::<Vec<_>>();
+	let args_type = def.call.methods.iter()
+		.map(|method| method.args.iter().map(|(_, _, type_)| type_.clone()).collect::<Vec<_>>())
+		.collect::<Vec<_>>();
 
-    let args_compact_attr = def.call.methods.iter().map(|method| {
-        method.args.iter()
-            .map(|(is_compact, _, type_)| {
-                if *is_compact {
-                    quote::quote_spanned!(type_.span() => #[codec(compact)] )
-                } else {
-                    quote::quote!()
-                }
-            })
-            .collect::<Vec<_>>()
-    });
+	let args_compact_attr = def.call.methods.iter().map(|method| {
+		method.args.iter()
+			.map(|(is_compact, _, type_)| {
+				if *is_compact {
+					quote::quote_spanned!(type_.span() => #[codec(compact)] )
+				} else {
+					quote::quote!()
+				}
+			})
+			.collect::<Vec<_>>()
+	});
 
-    let args_metadata_type = def.call.methods.iter().map(|method| {
-        method.args.iter()
-            .map(|(is_compact, _, type_)| {
-                let final_type = if *is_compact {
-                    quote::quote_spanned!(type_.span() => Compact<#type_>)
-                } else {
-                    quote::quote!(#type_)
-                };
-                clean_type_string(&final_type.to_string())
-            })
-            .collect::<Vec<_>>()
-    });
+	let args_metadata_type = def.call.methods.iter().map(|method| {
+		method.args.iter()
+			.map(|(is_compact, _, type_)| {
+				let final_type = if *is_compact {
+					quote::quote_spanned!(type_.span() => Compact<#type_>)
+				} else {
+					quote::quote!(#type_)
+				};
+				clean_type_string(&final_type.to_string())
+			})
+			.collect::<Vec<_>>()
+	});
 
-    let default_docs = [syn::parse_quote!(
+	let default_docs = [syn::parse_quote!(
 		r"Contains one variant per dispatchable that can be called by an extrinsic."
 	)];
-    let docs = if def.call.docs.is_empty() {
-        &default_docs[..]
-    } else {
-        &def.call.docs[..]
-    };
+	let docs = if def.call.docs.is_empty() {
+		&default_docs[..]
+	} else {
+		&def.call.docs[..]
+	};
 
-    quote::quote_spanned!(def.call.attr_span =>
+	quote::quote_spanned!(def.call.attr_span =>
 		#( #[doc = #docs] )*
 		#[derive(
 			#frame_support::RuntimeDebugNoBound,

@@ -19,9 +19,9 @@
 //! randomness collected from VRF outputs.
 
 use super::{
-    AuthorVrfRandomness, Config, EpochStart, NextRandomness, Randomness, VRF_OUTPUT_LENGTH,
+	AuthorVrfRandomness, Config, EpochStart, NextRandomness, Randomness, VRF_OUTPUT_LENGTH,
 };
-use frame_support::traits::Randomness as RandomnessT;
+use frame_support::{traits::Randomness as RandomnessT};
 use sp_runtime::traits::Hash;
 
 /// Randomness usable by consensus protocols that **depend** upon finality and take action
@@ -114,35 +114,35 @@ pub struct RandomnessFromOneEpochAgo<T>(sp_std::marker::PhantomData<T>);
 pub struct CurrentBlockRandomness<T>(sp_std::marker::PhantomData<T>);
 
 impl<T: Config> RandomnessT<T::Hash, T::BlockNumber> for RandomnessFromTwoEpochsAgo<T> {
-    fn random(subject: &[u8]) -> (T::Hash, T::BlockNumber) {
-        let mut subject = subject.to_vec();
-        subject.reserve(VRF_OUTPUT_LENGTH);
-        subject.extend_from_slice(&Randomness::<T>::get()[..]);
+	fn random(subject: &[u8]) -> (T::Hash, T::BlockNumber) {
+		let mut subject = subject.to_vec();
+		subject.reserve(VRF_OUTPUT_LENGTH);
+		subject.extend_from_slice(&Randomness::<T>::get()[..]);
 
-        (T::Hashing::hash(&subject[..]), EpochStart::<T>::get().0)
-    }
+		(T::Hashing::hash(&subject[..]), EpochStart::<T>::get().0)
+	}
 }
 
 impl<T: Config> RandomnessT<T::Hash, T::BlockNumber> for RandomnessFromOneEpochAgo<T> {
-    fn random(subject: &[u8]) -> (T::Hash, T::BlockNumber) {
-        let mut subject = subject.to_vec();
-        subject.reserve(VRF_OUTPUT_LENGTH);
-        subject.extend_from_slice(&NextRandomness::<T>::get()[..]);
+	fn random(subject: &[u8]) -> (T::Hash, T::BlockNumber) {
+		let mut subject = subject.to_vec();
+		subject.reserve(VRF_OUTPUT_LENGTH);
+		subject.extend_from_slice(&NextRandomness::<T>::get()[..]);
 
-        (T::Hashing::hash(&subject[..]), EpochStart::<T>::get().1)
-    }
+		(T::Hashing::hash(&subject[..]), EpochStart::<T>::get().1)
+	}
 }
 
 impl<T: Config> RandomnessT<Option<T::Hash>, T::BlockNumber> for CurrentBlockRandomness<T> {
-    fn random(subject: &[u8]) -> (Option<T::Hash>, T::BlockNumber) {
-        let random = AuthorVrfRandomness::<T>::get().map(|random| {
-            let mut subject = subject.to_vec();
-            subject.reserve(VRF_OUTPUT_LENGTH);
-            subject.extend_from_slice(&random);
+	fn random(subject: &[u8]) -> (Option<T::Hash>, T::BlockNumber) {
+		let random = AuthorVrfRandomness::<T>::get().map(|random| {
+			let mut subject = subject.to_vec();
+			subject.reserve(VRF_OUTPUT_LENGTH);
+			subject.extend_from_slice(&random);
 
-            T::Hashing::hash(&subject[..])
-        });
+			T::Hashing::hash(&subject[..])
+		});
 
-        (random, <frame_system::Pallet<T>>::block_number())
-    }
+		(random, <frame_system::Pallet<T>>::block_number())
+	}
 }

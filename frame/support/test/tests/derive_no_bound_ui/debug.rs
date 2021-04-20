@@ -1,10 +1,10 @@
 trait Config {
-    type C;
+	type C;
 }
 
 #[derive(frame_support::DebugNoBound)]
 struct Foo<T: Config> {
-    c: T::C,
+	c: T::C,
 }
 
 fn main() {}

@@ -27,8 +27,8 @@ use serde::{Serialize, Deserialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ExtrinsicOrHash<Hash> {
-    /// The hash of the extrinsic.
-    Hash(Hash),
-    /// Raw extrinsic bytes.
-    Extrinsic(Bytes),
+	/// The hash of the extrinsic.
+	Hash(Hash),
+	/// Raw extrinsic bytes.
+	Extrinsic(Bytes),
 }

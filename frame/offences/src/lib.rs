@@ -50,17 +50,17 @@ pub type DeferredOffenceOf<T> = (
 );
 
 pub trait WeightInfo {
-	fn report_offence_im_online(r: u32, o: u32, n: u32 ) -> Weight;
-	fn report_offence_grandpa(r: u32, n: u32 ) -> Weight;
-	fn report_offence_babe(r: u32, n: u32 ) -> Weight;
-	fn on_initialize(d: u32 ) -> Weight;
+	fn report_offence_im_online(r: u32, o: u32, n: u32, ) -> Weight;
+	fn report_offence_grandpa(r: u32, n: u32, ) -> Weight;
+	fn report_offence_babe(r: u32, n: u32, ) -> Weight;
+	fn on_initialize(d: u32, ) -> Weight;
 }
 
 impl WeightInfo for () {
-	fn report_offence_im_online(_r: u32, _o: u32, _n: u32 ) -> Weight { 1_000_000_000 }
-	fn report_offence_grandpa(_r: u32, _n: u32 ) -> Weight { 1_000_000_000 }
-	fn report_offence_babe(_r: u32, _n: u32 ) -> Weight { 1_000_000_000 }
-	fn on_initialize(_d: u32 ) -> Weight { 1_000_000_000 }
+	fn report_offence_im_online(_r: u32, _o: u32, _n: u32, ) -> Weight { 1_000_000_000 }
+	fn report_offence_grandpa(_r: u32, _n: u32, ) -> Weight { 1_000_000_000 }
+	fn report_offence_babe(_r: u32, _n: u32, ) -> Weight { 1_000_000_000 }
+	fn on_initialize(_d: u32, ) -> Weight { 1_000_000_000 }
 }
 
 /// Offences trait

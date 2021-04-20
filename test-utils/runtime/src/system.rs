@@ -34,7 +34,7 @@ use sp_runtime::{
 use codec::{KeyedVec, Encode, Decode};
 use frame_system::Config;
 use crate::{
-	AccountId, BlockNumber, Extrinsic, Transfer, H256 as Hash, Block, Header, Digest, AuthorityId,
+	AccountId, BlockNumber, Extrinsic, Transfer, H256 as Hash, Block, Header, Digest, AuthorityId
 };
 use sp_core::{storage::well_known_keys, ChangesTrieConfiguration};
 
@@ -264,7 +264,7 @@ fn execute_transaction_backend(utx: &Extrinsic, extrinsic_index: u32) -> ApplyEx
 		Extrinsic::OffchainIndexSet(key, value) => {
 			sp_io::offchain_index::set(&key, &value);
 			Ok(Ok(()))
-		}
+		},
 		Extrinsic::OffchainIndexClear(key) => {
 			sp_io::offchain_index::clear(&key);
 			Ok(Ok(()))

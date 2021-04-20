@@ -57,7 +57,7 @@ impl OneSessionHandler<AccountId> for OtherSessionHandler {
 	fn on_genesis_session<'a, I: 'a>(_: I)
 		where I: Iterator<Item=(&'a AccountId, Self::Key)>, AccountId: 'a {}
 
-	fn on_new_session<'a, I: 'a>(_: bool, validators: I, _: I)
+	fn on_new_session<'a, I: 'a>(_: bool, validators: I, _: I,)
 		where I: Iterator<Item=(&'a AccountId, Self::Key)>, AccountId: 'a
 	{
 		SESSION.with(|x| {
@@ -514,7 +514,7 @@ fn check_nominators() {
 				let individual = e.others.iter().filter(|e| e.who == nominator).collect::<Vec<_>>();
 				let len = individual.len();
 				match len {
-					0 => { /* not supporting this validator at all. */ }
+					0 => { /* not supporting this validator at all. */ },
 					1 => sum += individual[0].value,
 					_ => panic!("nominator cannot back a validator more than once."),
 				};
@@ -725,7 +725,7 @@ pub(crate) fn on_offence_in_era(
 			Staking::on_offence(
 				offenders,
 				slash_fraction,
-				Staking::eras_start_session_index(era).unwrap(),
+				Staking::eras_start_session_index(era).unwrap()
 			).unwrap();
 	} else {
 		panic!("cannot slash in era {}", era);

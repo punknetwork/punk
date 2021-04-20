@@ -20,20 +20,20 @@ use crate::pallet::{Def, parse::helper::get_doc_literals};
 /// * impl various trait on Error
 /// * impl ModuleErrorMetadata for Error
 pub fn expand_error(def: &mut Def) -> proc_macro2::TokenStream {
-    let error = if let Some(error) = &def.error {
-        error
-    } else {
-        return Default::default();
-    };
+	let error = if let Some(error) = &def.error {
+		error
+	} else {
+		return Default::default()
+	};
 
-    let error_ident = &error.error;
-    let frame_support = &def.frame_support;
-    let frame_system = &def.frame_system;
-    let type_impl_gen = &def.type_impl_generics(error.attr_span);
-    let type_use_gen = &def.type_use_generics(error.attr_span);
-    let config_where_clause = &def.config.where_clause;
+	let error_ident = &error.error;
+	let frame_support = &def.frame_support;
+	let frame_system = &def.frame_system;
+	let type_impl_gen = &def.type_impl_generics(error.attr_span);
+	let type_use_gen = &def.type_use_generics(error.attr_span);
+	let config_where_clause = &def.config.where_clause;
 
-    let phantom_variant: syn::Variant = syn::parse_quote!(
+	let phantom_variant: syn::Variant = syn::parse_quote!(
 		#[doc(hidden)]
 		__Ignore(
 			#frame_support::sp_std::marker::PhantomData<(#type_use_gen)>,
@@ -41,49 +41,49 @@ pub fn expand_error(def: &mut Def) -> proc_macro2::TokenStream {
 		)
 	);
 
-    let as_u8_matches = error.variants.iter().enumerate()
-        .map(|(i, (variant, _))| {
-            quote::quote_spanned!(error.attr_span => Self::#variant => #i as u8,)
-        });
+	let as_u8_matches = error.variants.iter().enumerate()
+		.map(|(i, (variant, _))| {
+			quote::quote_spanned!(error.attr_span => Self::#variant => #i as u8,)
+		});
 
-    let as_str_matches = error.variants.iter()
-        .map(|(variant, _)| {
-            let variant_str = format!("{}", variant);
-            quote::quote_spanned!(error.attr_span => Self::#variant => #variant_str,)
-        });
+	let as_str_matches = error.variants.iter()
+		.map(|(variant, _)| {
+			let variant_str = format!("{}", variant);
+			quote::quote_spanned!(error.attr_span => Self::#variant => #variant_str,)
+		});
 
-    let metadata = error.variants.iter()
-        .map(|(variant, doc)| {
-            let variant_str = format!("{}", variant);
-            quote::quote_spanned!(error.attr_span =>
+	let metadata = error.variants.iter()
+		.map(|(variant, doc)| {
+			let variant_str = format!("{}", variant);
+			quote::quote_spanned!(error.attr_span =>
 				#frame_support::error::ErrorMetadata {
 					name: #frame_support::error::DecodeDifferent::Encode(#variant_str),
 					documentation: #frame_support::error::DecodeDifferent::Encode(&[ #( #doc, )* ]),
 				},
 			)
-        });
+		});
 
-    let error_item = {
-        let item = &mut def.item.content.as_mut().expect("Checked by def parser").1[error.index];
-        if let syn::Item::Enum(item) = item {
-            item
-        } else {
-            unreachable!("Checked by error parser")
-        }
-    };
+	let error_item = {
+		let item = &mut def.item.content.as_mut().expect("Checked by def parser").1[error.index];
+		if let syn::Item::Enum(item) = item {
+			item
+		} else {
+			unreachable!("Checked by error parser")
+		}
+	};
 
-    error_item.variants.insert(0, phantom_variant);
+	error_item.variants.insert(0, phantom_variant);
 
-    if get_doc_literals(&error_item.attrs).is_empty() {
-        error_item.attrs.push(syn::parse_quote!(
+	if get_doc_literals(&error_item.attrs).is_empty() {
+		error_item.attrs.push(syn::parse_quote!(
 			#[doc = r"
 			Custom [dispatch errors](https://substrate.dev/docs/en/knowledgebase/runtime/errors)
 			of this pallet.
 			"]
 		));
-    }
+	}
 
-    quote::quote_spanned!(error.attr_span =>
+	quote::quote_spanned!(error.attr_span =>
 		impl<#type_impl_gen> #frame_support::sp_std::fmt::Debug for #error_ident<#type_use_gen>
 			#config_where_clause
 		{

@@ -350,7 +350,7 @@ pub trait Externalities: Send {
 		&mut self,
 		method: &str,
 		uri: &str,
-		meta: &[u8],
+		meta: &[u8]
 	) -> Result<HttpRequestId, ()>;
 
 	/// Append header to the request.
@@ -370,7 +370,7 @@ pub trait Externalities: Send {
 		&mut self,
 		request_id: HttpRequestId,
 		name: &str,
-		value: &str,
+		value: &str
 	) -> Result<(), ()>;
 
 	/// Write a chunk of request body.
@@ -392,7 +392,7 @@ pub trait Externalities: Send {
 		&mut self,
 		request_id: HttpRequestId,
 		chunk: &[u8],
-		deadline: Option<Timestamp>,
+		deadline: Option<Timestamp>
 	) -> Result<(), HttpError>;
 
 	/// Block and wait for the responses for given requests.
@@ -408,7 +408,7 @@ pub trait Externalities: Send {
 	fn http_response_wait(
 		&mut self,
 		ids: &[HttpRequestId],
-		deadline: Option<Timestamp>,
+		deadline: Option<Timestamp>
 	) -> Vec<HttpRequestStatus>;
 
 	/// Read all response headers.
@@ -422,7 +422,7 @@ pub trait Externalities: Send {
 	/// received a response, or has finished.
 	fn http_response_headers(
 		&mut self,
-		request_id: HttpRequestId,
+		request_id: HttpRequestId
 	) -> Vec<(Vec<u8>, Vec<u8>)>;
 
 	/// Read a chunk of body response to given buffer.
@@ -448,7 +448,7 @@ pub trait Externalities: Send {
 		&mut self,
 		request_id: HttpRequestId,
 		buffer: &mut [u8],
-		deadline: Option<Timestamp>,
+		deadline: Option<Timestamp>
 	) -> Result<usize, HttpError>;
 
 	/// Set the authorized nodes from runtime.
@@ -497,7 +497,7 @@ impl<T: Externalities + ?Sized> Externalities for Box<T> {
 		&mut self,
 		request_id: HttpRequestId,
 		chunk: &[u8],
-		deadline: Option<Timestamp>,
+		deadline: Option<Timestamp>
 	) -> Result<(), HttpError> {
 		(&mut **self).http_request_write_body(request_id, chunk, deadline)
 	}
@@ -514,7 +514,7 @@ impl<T: Externalities + ?Sized> Externalities for Box<T> {
 		&mut self,
 		request_id: HttpRequestId,
 		buffer: &mut [u8],
-		deadline: Option<Timestamp>,
+		deadline: Option<Timestamp>
 	) -> Result<usize, HttpError> {
 		(&mut **self).http_response_read_body(request_id, buffer, deadline)
 	}
@@ -589,7 +589,7 @@ impl<T: Externalities> Externalities for LimitedExternalities<T> {
 		&mut self,
 		request_id: HttpRequestId,
 		chunk: &[u8],
-		deadline: Option<Timestamp>,
+		deadline: Option<Timestamp>
 	) -> Result<(), HttpError> {
 		self.check(Capability::Http, "http_request_write_body");
 		self.externalities.http_request_write_body(request_id, chunk, deadline)
@@ -609,7 +609,7 @@ impl<T: Externalities> Externalities for LimitedExternalities<T> {
 		&mut self,
 		request_id: HttpRequestId,
 		buffer: &mut [u8],
-		deadline: Option<Timestamp>,
+		deadline: Option<Timestamp>
 	) -> Result<usize, HttpError> {
 		self.check(Capability::Http, "http_response_read_body");
 		self.externalities.http_response_read_body(request_id, buffer, deadline)

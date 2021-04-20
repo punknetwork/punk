@@ -22,51 +22,51 @@ use quote::quote;
 
 #[proc_macro_attribute]
 pub fn test(args: TokenStream, item: TokenStream) -> TokenStream {
-    impl_test(args, item)
+	impl_test(args, item)
 }
 
 fn impl_test(args: TokenStream, item: TokenStream) -> TokenStream {
-    let input = syn::parse_macro_input!(item as syn::ItemFn);
-    let args = syn::parse_macro_input!(args as syn::AttributeArgs);
+	let input = syn::parse_macro_input!(item as syn::ItemFn);
+	let args = syn::parse_macro_input!(args as syn::AttributeArgs);
 
-    parse_knobs(input, args).unwrap_or_else(|e| e.to_compile_error().into())
+	parse_knobs(input, args).unwrap_or_else(|e| e.to_compile_error().into())
 }
 
 fn parse_knobs(
-    mut input: syn::ItemFn,
-    args: syn::AttributeArgs,
+	mut input: syn::ItemFn,
+	args: syn::AttributeArgs,
 ) -> Result<TokenStream, syn::Error> {
-    let sig = &mut input.sig;
-    let body = &input.block;
-    let attrs = &input.attrs;
-    let vis = input.vis;
+	let sig = &mut input.sig;
+	let body = &input.block;
+	let attrs = &input.attrs;
+	let vis = input.vis;
 
-    if sig.inputs.len() != 1 {
-        let msg = "the test function accepts only one argument of type sc_service::TaskExecutor";
-        return Err(syn::Error::new_spanned(&sig, msg));
-    }
-    let (task_executor_name, task_executor_type) = match sig.inputs.pop().map(|x| x.into_value()) {
-        Some(syn::FnArg::Typed(x)) => (x.pat, x.ty),
-        _ => {
-            let msg =
-                "the test function accepts only one argument of type sc_service::TaskExecutor";
-            return Err(syn::Error::new_spanned(&sig, msg));
-        }
-    };
+	if sig.inputs.len() != 1 {
+		let msg = "the test function accepts only one argument of type sc_service::TaskExecutor";
+		return Err(syn::Error::new_spanned(&sig, msg));
+	}
+	let (task_executor_name, task_executor_type) = match sig.inputs.pop().map(|x| x.into_value()) {
+		Some(syn::FnArg::Typed(x)) => (x.pat, x.ty),
+		_ => {
+			let msg =
+				"the test function accepts only one argument of type sc_service::TaskExecutor";
+			return Err(syn::Error::new_spanned(&sig, msg));
+		}
+	};
 
-    let crate_name = match crate_name("substrate-test-utils") {
-        Ok(FoundCrate::Itself) => syn::Ident::new("substrate_test_utils", Span::call_site().into()),
-        Ok(FoundCrate::Name(crate_name)) => syn::Ident::new(&crate_name, Span::call_site().into()),
-        Err(e) => return Err(syn::Error::new_spanned(&sig, e)),
-    };
+	let crate_name = match crate_name("substrate-test-utils") {
+		Ok(FoundCrate::Itself) => syn::Ident::new("substrate_test_utils", Span::call_site().into()),
+		Ok(FoundCrate::Name(crate_name)) => syn::Ident::new(&crate_name, Span::call_site().into()),
+		Err(e) => return Err(syn::Error::new_spanned(&sig, e)),
+	};
 
-    let header = {
-        quote! {
+	let header = {
+		quote! {
 			#[#crate_name::tokio::test(#(#args)*)]
 		}
-    };
+	};
 
-    let result = quote! {
+	let result = quote! {
 		#header
 		#(#attrs)*
 		#vis #sig {
@@ -99,5 +99,5 @@ fn parse_knobs(
 		}
 	};
 
-    Ok(result.into())
+	Ok(result.into())
 }

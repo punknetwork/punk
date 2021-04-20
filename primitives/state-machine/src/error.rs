@@ -35,15 +35,15 @@ impl<T: 'static + fmt::Debug + fmt::Display + Send + Sync> Error for T {}
 #[allow(missing_docs)]
 #[cfg_attr(feature = "std", derive(thiserror::Error))]
 pub enum ExecutionError {
-    #[cfg_attr(feature = "std", error("Backend error {0:?}"))]
-    Backend(crate::DefaultError),
+	#[cfg_attr(feature = "std", error("Backend error {0:?}"))]
+	Backend(crate::DefaultError),
 
-    #[cfg_attr(feature = "std", error("`:code` entry does not exist in storage"))]
-    CodeEntryDoesNotExist,
+	#[cfg_attr(feature = "std", error("`:code` entry does not exist in storage"))]
+	CodeEntryDoesNotExist,
 
-    #[cfg_attr(feature = "std", error("Unable to generate proof"))]
-    UnableToGenerateProof,
+	#[cfg_attr(feature = "std", error("Unable to generate proof"))]
+	UnableToGenerateProof,
 
-    #[cfg_attr(feature = "std", error("Invalid execution proof"))]
-    InvalidProof,
+	#[cfg_attr(feature = "std", error("Invalid execution proof"))]
+	InvalidProof,
 }

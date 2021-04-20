@@ -25,8 +25,8 @@ use serde::{Serialize, Deserialize};
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReadProof<Hash> {
-    /// Block hash used to generate the proof
-    pub at: Hash,
-    /// A proof used to prove that storage entries are included in the storage trie
-    pub proof: Vec<Bytes>,
+	/// Block hash used to generate the proof
+	pub at: Hash,
+	/// A proof used to prove that storage entries are included in the storage trie
+	pub proof: Vec<Bytes>,
 }

@@ -42,7 +42,7 @@ use frame_support::{
 	traits::{
 		Currency, ExistenceRequirement, Get, LockableCurrency, LockIdentifier, BalanceStatus,
 		OnUnbalanced, ReservableCurrency, WithdrawReasons, ChangeMembers,
-	},
+	}
 };
 use codec::{Encode, Decode};
 use frame_system::{ensure_signed, ensure_root};
@@ -860,7 +860,7 @@ impl<T: Config> Module<T> {
 				CellStatus::Hole => {
 					// requested cell was a valid hole.
 					<Voters<T>>::mutate(set_index, |set| set[vec_index] = Some(who.clone()));
-				}
+				},
 				CellStatus::Head | CellStatus::Occupied => {
 					// Either occupied or out-of-range.
 					let next = Self::next_nonfull_voter_set();
@@ -903,7 +903,7 @@ impl<T: Config> Module<T> {
 				last_win: index,
 				stake: locked_balance,
 				pot: pot_to_set,
-			},
+			}
 		);
 		Self::set_approvals_chunked(&who, votes);
 
@@ -1149,7 +1149,7 @@ impl<T: Config> Module<T> {
 	/// Convert a vec of flags (u32) to boolean.
 	pub fn flag_to_bool(chunk: Vec<ApprovalFlag>) -> Vec<bool> {
 		let mut result = Vec::with_capacity(chunk.len());
-		if chunk.is_empty() { return vec![]; }
+		if chunk.is_empty() { return vec![] }
 		chunk.into_iter()
 			.map(|num|
 				(0..APPROVAL_FLAG_LEN).map(|bit| Self::bit_at(num, bit)).collect::<Vec<bool>>()
@@ -1187,7 +1187,7 @@ impl<T: Config> Module<T> {
 				<ApprovalsOf<T>>::remove((who.clone(), index));
 				index += 1;
 			} else {
-				break;
+				break
 			}
 		}
 	}
@@ -1204,7 +1204,7 @@ impl<T: Config> Module<T> {
 	/// returned if `t` is zero.
 	fn get_offset(stake: BalanceOf<T>, t: VoteIndex) -> BalanceOf<T> {
 		let decay_ratio: BalanceOf<T> = T::DecayRatio::get().into();
-		if t > 150 { return stake * decay_ratio; }
+		if t > 150 { return stake * decay_ratio }
 		let mut offset = stake;
 		let mut r = Zero::zero();
 		let decay = decay_ratio + One::one();

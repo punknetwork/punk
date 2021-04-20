@@ -41,11 +41,11 @@ pub use core::time;
 pub use std::vec;
 
 pub mod collections {
-    pub use std::collections::btree_map;
-    pub use std::collections::btree_set;
-    pub use std::collections::vec_deque;
+	pub use std::collections::btree_map;
+	pub use std::collections::btree_set;
+	pub use std::collections::vec_deque;
 }
 
 pub mod thread {
-    pub use std::thread::panicking;
+	pub use std::thread::panicking;
 }

@@ -22,15 +22,15 @@ mod common;
 use common::*;
 use honggfuzz::fuzz;
 use sp_npos_elections::{
-    assignment_ratio_to_staked_normalized, is_score_better, seq_phragmen, to_supports,
-    to_without_backing, EvaluateSupport, VoteWeight,
+	assignment_ratio_to_staked_normalized, is_score_better, seq_phragmen, to_supports,
+	to_without_backing, EvaluateSupport, VoteWeight,
 };
 use sp_runtime::Perbill;
 use rand::{self, SeedableRng};
 
 fn main() {
-    loop {
-        fuzz!(|data: (usize, usize, usize, usize, u64)| {
+	loop {
+		fuzz!(|data: (usize, usize, usize, usize, u64)| {
 			let (
 				mut target_count,
 				mut voter_count,
@@ -118,5 +118,5 @@ fn main() {
 				);
 			}
 		});
-    }
+	}
 }

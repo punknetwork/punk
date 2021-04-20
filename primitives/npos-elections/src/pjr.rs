@@ -1,4 +1,4 @@
-// This file is part of Substrate.
+ // This file is part of Substrate.
 
 // Copyright (C) 2021 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
@@ -23,21 +23,20 @@
 //! See [`pjr_check`] which is the main entry point of the module.
 
 use crate::{
-    Candidate,
-    CandidatePtr,
-    Edge,
-    ExtendedBalance,
-    IdentifierT,
-    Support,
-    SupportMap,
-    Supports,
-    Voter,
-    VoteWeight,
+	Candidate,
+	CandidatePtr,
+	Edge,
+	ExtendedBalance,
+	IdentifierT,
+	Support,
+	SupportMap,
+	Supports,
+	Voter,
+	VoteWeight,
 };
 use sp_std::{rc::Rc, vec::Vec};
 use sp_std::collections::btree_map::BTreeMap;
 use sp_arithmetic::{traits::Zero, Perbill};
-
 /// The type used as the threshold.
 ///
 /// Just some reading sugar; Must always be same as [`ExtendedBalance`];
@@ -56,27 +55,27 @@ type Threshold = ExtendedBalance;
 /// - `weights` is an iterator of voter stakes. If the sum of stakes is already known,
 ///   `std::iter::once(sum_of_stakes)` is appropriate here.
 pub fn standard_threshold(
-    committee_size: usize,
-    weights: impl IntoIterator<Item=ExtendedBalance>,
+	committee_size: usize,
+	weights: impl IntoIterator<Item = ExtendedBalance>,
 ) -> Threshold {
-    weights
-        .into_iter()
-        .fold(Threshold::zero(), |acc, elem| {
-            acc.saturating_add(elem)
-        })
-        / committee_size.max(1) as Threshold
+	weights
+		.into_iter()
+		.fold(Threshold::zero(), |acc, elem| {
+			acc.saturating_add(elem)
+		})
+	/ committee_size.max(1) as Threshold
 }
 
 /// Check a solution to be PJR.
 ///
 /// The PJR property is true if `t-PJR` is true when `t == sum(stake) / committee_size`.
 pub fn pjr_check<AccountId: IdentifierT>(
-    supports: &Supports<AccountId>,
-    all_candidates: Vec<AccountId>,
-    all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
+	supports: &Supports<AccountId>,
+	all_candidates: Vec<AccountId>,
+	all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
 ) -> Result<(), AccountId> {
-    let t = standard_threshold(supports.len(), all_voters.iter().map(|voter| voter.1 as ExtendedBalance));
-    t_pjr_check(supports, all_candidates, all_voters, t)
+	let t = standard_threshold(supports.len(), all_voters.iter().map(|voter| voter.1 as ExtendedBalance));
+	t_pjr_check(supports, all_candidates, all_voters, t)
 }
 
 /// Check a solution to be t-PJR.
@@ -115,19 +114,19 @@ pub fn pjr_check<AccountId: IdentifierT>(
 // Note that while the names don't explicitly say so, `candidates` are the winning candidates, and
 // `voters` is the set of weighted edges from nominators to winning validators.
 pub fn t_pjr_check<AccountId: IdentifierT>(
-    supports: &Supports<AccountId>,
-    all_candidates: Vec<AccountId>,
-    all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
-    t: Threshold,
+	supports: &Supports<AccountId>,
+	all_candidates: Vec<AccountId>,
+	all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
+	t: Threshold,
 ) -> Result<(), AccountId> {
-    // First order of business: derive `(candidates, voters)` from `supports`.
-    let (candidates, voters) = prepare_pjr_input(
-        supports,
-        all_candidates,
-        all_voters,
-    );
-    // compute with threshold t.
-    pjr_check_core(candidates.as_ref(), voters.as_ref(), t)
+	// First order of business: derive `(candidates, voters)` from `supports`.
+	let (candidates, voters) = prepare_pjr_input(
+		supports,
+		all_candidates,
+		all_voters,
+	);
+	// compute with threshold t.
+	pjr_check_core(candidates.as_ref(), voters.as_ref(), t)
 }
 
 /// The internal implementation of the PJR check after having the data converted.
@@ -137,17 +136,17 @@ pub fn t_pjr_check<AccountId: IdentifierT>(
 /// This function returns an `AccountId` in the `Err` case. This is the counter_example: the ID of the
 /// unelected candidate with the highest prescore, such that `pre_score(counter_example) >= t`.
 pub fn pjr_check_core<AccountId: IdentifierT>(
-    candidates: &[CandidatePtr<AccountId>],
-    voters: &[Voter<AccountId>],
-    t: Threshold,
+	candidates: &[CandidatePtr<AccountId>],
+	voters: &[Voter<AccountId>],
+	t: Threshold,
 ) -> Result<(), AccountId> {
-    let unelected = candidates.iter().filter(|c| !c.borrow().elected);
-    let maybe_max_pre_score = unelected.map(|c| (pre_score(Rc::clone(c), voters, t), c.borrow().who.clone())).max();
-    // if unelected is empty then the solution is indeed PJR.
-    match maybe_max_pre_score {
-        Some((max_pre_score, counter_example)) if max_pre_score >= t => Err(counter_example),
-        _ => Ok(()),
-    }
+	let unelected = candidates.iter().filter(|c| !c.borrow().elected);
+	let maybe_max_pre_score = unelected.map(|c| (pre_score(Rc::clone(c), voters, t), c.borrow().who.clone())).max();
+	// if unelected is empty then the solution is indeed PJR.
+	match maybe_max_pre_score {
+		Some((max_pre_score, counter_example)) if max_pre_score >= t => Err(counter_example),
+		_ => Ok(()),
+	}
 }
 
 /// Validate a challenge to an election result.
@@ -161,13 +160,13 @@ pub fn pjr_check_core<AccountId: IdentifierT>(
 /// Returns `true` if the challenge is valid: the proposed solution does not satisfy PJR.
 /// Returns `false` if the challenge is invalid: the proposed solution does in fact satisfy PJR.
 pub fn validate_pjr_challenge<AccountId: IdentifierT>(
-    counter_example: AccountId,
-    supports: &Supports<AccountId>,
-    all_candidates: Vec<AccountId>,
-    all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
+	counter_example: AccountId,
+	supports: &Supports<AccountId>,
+	all_candidates: Vec<AccountId>,
+	all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
 ) -> bool {
-    let threshold = standard_threshold(supports.len(), all_voters.iter().map(|voter| voter.1 as ExtendedBalance));
-    validate_t_pjr_challenge(counter_example, supports, all_candidates, all_voters, threshold)
+	let threshold = standard_threshold(supports.len(), all_voters.iter().map(|voter| voter.1 as ExtendedBalance));
+	validate_t_pjr_challenge(counter_example, supports, all_candidates, all_voters, threshold)
 }
 
 /// Validate a challenge to an election result.
@@ -181,18 +180,18 @@ pub fn validate_pjr_challenge<AccountId: IdentifierT>(
 /// Returns `true` if the challenge is valid: the proposed solution does not satisfy PJR.
 /// Returns `false` if the challenge is invalid: the proposed solution does in fact satisfy PJR.
 pub fn validate_t_pjr_challenge<AccountId: IdentifierT>(
-    counter_example: AccountId,
-    supports: &Supports<AccountId>,
-    all_candidates: Vec<AccountId>,
-    all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
-    threshold: Threshold,
+	counter_example: AccountId,
+	supports: &Supports<AccountId>,
+	all_candidates: Vec<AccountId>,
+	all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
+	threshold: Threshold,
 ) -> bool {
-    let (candidates, voters) = prepare_pjr_input(
-        supports,
-        all_candidates,
-        all_voters,
-    );
-    validate_pjr_challenge_core(counter_example, &candidates, &voters, threshold)
+	let (candidates, voters) = prepare_pjr_input(
+		supports,
+		all_candidates,
+		all_voters,
+	);
+	validate_pjr_challenge_core(counter_example, &candidates, &voters, threshold)
 }
 
 /// Validate a challenge to an election result.
@@ -204,27 +203,27 @@ pub fn validate_t_pjr_challenge<AccountId: IdentifierT>(
 /// Returns `true` if the challenge is valid: the proposed solution does not satisfy PJR.
 /// Returns `false` if the challenge is invalid: the proposed solution does in fact satisfy PJR.
 fn validate_pjr_challenge_core<AccountId: IdentifierT>(
-    counter_example: AccountId,
-    candidates: &[CandidatePtr<AccountId>],
-    voters: &[Voter<AccountId>],
-    threshold: Threshold,
+	counter_example: AccountId,
+	candidates: &[CandidatePtr<AccountId>],
+	voters: &[Voter<AccountId>],
+	threshold: Threshold,
 ) -> bool {
-    // Performing a linear search of the candidate list is not great, for obvious reasons. However,
-    // the alternatives are worse:
-    //
-    // - we could pre-sort the candidates list in `prepare_pjr_input` (n log n) which would let us
-    //   binary search for the appropriate one here (log n). Overall runtime is `n log n` which is
-    //   worse than the current runtime of `n`.
-    //
-    // - we could probably pre-sort the candidates list in `n` in `prepare_pjr_input` using some
-    //   unsafe code leveraging the existing `candidates_index`: allocate an uninitialized vector of
-    //   appropriate length, then copy in all the elements. We'd really prefer to avoid unsafe code
-    //   in the runtime, though.
-    let candidate = match candidates.iter().find(|candidate| candidate.borrow().who == counter_example) {
-        None => return false,
-        Some(candidate) => candidate.clone(),
-    };
-    pre_score(candidate, &voters, threshold) >= threshold
+	// Performing a linear search of the candidate list is not great, for obvious reasons. However,
+	// the alternatives are worse:
+	//
+	// - we could pre-sort the candidates list in `prepare_pjr_input` (n log n) which would let us
+	//   binary search for the appropriate one here (log n). Overall runtime is `n log n` which is
+	//   worse than the current runtime of `n`.
+	//
+	// - we could probably pre-sort the candidates list in `n` in `prepare_pjr_input` using some
+	//   unsafe code leveraging the existing `candidates_index`: allocate an uninitialized vector of
+	//   appropriate length, then copy in all the elements. We'd really prefer to avoid unsafe code
+	//   in the runtime, though.
+	let candidate = match candidates.iter().find(|candidate| candidate.borrow().who == counter_example) {
+		None => return false,
+		Some(candidate) => candidate.clone(),
+	};
+	pre_score(candidate, &voters, threshold) >= threshold
 }
 
 /// Convert the data types that the user runtime has into ones that can be used by this module.
@@ -255,77 +254,77 @@ fn validate_pjr_challenge_core<AccountId: IdentifierT>(
 /// little as possible, and take sufficient economical measures to ensure that this function cannot
 /// be abused.
 fn prepare_pjr_input<AccountId: IdentifierT>(
-    supports: &Supports<AccountId>,
-    all_candidates: Vec<AccountId>,
-    all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
+	supports: &Supports<AccountId>,
+	all_candidates: Vec<AccountId>,
+	all_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
 ) -> (Vec<CandidatePtr<AccountId>>, Vec<Voter<AccountId>>) {
-    let mut candidates_index: BTreeMap<AccountId, usize> = BTreeMap::new();
+	let mut candidates_index: BTreeMap<AccountId, usize> = BTreeMap::new();
 
-    // dump the staked assignments in a voter-major map for faster access down the road.
-    let mut assignment_map: BTreeMap<AccountId, Vec<(AccountId, ExtendedBalance)>> = BTreeMap::new();
-    for (winner_id, Support { voters, .. }) in supports.iter() {
-        for (voter_id, support) in voters.iter() {
-            assignment_map.entry(voter_id.clone()).or_default().push((winner_id.clone(), *support));
-        }
-    }
+	// dump the staked assignments in a voter-major map for faster access down the road.
+	let mut assignment_map: BTreeMap<AccountId, Vec<(AccountId, ExtendedBalance)>> = BTreeMap::new();
+	for (winner_id, Support { voters, .. }) in supports.iter() {
+		for (voter_id, support) in voters.iter() {
+			assignment_map.entry(voter_id.clone()).or_default().push((winner_id.clone(), *support));
+		}
+	}
 
-    // Convert Suppports into a SupportMap
-    //
-    // As a flat list, we're limited to linear search. That gives the production of `candidates`,
-    // below, a complexity of `O(s*c)`, where `s == supports.len()` and `c == all_candidates.len()`.
-    // For large lists, that's pretty bad.
-    //
-    // A `SupportMap`, as a `BTreeMap`, has access timing of `O(lg n)`. This means that constructing
-    // the map and then indexing from it gives us timing of `O((s + c) * lg(s))`. If in the future
-    // we get access to a deterministic `HashMap`, we can further improve that to `O(s+c)`.
-    //
-    // However, it does mean allocating sufficient space to store all the data again.
-    let supports: SupportMap<AccountId> = supports.iter().cloned().collect();
+	// Convert Suppports into a SupportMap
+	//
+	// As a flat list, we're limited to linear search. That gives the production of `candidates`,
+	// below, a complexity of `O(s*c)`, where `s == supports.len()` and `c == all_candidates.len()`.
+	// For large lists, that's pretty bad.
+	//
+	// A `SupportMap`, as a `BTreeMap`, has access timing of `O(lg n)`. This means that constructing
+	// the map and then indexing from it gives us timing of `O((s + c) * lg(s))`. If in the future
+	// we get access to a deterministic `HashMap`, we can further improve that to `O(s+c)`.
+	//
+	// However, it does mean allocating sufficient space to store all the data again.
+	let supports: SupportMap<AccountId> = supports.iter().cloned().collect();
 
-    // collect all candidates and winners into a unified `Vec<CandidatePtr>`.
-    let candidates = all_candidates.into_iter().enumerate().map(|(i, c)| {
-        candidates_index.insert(c.clone(), i);
+	// collect all candidates and winners into a unified `Vec<CandidatePtr>`.
+	let candidates = all_candidates.into_iter().enumerate().map(|(i, c)| {
+		candidates_index.insert(c.clone(), i);
 
-        // set the backing value and elected flag if the candidate is among the winners.
-        let who = c;
-        let maybe_support = supports.get(&who);
-        let elected = maybe_support.is_some();
-        let backed_stake = maybe_support.map(|support| support.total).unwrap_or_default();
+		// set the backing value and elected flag if the candidate is among the winners.
+		let who = c;
+		let maybe_support = supports.get(&who);
+		let elected = maybe_support.is_some();
+		let backed_stake = maybe_support.map(|support| support.total).unwrap_or_default();
 
-        Candidate { who, elected, backed_stake, ..Default::default() }.to_ptr()
-    }).collect::<Vec<_>>();
+		Candidate { who, elected, backed_stake, ..Default::default() }.to_ptr()
+	}).collect::<Vec<_>>();
 
-    // collect all voters into a unified Vec<Voters>.
-    let voters = all_voters.into_iter().map(|(v, w, ts)| {
-        let mut edges: Vec<Edge<AccountId>> = Vec::with_capacity(ts.len());
-        for t in ts {
-            if edges.iter().any(|e| e.who == t) {
-                // duplicate edge.
-                continue;
-            }
+	// collect all voters into a unified Vec<Voters>.
+	let voters = all_voters.into_iter().map(|(v, w, ts)| {
+		let mut edges: Vec<Edge<AccountId>> = Vec::with_capacity(ts.len());
+		for t in ts {
+			if edges.iter().any(|e| e.who == t) {
+				// duplicate edge.
+				continue;
+			}
 
-            if let Some(idx) = candidates_index.get(&t) {
-                // if this edge is among the assignments, set the weight as well.
-                let weight = assignment_map
-                    .get(&v)
-                    .and_then(|d| d.iter().find_map(|(x, y)| if x == &t { Some(y) } else { None }))
-                    .cloned()
-                    .unwrap_or_default();
-                edges.push(Edge {
-                    who: t,
-                    candidate: Rc::clone(&candidates[*idx]),
-                    weight,
-                    ..Default::default()
-                });
-            }
-        }
+			if let Some(idx) = candidates_index.get(&t) {
+				// if this edge is among the assignments, set the weight as well.
+				let weight = assignment_map
+					.get(&v)
+					.and_then(|d| d.iter().find_map(|(x, y)| if x == &t { Some(y) } else { None }))
+					.cloned()
+					.unwrap_or_default();
+				edges.push(Edge {
+					who: t,
+					candidate: Rc::clone(&candidates[*idx]),
+					weight,
+					..Default::default()
+				});
+			}
+		}
 
-        let who = v;
-        let budget: ExtendedBalance = w.into();
-        Voter { who, budget, edges, ..Default::default() }
-    }).collect::<Vec<_>>();
+		let who = v;
+		let budget: ExtendedBalance = w.into();
+		Voter { who, budget, edges, ..Default::default() }
+	}).collect::<Vec<_>>();
 
-    (candidates, voters)
+	(candidates, voters)
 }
 
 /// The pre-score of an unelected candidate.
@@ -335,15 +334,15 @@ fn prepare_pjr_input<AccountId: IdentifierT>(
 ///
 /// In essence, it is the sum(slack(n, t)) for all `n` who vote for `unelected`.
 fn pre_score<AccountId: IdentifierT>(
-    unelected: CandidatePtr<AccountId>,
-    voters: &[Voter<AccountId>],
-    t: Threshold,
+	unelected: CandidatePtr<AccountId>,
+	voters: &[Voter<AccountId>],
+	t: Threshold,
 ) -> ExtendedBalance {
-    debug_assert!(!unelected.borrow().elected);
-    voters
-        .iter()
-        .filter(|ref v| v.votes_for(&unelected.borrow().who))
-        .fold(Zero::zero(), |acc: ExtendedBalance, voter| acc.saturating_add(slack(voter, t)))
+	debug_assert!(!unelected.borrow().elected);
+	voters
+		.iter()
+		.filter(|ref v| v.votes_for(&unelected.borrow().who))
+		.fold(Zero::zero(), |acc: ExtendedBalance, voter| acc.saturating_add(slack(voter, t)))
 }
 
 
@@ -359,250 +358,251 @@ fn pre_score<AccountId: IdentifierT>(
 /// 1. If `c` exactly has `t` backing or less, then we don't generate any slack.
 /// 2. If `c` has more than `t`, then we reduce it to `t`.
 fn slack<AccountId: IdentifierT>(voter: &Voter<AccountId>, t: Threshold) -> ExtendedBalance {
-    let budget = voter.budget;
-    let leftover = voter.edges.iter().fold(Zero::zero(), |acc: ExtendedBalance, edge| {
-        let candidate = edge.candidate.borrow();
-        if candidate.elected {
-            let extra =
-                Perbill::one().min(Perbill::from_rational(t, candidate.backed_stake))
-                    * edge.weight;
-            acc.saturating_add(extra)
-        } else {
-            // No slack generated here.
-            acc
-        }
-    });
+	let budget = voter.budget;
+	let leftover = voter.edges.iter().fold(Zero::zero(), |acc: ExtendedBalance, edge| {
+		let candidate = edge.candidate.borrow();
+		if candidate.elected {
+			let extra =
+				Perbill::one().min(Perbill::from_rational(t, candidate.backed_stake))
+				* edge.weight;
+			acc.saturating_add(extra)
+		} else {
+			// No slack generated here.
+			acc
+		}
+	});
 
-    // NOTE: candidate for saturating_log_sub(). Defensive-only.
-    budget.saturating_sub(leftover)
+	// NOTE: candidate for saturating_log_sub(). Defensive-only.
+	budget.saturating_sub(leftover)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+	use super::*;
 
-    fn setup_voter(who: u32, votes: Vec<(u32, u128, bool)>) -> Voter<u32> {
-        let mut voter = Voter::new(who);
-        let mut budget = 0u128;
-        let candidates = votes.into_iter().map(|(t, w, e)| {
-            budget += w;
-            Candidate { who: t, elected: e, backed_stake: w, ..Default::default() }
-        }).collect::<Vec<_>>();
-        let edges = candidates.into_iter().map(|c|
-            Edge { who: c.who, weight: c.backed_stake, candidate: c.to_ptr(), ..Default::default() }
-        ).collect::<Vec<_>>();
-        voter.edges = edges;
-        voter.budget = budget;
-        voter
-    }
+	fn setup_voter(who: u32, votes: Vec<(u32, u128, bool)>) -> Voter<u32> {
+		let mut voter = Voter::new(who);
+		let mut budget = 0u128;
+		let candidates = votes.into_iter().map(|(t, w, e)| {
+			budget += w;
+			Candidate { who: t, elected: e, backed_stake: w, ..Default::default() }
+		}).collect::<Vec<_>>();
+		let edges = candidates.into_iter().map(|c|
+			Edge { who: c.who, weight: c.backed_stake, candidate: c.to_ptr(), ..Default::default() }
+		).collect::<Vec<_>>();
+		voter.edges = edges;
+		voter.budget = budget;
+		voter
+	}
 
-    fn assert_core_failure<AccountId: IdentifierT>(
-        candidates: &[CandidatePtr<AccountId>],
-        voters: &[Voter<AccountId>],
-        t: Threshold,
-    ) {
-        let counter_example = pjr_check_core(candidates, voters, t).unwrap_err();
-        assert!(validate_pjr_challenge_core(counter_example, candidates, voters, t));
-    }
+	fn assert_core_failure<AccountId: IdentifierT>(
+		candidates: &[CandidatePtr<AccountId>],
+		voters: &[Voter<AccountId>],
+		t: Threshold,
+	) {
+		let counter_example = pjr_check_core(candidates, voters, t).unwrap_err();
+		assert!(validate_pjr_challenge_core(counter_example, candidates, voters, t));
+	}
 
-    #[test]
-    fn slack_works() {
-        let voter = setup_voter(10, vec![(1, 10, true), (2, 20, true)]);
+	#[test]
+	fn slack_works() {
+		let voter = setup_voter(10, vec![(1, 10, true), (2, 20, true)]);
 
-        assert_eq!(slack(&voter, 15), 5);
-        assert_eq!(slack(&voter, 17), 3);
-        assert_eq!(slack(&voter, 10), 10);
-        assert_eq!(slack(&voter, 5), 20);
-    }
+		assert_eq!(slack(&voter, 15), 5);
+		assert_eq!(slack(&voter, 17), 3);
+		assert_eq!(slack(&voter, 10), 10);
+		assert_eq!(slack(&voter, 5), 20);
 
-    #[test]
-    fn pre_score_works() {
-        // will give 5 slack
-        let v1 = setup_voter(10, vec![(1, 10, true), (2, 20, true), (3, 0, false)]);
-        // will give no slack
-        let v2 = setup_voter(20, vec![(1, 5, true), (2, 5, true)]);
-        // will give 10 slack.
-        let v3 = setup_voter(30, vec![(1, 20, true), (2, 20, true), (3, 0, false)]);
+	}
 
-        let unelected = Candidate { who: 3u32, elected: false, ..Default::default() }.to_ptr();
-        let score = pre_score(unelected, &vec![v1, v2, v3], 15);
+	#[test]
+	fn pre_score_works() {
+		// will give 5 slack
+		let v1 = setup_voter(10, vec![(1, 10, true), (2, 20, true), (3, 0, false)]);
+		// will give no slack
+		let v2 = setup_voter(20, vec![(1, 5, true), (2, 5, true)]);
+		// will give 10 slack.
+		let v3 = setup_voter(30, vec![(1, 20, true), (2, 20, true), (3, 0, false)]);
 
-        assert_eq!(score, 15);
-    }
+		let unelected = Candidate { who: 3u32, elected: false, ..Default::default() }.to_ptr();
+		let score = pre_score(unelected, &vec![v1, v2, v3], 15);
 
-    #[test]
-    fn can_convert_data_from_external_api() {
-        let all_candidates = vec![10, 20, 30, 40];
-        let all_voters = vec![
-            (1, 10, vec![10, 20, 30, 40]),
-            (2, 20, vec![10, 20, 30, 40]),
-            (3, 30, vec![10, 30]),
-        ];
-        // tuples in voters vector are (AccountId, Balance)
-        let supports: Supports<u32> = vec![
-            (20, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-            (40, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-        ];
+		assert_eq!(score, 15);
+	}
 
-        let (candidates, voters) = prepare_pjr_input(
-            &supports,
-            all_candidates,
-            all_voters,
-        );
+	#[test]
+	fn can_convert_data_from_external_api() {
+		let all_candidates = vec![10, 20, 30, 40];
+		let all_voters = vec![
+			(1, 10, vec![10, 20, 30, 40]),
+			(2, 20, vec![10, 20, 30, 40]),
+			(3, 30, vec![10, 30]),
+		];
+		// tuples in voters vector are (AccountId, Balance)
+		let supports: Supports<u32> = vec![
+			(20, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+			(40, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+		];
 
-        // elected flag and backing must be set correctly
-        assert_eq!(
-            candidates
-                .iter()
-                .map(|c| (c.borrow().who.clone(), c.borrow().elected, c.borrow().backed_stake))
-                .collect::<Vec<_>>(),
-            vec![(10, false, 0), (20, true, 15), (30, false, 0), (40, true, 15)],
-        );
+		let (candidates, voters) = prepare_pjr_input(
+			&supports,
+			all_candidates,
+			all_voters,
+		);
 
-        // edge weight must be set correctly
-        assert_eq!(
-            voters
-                .iter()
-                .map(|v| (
-                    v.who,
-                    v.budget,
-                    v.edges.iter().map(|e| (e.who, e.weight)).collect::<Vec<_>>(),
-                )).collect::<Vec<_>>(),
-            vec![
-                (1, 10, vec![(10, 0), (20, 5), (30, 0), (40, 5)]),
-                (2, 20, vec![(10, 0), (20, 10), (30, 0), (40, 10)]),
-                (3, 30, vec![(10, 0), (30, 0)]),
-            ],
-        );
+		// elected flag and backing must be set correctly
+		assert_eq!(
+			candidates
+				.iter()
+				.map(|c| (c.borrow().who.clone(), c.borrow().elected, c.borrow().backed_stake))
+				.collect::<Vec<_>>(),
+			vec![(10, false, 0), (20, true, 15), (30, false, 0), (40, true, 15)],
+		);
 
-        // fyi. this is not PJR, obviously because the votes of 3 can bump the stake a lot but they
-        // are being ignored.
-        assert_core_failure(&candidates, &voters, 1);
-        assert_core_failure(&candidates, &voters, 10);
-        assert_core_failure(&candidates, &voters, 20);
-    }
+		// edge weight must be set correctly
+		assert_eq!(
+			voters
+				.iter()
+				.map(|v| (
+					v.who,
+					v.budget,
+					v.edges.iter().map(|e| (e.who, e.weight)).collect::<Vec<_>>(),
+				)).collect::<Vec<_>>(),
+			vec![
+				(1, 10, vec![(10, 0), (20, 5), (30, 0), (40, 5)]),
+				(2, 20, vec![(10, 0), (20, 10), (30, 0), (40, 10)]),
+				(3, 30, vec![(10, 0), (30, 0)]),
+			],
+		);
 
-    // These next tests ensure that the threshold phase change property holds for us, but that's not their real purpose.
-    // They were written to help develop an intuition about what the threshold value actually means
-    // in layman's terms.
-    //
-    // The results tend to support the intuition that the threshold is the voting power at and below
-    // which a voter's preferences can simply be ignored.
-    #[test]
-    fn find_upper_bound_for_threshold_scenario_1() {
-        let all_candidates = vec![10, 20, 30, 40];
-        let all_voters = vec![
-            (1, 10, vec![10, 20, 30, 40]),
-            (2, 20, vec![10, 20, 30, 40]),
-            (3, 30, vec![10, 30]),
-        ];
-        // tuples in voters vector are (AccountId, Balance)
-        let supports: Supports<u32> = vec![
-            (20, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-            (40, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-        ];
+		// fyi. this is not PJR, obviously because the votes of 3 can bump the stake a lot but they
+		// are being ignored.
+		assert_core_failure(&candidates, &voters, 1);
+		assert_core_failure(&candidates, &voters, 10);
+		assert_core_failure(&candidates, &voters, 20);
+	}
 
-        let (candidates, voters) = prepare_pjr_input(
-            &supports,
-            all_candidates,
-            all_voters,
-        );
+	// These next tests ensure that the threshold phase change property holds for us, but that's not their real purpose.
+	// They were written to help develop an intuition about what the threshold value actually means
+	// in layman's terms.
+	//
+	// The results tend to support the intuition that the threshold is the voting power at and below
+	// which a voter's preferences can simply be ignored.
+	#[test]
+	fn find_upper_bound_for_threshold_scenario_1() {
+		let all_candidates = vec![10, 20, 30, 40];
+		let all_voters = vec![
+			(1, 10, vec![10, 20, 30, 40]),
+			(2, 20, vec![10, 20, 30, 40]),
+			(3, 30, vec![10, 30]),
+		];
+		// tuples in voters vector are (AccountId, Balance)
+		let supports: Supports<u32> = vec![
+			(20, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+			(40, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+		];
 
-        find_threshold_phase_change_for_scenario(candidates, voters);
-    }
+		let (candidates, voters) = prepare_pjr_input(
+			&supports,
+			all_candidates,
+			all_voters,
+		);
 
-    #[test]
-    fn find_upper_bound_for_threshold_scenario_2() {
-        let all_candidates = vec![10, 20, 30, 40];
-        let all_voters = vec![
-            (1, 10, vec![10, 20, 30, 40]),
-            (2, 20, vec![10, 20, 30, 40]),
-            (3, 25, vec![10, 30]),
-        ];
-        // tuples in voters vector are (AccountId, Balance)
-        let supports: Supports<u32> = vec![
-            (20, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-            (40, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-        ];
+		find_threshold_phase_change_for_scenario(candidates, voters);
+	}
 
-        let (candidates, voters) = prepare_pjr_input(
-            &supports,
-            all_candidates,
-            all_voters,
-        );
+	#[test]
+	fn find_upper_bound_for_threshold_scenario_2() {
+		let all_candidates = vec![10, 20, 30, 40];
+		let all_voters = vec![
+			(1, 10, vec![10, 20, 30, 40]),
+			(2, 20, vec![10, 20, 30, 40]),
+			(3, 25, vec![10, 30]),
+		];
+		// tuples in voters vector are (AccountId, Balance)
+		let supports: Supports<u32> = vec![
+			(20, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+			(40, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+		];
 
-        find_threshold_phase_change_for_scenario(candidates, voters);
-    }
+		let (candidates, voters) = prepare_pjr_input(
+			&supports,
+			all_candidates,
+			all_voters,
+		);
 
-    #[test]
-    fn find_upper_bound_for_threshold_scenario_3() {
-        let all_candidates = vec![10, 20, 30, 40];
-        let all_voters = vec![
-            (1, 10, vec![10, 20, 30, 40]),
-            (2, 20, vec![10, 20, 30, 40]),
-            (3, 35, vec![10, 30]),
-        ];
-        // tuples in voters vector are (AccountId, Balance)
-        let supports: Supports<u32> = vec![
-            (20, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-            (40, Support { total: 15, voters: vec![(1, 5), (2, 10)] }),
-        ];
+		find_threshold_phase_change_for_scenario(candidates, voters);
+	}
 
-        let (candidates, voters) = prepare_pjr_input(
-            &supports,
-            all_candidates,
-            all_voters,
-        );
+	#[test]
+	fn find_upper_bound_for_threshold_scenario_3() {
+		let all_candidates = vec![10, 20, 30, 40];
+		let all_voters = vec![
+			(1, 10, vec![10, 20, 30, 40]),
+			(2, 20, vec![10, 20, 30, 40]),
+			(3, 35, vec![10, 30]),
+		];
+		// tuples in voters vector are (AccountId, Balance)
+		let supports: Supports<u32> = vec![
+			(20, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+			(40, Support { total: 15, voters: vec![(1, 5), (2, 10)]}),
+		];
 
-        find_threshold_phase_change_for_scenario(candidates, voters);
-    }
+		let (candidates, voters) = prepare_pjr_input(
+			&supports,
+			all_candidates,
+			all_voters,
+		);
 
-    fn find_threshold_phase_change_for_scenario<AccountId: IdentifierT>(
-        candidates: Vec<CandidatePtr<AccountId>>,
-        voters: Vec<Voter<AccountId>>,
-    ) -> Threshold {
-        let mut threshold = 1;
-        let mut prev_threshold = 0;
+		find_threshold_phase_change_for_scenario(candidates, voters);
+	}
 
-        // find the binary range containing the threshold beyond which the PJR check succeeds
-        while pjr_check_core(&candidates, &voters, threshold).is_err() {
-            prev_threshold = threshold;
-            threshold = threshold.checked_mul(2).expect("pjr check must fail before we run out of capacity in u128");
-        }
+	fn find_threshold_phase_change_for_scenario<AccountId: IdentifierT>(
+		candidates: Vec<CandidatePtr<AccountId>>,
+		voters: Vec<Voter<AccountId>>
+	) -> Threshold {
+		let mut threshold = 1;
+		let mut prev_threshold = 0;
 
-        // now binary search within that range to find the phase threshold
-        let mut high_bound = threshold;
-        let mut low_bound = prev_threshold;
+		// find the binary range containing the threshold beyond which the PJR check succeeds
+		while pjr_check_core(&candidates, &voters, threshold).is_err() {
+			prev_threshold = threshold;
+			threshold = threshold.checked_mul(2).expect("pjr check must fail before we run out of capacity in u128");
+		}
 
-        while high_bound - low_bound > 1 {
-            // maintain the invariant that low_bound fails and high_bound passes
-            let test = low_bound + ((high_bound - low_bound) / 2);
-            if pjr_check_core(&candidates, &voters, test).is_ok() {
-                high_bound = test;
-            } else {
-                low_bound = test;
-            }
-        }
+		// now binary search within that range to find the phase threshold
+		let mut high_bound = threshold;
+		let mut low_bound = prev_threshold;
 
-        println!("highest failing check:   {}", low_bound);
-        println!("lowest succeeding check: {}", high_bound);
+		while high_bound - low_bound > 1 {
+			// maintain the invariant that low_bound fails and high_bound passes
+			let test = low_bound + ((high_bound - low_bound) / 2);
+			if pjr_check_core(&candidates, &voters, test).is_ok() {
+				high_bound = test;
+			} else {
+				low_bound = test;
+			}
+		}
 
-        // for a value to be a threshold, it must be the boundary between two conditions
-        let mut unexpected_failures = Vec::new();
-        let mut unexpected_successes = Vec::new();
-        for t in 0..=low_bound {
-            if pjr_check_core(&candidates, &voters, t).is_ok() {
-                unexpected_successes.push(t);
-            }
-        }
-        for t in high_bound..(high_bound * 2) {
-            if pjr_check_core(&candidates, &voters, t).is_err() {
-                unexpected_failures.push(t);
-            }
-        }
-        dbg!(&unexpected_successes, &unexpected_failures);
-        assert!(unexpected_failures.is_empty() && unexpected_successes.is_empty());
+		println!("highest failing check:   {}", low_bound);
+		println!("lowest succeeding check: {}", high_bound);
 
-        high_bound
-    }
+		// for a value to be a threshold, it must be the boundary between two conditions
+		let mut unexpected_failures = Vec::new();
+		let mut unexpected_successes = Vec::new();
+		for t in 0..=low_bound {
+			if pjr_check_core(&candidates, &voters, t).is_ok() {
+				unexpected_successes.push(t);
+			}
+		}
+		for t in high_bound..(high_bound*2) {
+			if pjr_check_core(&candidates, &voters, t).is_err() {
+				unexpected_failures.push(t);
+			}
+		}
+		dbg!(&unexpected_successes, &unexpected_failures);
+		assert!(unexpected_failures.is_empty() && unexpected_successes.is_empty());
+
+		high_bound
+	}
 }

@@ -43,29 +43,33 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for pallet_im_online.
 pub trait WeightInfo {
-    fn validate_unsigned_and_then_heartbeat(k: u32, e: u32) -> Weight;
+	fn validate_unsigned_and_then_heartbeat(k: u32, e: u32, ) -> Weight;
+	
 }
 
 /// Weights for pallet_im_online using the Substrate node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
-
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-    fn validate_unsigned_and_then_heartbeat(k: u32, e: u32) -> Weight {
-        (114_379_000 as Weight)
-            .saturating_add((219_000 as Weight).saturating_mul(k as Weight))
-            .saturating_add((481_000 as Weight).saturating_mul(e as Weight))
-            .saturating_add(T::DbWeight::get().reads(4 as Weight))
-            .saturating_add(T::DbWeight::get().writes(1 as Weight))
-    }
+	fn validate_unsigned_and_then_heartbeat(k: u32, e: u32, ) -> Weight {
+		(114_379_000 as Weight)
+			.saturating_add((219_000 as Weight).saturating_mul(k as Weight))
+			.saturating_add((481_000 as Weight).saturating_mul(e as Weight))
+			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+			
+	}
+	
 }
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
-    fn validate_unsigned_and_then_heartbeat(k: u32, e: u32) -> Weight {
-        (114_379_000 as Weight)
-            .saturating_add((219_000 as Weight).saturating_mul(k as Weight))
-            .saturating_add((481_000 as Weight).saturating_mul(e as Weight))
-            .saturating_add(RocksDbWeight::get().reads(4 as Weight))
-            .saturating_add(RocksDbWeight::get().writes(1 as Weight))
-    }
+	fn validate_unsigned_and_then_heartbeat(k: u32, e: u32, ) -> Weight {
+		(114_379_000 as Weight)
+			.saturating_add((219_000 as Weight).saturating_mul(k as Weight))
+			.saturating_add((481_000 as Weight).saturating_mul(e as Weight))
+			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
+			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+			
+	}
+	
 }

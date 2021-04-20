@@ -68,16 +68,16 @@ use serde::{Serialize, Deserialize};
 use sp_std::prelude::*;
 use frame_support::{decl_module, decl_storage, decl_event, ensure, print, decl_error};
 use frame_support::traits::{
-	Currency, Get, Imbalance, OnUnbalanced, ExistenceRequirement::KeepAlive,
-	ReservableCurrency, WithdrawReasons,
+	Currency, Get, Imbalance, OnUnbalanced, ExistenceRequirement::{KeepAlive},
+	ReservableCurrency, WithdrawReasons
 };
 use sp_runtime::{Permill, ModuleId, RuntimeDebug, traits::{
-	Zero, StaticLookup, AccountIdConversion, Saturating,
+	Zero, StaticLookup, AccountIdConversion, Saturating
 }};
 use frame_support::weights::{Weight, DispatchClass};
-use frame_support::traits::EnsureOrigin;
+use frame_support::traits::{EnsureOrigin};
 use codec::{Encode, Decode};
-use frame_system::ensure_signed;
+use frame_system::{ensure_signed};
 pub use weights::WeightInfo;
 
 pub type BalanceOf<T, I=DefaultInstance> =
@@ -420,7 +420,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 			&account_id,
 			imbalance,
 			WithdrawReasons::TRANSFER,
-			KeepAlive,
+			KeepAlive
 		) {
 			print("Inconsistent state - couldn't settle imbalance for funds spent by treasury");
 			// Nothing else to do here.

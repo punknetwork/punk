@@ -189,7 +189,7 @@ impl BlindCheckable for Extrinsic {
 				} else {
 					Err(InvalidTransaction::BadProof.into())
 				}
-			}
+			},
 			Extrinsic::IncludeData(_) => Err(InvalidTransaction::BadProof.into()),
 			Extrinsic::StorageChange(key, value) => Ok(Extrinsic::StorageChange(key, value)),
 			Extrinsic::ChangesTrieConfigUpdate(new_config) =>
@@ -452,13 +452,13 @@ impl frame_support::traits::PalletInfo for Runtime {
 	fn index<P: 'static>() -> Option<usize> {
 		let type_id = sp_std::any::TypeId::of::<P>();
 		if type_id == sp_std::any::TypeId::of::<system::Pallet<Runtime>>() {
-			return Some(0);
+			return Some(0)
 		}
 		if type_id == sp_std::any::TypeId::of::<pallet_timestamp::Pallet<Runtime>>() {
-			return Some(1);
+			return Some(1)
 		}
 		if type_id == sp_std::any::TypeId::of::<pallet_babe::Pallet<Runtime>>() {
-			return Some(2);
+			return Some(2)
 		}
 
 		None
@@ -466,13 +466,13 @@ impl frame_support::traits::PalletInfo for Runtime {
 	fn name<P: 'static>() -> Option<&'static str> {
 		let type_id = sp_std::any::TypeId::of::<P>();
 		if type_id == sp_std::any::TypeId::of::<system::Pallet<Runtime>>() {
-			return Some("System");
+			return Some("System")
 		}
 		if type_id == sp_std::any::TypeId::of::<pallet_timestamp::Pallet<Runtime>>() {
-			return Some("Timestamp");
+			return Some("Timestamp")
 		}
 		if type_id == sp_std::any::TypeId::of::<pallet_babe::Pallet<Runtime>>() {
-			return Some("Babe");
+			return Some("Babe")
 		}
 
 		None

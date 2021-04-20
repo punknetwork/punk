@@ -692,7 +692,7 @@ fn wasm_tracing_should_work(wasm_method: WasmExecutionMethod) {
 	// Create subscriber with wasm_tracing disabled
 	let test_subscriber = tracing_subscriber::fmt().finish().with(
 		sc_tracing::ProfilingLayer::new_with_handler(
-			Box::new(handler), "default",
+			Box::new(handler), "default"
 		)
 	);
 

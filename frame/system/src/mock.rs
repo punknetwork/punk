@@ -121,7 +121,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	// Add to each test the initial weight of a block
 	ext.execute_with(|| System::register_extra_weight_unchecked(
 		<Test as crate::Config>::BlockWeights::get().base_block,
-		DispatchClass::Mandatory,
+		DispatchClass::Mandatory
 	));
 	ext
 }

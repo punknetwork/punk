@@ -448,7 +448,7 @@ fn run_one_test(
 
 			Poll::<()>::Pending
 		}),
-		future::select(future::join_all(import_notifications), future::join_all(babe_futures)),
+		future::select(future::join_all(import_notifications), future::join_all(babe_futures))
 	));
 }
 
@@ -629,7 +629,7 @@ fn propose_and_import_block<Transaction>(
 	let import_result = block_import.import_block(import, Default::default()).unwrap();
 
 	match import_result {
-		ImportResult::Imported(_) => {}
+		ImportResult::Imported(_) => {},
 		_ => panic!("expected block to be imported"),
 	}
 

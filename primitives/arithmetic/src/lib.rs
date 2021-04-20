@@ -65,7 +65,7 @@ where
 	fn tcmp(&self, other: &T, threshold: T) -> Ordering {
 		// early exit.
 		if threshold.is_zero() {
-			return self.cmp(&other);
+			return self.cmp(&other)
 		}
 
 		let upper_bound = other.saturating_add(threshold);

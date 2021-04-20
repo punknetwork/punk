@@ -154,7 +154,7 @@
 use sp_std::prelude::*;
 use sp_runtime::{
 	traits::{Dispatchable, SaturatedConversion, CheckedAdd, CheckedMul},
-	DispatchResult,
+	DispatchResult
 };
 use codec::{Encode, Decode};
 

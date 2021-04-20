@@ -145,10 +145,10 @@ impl TestNetFactory for GrandpaTestNet {
 					Some(justification_import),
 					Mutex::new(Some(link)),
 				)
-			}
+			},
 			PeersClient::Light(..) => {
 				panic!("Light client is not used in tests.");
-			}
+			},
 		}
 	}
 
@@ -341,7 +341,7 @@ fn run_to_completion(
 	runtime: &mut Runtime,
 	blocks: u64,
 	net: Arc<Mutex<GrandpaTestNet>>,
-	peers: &[Ed25519Keyring],
+	peers: &[Ed25519Keyring]
 ) -> u64 {
 	run_to_completion_with(runtime, blocks, net, peers, |_| None)
 }
@@ -548,7 +548,7 @@ fn transition_3_voters_twice_1_full_observer() {
 					1 => {
 						// first 14 blocks.
 						net.lock().peer(0).push_blocks(13, false);
-					}
+					},
 					14 => {
 						// generate transition at block 15, applied at 20.
 						net.lock().peer(0).generate_blocks(1, BlockOrigin::File, |builder| {
@@ -561,7 +561,7 @@ fn transition_3_voters_twice_1_full_observer() {
 							block
 						});
 						net.lock().peer(0).push_blocks(5, false);
-					}
+					},
 					20 => {
 						// at block 21 we do another transition, but this time instant.
 						// add more until we have 30.
@@ -575,8 +575,8 @@ fn transition_3_voters_twice_1_full_observer() {
 							block
 						});
 						net.lock().peer(0).push_blocks(9, false);
-					}
-					_ => {}
+					},
+					_ => {},
 				}
 
 				future::ready(())
@@ -1111,7 +1111,7 @@ fn voter_persists_its_votes() {
 						Box::pin(async move {
 							delay.await;
 							Some(((), Delay::new(Duration::from_millis(200))))
-						}),
+						})
 					);
 
 					interval

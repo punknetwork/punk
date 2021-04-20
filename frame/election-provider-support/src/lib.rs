@@ -164,87 +164,87 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub mod onchain;
-
 use sp_std::{prelude::*, fmt::Debug};
 use frame_support::weights::Weight;
 
 /// Re-export some type as they are used in the interface.
 pub use sp_arithmetic::PerThing;
 pub use sp_npos_elections::{
-    Assignment, ExtendedBalance, PerThing128, Supports, Support, VoteWeight,
+	Assignment, ExtendedBalance, PerThing128, Supports, Support, VoteWeight
 };
 
 /// Types that are used by the data provider trait.
 pub mod data_provider {
-    /// Alias for the result type of the election data provider.
-    pub type Result<T> = sp_std::result::Result<T, &'static str>;
+	/// Alias for the result type of the election data provider.
+	pub type Result<T> = sp_std::result::Result<T, &'static str>;
 }
 
 /// Something that can provide the data to an [`ElectionProvider`].
 pub trait ElectionDataProvider<AccountId, BlockNumber> {
-    /// Maximum number of votes per voter that this data provider is providing.
-    const MAXIMUM_VOTES_PER_VOTER: u32;
+	/// Maximum number of votes per voter that this data provider is providing.
+	const MAXIMUM_VOTES_PER_VOTER: u32;
 
-    /// All possible targets for the election, i.e. the candidates.
-    ///
-    /// If `maybe_max_len` is `Some(v)` then the resulting vector MUST NOT be longer than `v` items
-    /// long.
-    ///
-    /// It is assumed that this function will only consume a notable amount of weight, when it
-    /// returns `Ok(_)`.
-    fn targets(maybe_max_len: Option<usize>) -> data_provider::Result<(Vec<AccountId>, Weight)>;
+	/// All possible targets for the election, i.e. the candidates.
+	///
+	/// If `maybe_max_len` is `Some(v)` then the resulting vector MUST NOT be longer than `v` items
+	/// long.
+	///
+	/// It is assumed that this function will only consume a notable amount of weight, when it
+	/// returns `Ok(_)`.
+	fn targets(maybe_max_len: Option<usize>) -> data_provider::Result<(Vec<AccountId>, Weight)>;
 
-    /// All possible voters for the election.
-    ///
-    /// Note that if a notion of self-vote exists, it should be represented here.
-    ///
-    /// If `maybe_max_len` is `Some(v)` then the resulting vector MUST NOT be longer than `v` items
-    /// long.
-    ///
-    /// It is assumed that this function will only consume a notable amount of weight, when it
-    /// returns `Ok(_)`.
-    fn voters(
-        maybe_max_len: Option<usize>,
-    ) -> data_provider::Result<(Vec<(AccountId, VoteWeight, Vec<AccountId>)>, Weight)>;
+	/// All possible voters for the election.
+	///
+	/// Note that if a notion of self-vote exists, it should be represented here.
+	///
+	/// If `maybe_max_len` is `Some(v)` then the resulting vector MUST NOT be longer than `v` items
+	/// long.
+	///
+	/// It is assumed that this function will only consume a notable amount of weight, when it
+	/// returns `Ok(_)`.
+	fn voters(
+		maybe_max_len: Option<usize>,
+	) -> data_provider::Result<(Vec<(AccountId, VoteWeight, Vec<AccountId>)>, Weight)>;
 
-    /// The number of targets to elect.
-    fn desired_targets() -> data_provider::Result<(u32, Weight)>;
+	/// The number of targets to elect.
+	fn desired_targets() -> data_provider::Result<(u32, Weight)>;
 
-    /// Provide a best effort prediction about when the next election is about to happen.
-    ///
-    /// In essence, the implementor should predict with this function when it will trigger the
-    /// [`ElectionProvider::elect`].
-    ///
-    /// This is only useful for stateful election providers.
-    fn next_election_prediction(now: BlockNumber) -> BlockNumber;
+	/// Provide a best effort prediction about when the next election is about to happen.
+	///
+	/// In essence, the implementor should predict with this function when it will trigger the
+	/// [`ElectionProvider::elect`].
+	///
+	/// This is only useful for stateful election providers.
+	fn next_election_prediction(now: BlockNumber) -> BlockNumber;
 
-    /// Utility function only to be used in benchmarking scenarios, to be implemented optionally,
-    /// else a noop.
-    #[cfg(any(feature = "runtime-benchmarks", test))]
-    fn put_snapshot(
-        _voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
-        _targets: Vec<AccountId>,
-        _target_stake: Option<VoteWeight>,
-    ) {}
+	/// Utility function only to be used in benchmarking scenarios, to be implemented optionally,
+	/// else a noop.
+	#[cfg(any(feature = "runtime-benchmarks", test))]
+	fn put_snapshot(
+		_voters: Vec<(AccountId, VoteWeight, Vec<AccountId>)>,
+		_targets: Vec<AccountId>,
+		_target_stake: Option<VoteWeight>,
+	) {
+	}
 }
 
 #[cfg(feature = "std")]
 impl<AccountId, BlockNumber> ElectionDataProvider<AccountId, BlockNumber> for () {
-    const MAXIMUM_VOTES_PER_VOTER: u32 = 0;
-    fn targets(_maybe_max_len: Option<usize>) -> data_provider::Result<(Vec<AccountId>, Weight)> {
-        Ok(Default::default())
-    }
-    fn voters(
-        _maybe_max_len: Option<usize>,
-    ) -> data_provider::Result<(Vec<(AccountId, VoteWeight, Vec<AccountId>)>, Weight)> {
-        Ok(Default::default())
-    }
-    fn desired_targets() -> data_provider::Result<(u32, Weight)> {
-        Ok(Default::default())
-    }
-    fn next_election_prediction(now: BlockNumber) -> BlockNumber {
-        now
-    }
+	const MAXIMUM_VOTES_PER_VOTER: u32 = 0;
+	fn targets(_maybe_max_len: Option<usize>) -> data_provider::Result<(Vec<AccountId>, Weight)> {
+		Ok(Default::default())
+	}
+	fn voters(
+		_maybe_max_len: Option<usize>,
+	) -> data_provider::Result<(Vec<(AccountId, VoteWeight, Vec<AccountId>)>, Weight)> {
+		Ok(Default::default())
+	}
+	fn desired_targets() -> data_provider::Result<(u32, Weight)> {
+		Ok(Default::default())
+	}
+	fn next_election_prediction(now: BlockNumber) -> BlockNumber {
+		now
+	}
 }
 
 /// Something that can compute the result of an election and pass it back to the caller.
@@ -253,24 +253,24 @@ impl<AccountId, BlockNumber> ElectionDataProvider<AccountId, BlockNumber> for ()
 /// [`ElectionProvider::elect`]. That data required for the election need to be passed to the
 /// implemented of this trait through [`ElectionProvider::DataProvider`].
 pub trait ElectionProvider<AccountId, BlockNumber> {
-    /// The error type that is returned by the provider.
-    type Error: Debug;
+	/// The error type that is returned by the provider.
+	type Error: Debug;
 
-    /// The data provider of the election.
-    type DataProvider: ElectionDataProvider<AccountId, BlockNumber>;
+	/// The data provider of the election.
+	type DataProvider: ElectionDataProvider<AccountId, BlockNumber>;
 
-    /// Elect a new set of winners.
-    ///
-    /// The result is returned in a target major format, namely as vector of supports.
-    fn elect() -> Result<(Supports<AccountId>, Weight), Self::Error>;
+	/// Elect a new set of winners.
+	///
+	/// The result is returned in a target major format, namely as vector of supports.
+	fn elect() -> Result<(Supports<AccountId>, Weight), Self::Error>;
 }
 
 #[cfg(feature = "std")]
 impl<AccountId, BlockNumber> ElectionProvider<AccountId, BlockNumber> for () {
-    type Error = &'static str;
-    type DataProvider = ();
+	type Error = &'static str;
+	type DataProvider = ();
 
-    fn elect() -> Result<(Supports<AccountId>, Weight), Self::Error> {
-        Err("<() as ElectionProvider> cannot do anything.")
-    }
+	fn elect() -> Result<(Supports<AccountId>, Weight), Self::Error> {
+		Err("<() as ElectionProvider> cannot do anything.")
+	}
 }

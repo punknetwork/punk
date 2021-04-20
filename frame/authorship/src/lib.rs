@@ -317,7 +317,7 @@ impl<T: Config> Module<T> {
 		let in_chain = <frame_system::Pallet<T>>::block_hash(uncle.number()) == hash;
 
 		if duplicate || in_chain {
-			return Err(Error::<T>::UncleAlreadyIncluded.into());
+			return Err(Error::<T>::UncleAlreadyIncluded.into())
 		}
 
 		// check uncle validity.
@@ -365,7 +365,7 @@ impl<T: Config> ProvideInherent for Module<T> {
 						existing_hashes.push(hash);
 
 						if set_uncles.len() == MAX_UNCLES {
-							break;
+							break
 						}
 					}
 					Err(_) => {
@@ -386,10 +386,10 @@ impl<T: Config> ProvideInherent for Module<T> {
 		match call {
 			Call::set_uncles(ref uncles) if uncles.len() > MAX_UNCLES => {
 				Err(InherentError::Uncles(Error::<T>::TooManyUncles.as_str().into()))
-			}
+			},
 			_ => {
 				Ok(())
-			}
+			},
 		}
 	}
 }
@@ -498,7 +498,7 @@ mod tests {
 							if a != author {
 								return Err("wrong author in seal");
 							}
-							break;
+							break
 						}
 					}
 				}
@@ -588,7 +588,7 @@ mod tests {
 				&number,
 				&hash,
 				&Default::default(),
-				Default::default(),
+				Default::default()
 			);
 
 			for number in 1..8 {

@@ -26,176 +26,176 @@ use super::PrefixIterator;
 
 /// Utility to iterate through raw items in storage.
 pub struct StorageIterator<T> {
-    prefix: Vec<u8>,
-    previous_key: Vec<u8>,
-    drain: bool,
-    _phantom: ::sp_std::marker::PhantomData<T>,
+	prefix: Vec<u8>,
+	previous_key: Vec<u8>,
+	drain: bool,
+	_phantom: ::sp_std::marker::PhantomData<T>,
 }
 
 impl<T> StorageIterator<T> {
-    /// Construct iterator to iterate over map items in `module` for the map called `item`.
-    pub fn new(module: &[u8], item: &[u8]) -> Self {
-        Self::with_suffix(module, item, &[][..])
-    }
+	/// Construct iterator to iterate over map items in `module` for the map called `item`.
+	pub fn new(module: &[u8], item: &[u8]) -> Self {
+		Self::with_suffix(module, item, &[][..])
+	}
 
-    /// Construct iterator to iterate over map items in `module` for the map called `item`.
-    pub fn with_suffix(module: &[u8], item: &[u8], suffix: &[u8]) -> Self {
-        let mut prefix = Vec::new();
-        prefix.extend_from_slice(&Twox128::hash(module));
-        prefix.extend_from_slice(&Twox128::hash(item));
-        prefix.extend_from_slice(suffix);
-        let previous_key = prefix.clone();
-        Self { prefix, previous_key, drain: false, _phantom: Default::default() }
-    }
+	/// Construct iterator to iterate over map items in `module` for the map called `item`.
+	pub fn with_suffix(module: &[u8], item: &[u8], suffix: &[u8]) -> Self {
+		let mut prefix = Vec::new();
+		prefix.extend_from_slice(&Twox128::hash(module));
+		prefix.extend_from_slice(&Twox128::hash(item));
+		prefix.extend_from_slice(suffix);
+		let previous_key = prefix.clone();
+		Self { prefix, previous_key, drain: false, _phantom: Default::default() }
+	}
 
-    /// Mutate this iterator into a draining iterator; items iterated are removed from storage.
-    pub fn drain(mut self) -> Self {
-        self.drain = true;
-        self
-    }
+	/// Mutate this iterator into a draining iterator; items iterated are removed from storage.
+	pub fn drain(mut self) -> Self {
+		self.drain = true;
+		self
+	}
 }
 
 impl<T: Decode + Sized> Iterator for StorageIterator<T> {
-    type Item = (Vec<u8>, T);
+	type Item = (Vec<u8>, T);
 
-    fn next(&mut self) -> Option<(Vec<u8>, T)> {
-        loop {
-            let maybe_next = sp_io::storage::next_key(&self.previous_key)
-                .filter(|n| n.starts_with(&self.prefix));
-            break match maybe_next {
-                Some(next) => {
-                    self.previous_key = next.clone();
-                    let maybe_value = frame_support::storage::unhashed::get::<T>(&next);
-                    match maybe_value {
-                        Some(value) => {
-                            if self.drain {
-                                frame_support::storage::unhashed::kill(&next);
-                            }
-                            Some((self.previous_key[self.prefix.len()..].to_vec(), value))
-                        }
-                        None => continue,
-                    }
-                }
-                None => None,
-            };
-        }
-    }
+	fn next(&mut self) -> Option<(Vec<u8>, T)> {
+		loop {
+			let maybe_next = sp_io::storage::next_key(&self.previous_key)
+				.filter(|n| n.starts_with(&self.prefix));
+			break match maybe_next {
+				Some(next) => {
+					self.previous_key = next.clone();
+					let maybe_value = frame_support::storage::unhashed::get::<T>(&next);
+					match maybe_value {
+						Some(value) => {
+							if self.drain {
+								frame_support::storage::unhashed::kill(&next);
+							}
+							Some((self.previous_key[self.prefix.len()..].to_vec(), value))
+						}
+						None => continue,
+					}
+				}
+				None => None,
+			}
+		}
+	}
 }
 
 /// Utility to iterate through raw items in storage.
 pub struct StorageKeyIterator<K, T, H: ReversibleStorageHasher> {
-    prefix: Vec<u8>,
-    previous_key: Vec<u8>,
-    drain: bool,
-    _phantom: ::sp_std::marker::PhantomData<(K, T, H)>,
+	prefix: Vec<u8>,
+	previous_key: Vec<u8>,
+	drain: bool,
+	_phantom: ::sp_std::marker::PhantomData<(K, T, H)>,
 }
 
 impl<K, T, H: ReversibleStorageHasher> StorageKeyIterator<K, T, H> {
-    /// Construct iterator to iterate over map items in `module` for the map called `item`.
-    pub fn new(module: &[u8], item: &[u8]) -> Self {
-        Self::with_suffix(module, item, &[][..])
-    }
+	/// Construct iterator to iterate over map items in `module` for the map called `item`.
+	pub fn new(module: &[u8], item: &[u8]) -> Self {
+		Self::with_suffix(module, item, &[][..])
+	}
 
-    /// Construct iterator to iterate over map items in `module` for the map called `item`.
-    pub fn with_suffix(module: &[u8], item: &[u8], suffix: &[u8]) -> Self {
-        let mut prefix = Vec::new();
-        prefix.extend_from_slice(&Twox128::hash(module));
-        prefix.extend_from_slice(&Twox128::hash(item));
-        prefix.extend_from_slice(suffix);
-        let previous_key = prefix.clone();
-        Self { prefix, previous_key, drain: false, _phantom: Default::default() }
-    }
+	/// Construct iterator to iterate over map items in `module` for the map called `item`.
+	pub fn with_suffix(module: &[u8], item: &[u8], suffix: &[u8]) -> Self {
+		let mut prefix = Vec::new();
+		prefix.extend_from_slice(&Twox128::hash(module));
+		prefix.extend_from_slice(&Twox128::hash(item));
+		prefix.extend_from_slice(suffix);
+		let previous_key = prefix.clone();
+		Self { prefix, previous_key, drain: false, _phantom: Default::default() }
+	}
 
-    /// Mutate this iterator into a draining iterator; items iterated are removed from storage.
-    pub fn drain(mut self) -> Self {
-        self.drain = true;
-        self
-    }
+	/// Mutate this iterator into a draining iterator; items iterated are removed from storage.
+	pub fn drain(mut self) -> Self {
+		self.drain = true;
+		self
+	}
 }
 
 impl<K: Decode + Sized, T: Decode + Sized, H: ReversibleStorageHasher> Iterator
-for StorageKeyIterator<K, T, H>
+	for StorageKeyIterator<K, T, H>
 {
-    type Item = (K, T);
+	type Item = (K, T);
 
-    fn next(&mut self) -> Option<(K, T)> {
-        loop {
-            let maybe_next = sp_io::storage::next_key(&self.previous_key)
-                .filter(|n| n.starts_with(&self.prefix));
-            break match maybe_next {
-                Some(next) => {
-                    self.previous_key = next.clone();
-                    let mut key_material = H::reverse(&next[self.prefix.len()..]);
-                    match K::decode(&mut key_material) {
-                        Ok(key) => {
-                            let maybe_value = frame_support::storage::unhashed::get::<T>(&next);
-                            match maybe_value {
-                                Some(value) => {
-                                    if self.drain {
-                                        frame_support::storage::unhashed::kill(&next);
-                                    }
-                                    Some((key, value))
-                                }
-                                None => continue,
-                            }
-                        }
-                        Err(_) => continue,
-                    }
-                }
-                None => None,
-            };
-        }
-    }
+	fn next(&mut self) -> Option<(K, T)> {
+		loop {
+			let maybe_next = sp_io::storage::next_key(&self.previous_key)
+				.filter(|n| n.starts_with(&self.prefix));
+			break match maybe_next {
+				Some(next) => {
+					self.previous_key = next.clone();
+					let mut key_material = H::reverse(&next[self.prefix.len()..]);
+					match K::decode(&mut key_material) {
+						Ok(key) => {
+							let maybe_value = frame_support::storage::unhashed::get::<T>(&next);
+							match maybe_value {
+								Some(value) => {
+									if self.drain {
+										frame_support::storage::unhashed::kill(&next);
+									}
+									Some((key, value))
+								}
+								None => continue,
+							}
+						}
+						Err(_) => continue,
+					}
+				}
+				None => None,
+			}
+		}
+	}
 }
 
 /// Get a particular value in storage by the `module`, the map's `item` name and the key `hash`.
 pub fn have_storage_value(module: &[u8], item: &[u8], hash: &[u8]) -> bool {
-    get_storage_value::<()>(module, item, hash).is_some()
+	get_storage_value::<()>(module, item, hash).is_some()
 }
 
 /// Get a particular value in storage by the `module`, the map's `item` name and the key `hash`.
 pub fn get_storage_value<T: Decode + Sized>(module: &[u8], item: &[u8], hash: &[u8]) -> Option<T> {
-    let mut key = vec![0u8; 32 + hash.len()];
-    key[0..16].copy_from_slice(&Twox128::hash(module));
-    key[16..32].copy_from_slice(&Twox128::hash(item));
-    key[32..].copy_from_slice(hash);
-    frame_support::storage::unhashed::get::<T>(&key)
+	let mut key = vec![0u8; 32 + hash.len()];
+	key[0..16].copy_from_slice(&Twox128::hash(module));
+	key[16..32].copy_from_slice(&Twox128::hash(item));
+	key[32..].copy_from_slice(hash);
+	frame_support::storage::unhashed::get::<T>(&key)
 }
 
 /// Take a particular value in storage by the `module`, the map's `item` name and the key `hash`.
 pub fn take_storage_value<T: Decode + Sized>(module: &[u8], item: &[u8], hash: &[u8]) -> Option<T> {
-    let mut key = vec![0u8; 32 + hash.len()];
-    key[0..16].copy_from_slice(&Twox128::hash(module));
-    key[16..32].copy_from_slice(&Twox128::hash(item));
-    key[32..].copy_from_slice(hash);
-    frame_support::storage::unhashed::take::<T>(&key)
+	let mut key = vec![0u8; 32 + hash.len()];
+	key[0..16].copy_from_slice(&Twox128::hash(module));
+	key[16..32].copy_from_slice(&Twox128::hash(item));
+	key[32..].copy_from_slice(hash);
+	frame_support::storage::unhashed::take::<T>(&key)
 }
 
 /// Put a particular value into storage by the `module`, the map's `item` name and the key `hash`.
 pub fn put_storage_value<T: Encode>(module: &[u8], item: &[u8], hash: &[u8], value: T) {
-    let mut key = vec![0u8; 32 + hash.len()];
-    key[0..16].copy_from_slice(&Twox128::hash(module));
-    key[16..32].copy_from_slice(&Twox128::hash(item));
-    key[32..].copy_from_slice(hash);
-    frame_support::storage::unhashed::put(&key, &value);
+	let mut key = vec![0u8; 32 + hash.len()];
+	key[0..16].copy_from_slice(&Twox128::hash(module));
+	key[16..32].copy_from_slice(&Twox128::hash(item));
+	key[32..].copy_from_slice(hash);
+	frame_support::storage::unhashed::put(&key, &value);
 }
 
 /// Get a particular value in storage by the `module`, the map's `item` name and the key `hash`.
 pub fn remove_storage_prefix(module: &[u8], item: &[u8], hash: &[u8]) {
-    let mut key = vec![0u8; 32 + hash.len()];
-    key[0..16].copy_from_slice(&Twox128::hash(module));
-    key[16..32].copy_from_slice(&Twox128::hash(item));
-    key[32..].copy_from_slice(hash);
-    frame_support::storage::unhashed::kill_prefix(&key)
+	let mut key = vec![0u8; 32 + hash.len()];
+	key[0..16].copy_from_slice(&Twox128::hash(module));
+	key[16..32].copy_from_slice(&Twox128::hash(item));
+	key[32..].copy_from_slice(hash);
+	frame_support::storage::unhashed::kill_prefix(&key)
 }
 
 /// Get a particular value in storage by the `module`, the map's `item` name and the key `hash`.
 pub fn take_storage_item<K: Encode + Sized, T: Decode + Sized, H: StorageHasher>(
-    module: &[u8],
-    item: &[u8],
-    key: K,
+	module: &[u8],
+	item: &[u8],
+	key: K,
 ) -> Option<T> {
-    take_storage_value(module, item, key.using_encoded(H::hash).as_ref())
+	take_storage_value(module, item, key.using_encoded(H::hash).as_ref())
 }
 
 /// Move a storage from a pallet prefix to another pallet prefix.
@@ -219,24 +219,24 @@ pub fn take_storage_item<K: Encode + Sized, T: Decode + Sized, H: StorageHasher>
 /// # })
 /// ```
 pub fn move_storage_from_pallet(
-    storage_name: &[u8],
-    old_pallet_name: &[u8],
-    new_pallet_name: &[u8],
+	storage_name: &[u8],
+	old_pallet_name: &[u8],
+	new_pallet_name: &[u8]
 ) {
-    let mut new_prefix = Vec::new();
-    new_prefix.extend_from_slice(&Twox128::hash(new_pallet_name));
-    new_prefix.extend_from_slice(&Twox128::hash(storage_name));
+	let mut new_prefix = Vec::new();
+	new_prefix.extend_from_slice(&Twox128::hash(new_pallet_name));
+	new_prefix.extend_from_slice(&Twox128::hash(storage_name));
 
-    let mut old_prefix = Vec::new();
-    old_prefix.extend_from_slice(&Twox128::hash(old_pallet_name));
-    old_prefix.extend_from_slice(&Twox128::hash(storage_name));
+	let mut old_prefix = Vec::new();
+	old_prefix.extend_from_slice(&Twox128::hash(old_pallet_name));
+	old_prefix.extend_from_slice(&Twox128::hash(storage_name));
 
-    move_prefix(&old_prefix, &new_prefix);
+	move_prefix(&old_prefix, &new_prefix);
 
-    if let Some(value) = unhashed::get_raw(&old_prefix) {
-        unhashed::put_raw(&new_prefix, &value);
-        unhashed::kill(&old_prefix);
-    }
+	if let Some(value) = unhashed::get_raw(&old_prefix) {
+		unhashed::put_raw(&new_prefix, &value);
+		unhashed::kill(&old_prefix);
+	}
 }
 
 /// Move all storages from a pallet prefix to another pallet prefix.
@@ -260,7 +260,7 @@ pub fn move_storage_from_pallet(
 /// # })
 /// ```
 pub fn move_pallet(old_pallet_name: &[u8], new_pallet_name: &[u8]) {
-    move_prefix(&Twox128::hash(old_pallet_name), &Twox128::hash(new_pallet_name))
+	move_prefix(&Twox128::hash(old_pallet_name), &Twox128::hash(new_pallet_name))
 }
 
 /// Move all `(key, value)` after some prefix to the another prefix
@@ -270,128 +270,120 @@ pub fn move_pallet(old_pallet_name: &[u8], new_pallet_name: &[u8]) {
 ///
 /// NOTE: The value at the key `from_prefix` is not moved.
 pub fn move_prefix(from_prefix: &[u8], to_prefix: &[u8]) {
-    if from_prefix == to_prefix {
-        return;
-    }
+	if from_prefix == to_prefix {
+		return
+	}
 
-    let iter = PrefixIterator {
-        prefix: from_prefix.to_vec(),
-        previous_key: from_prefix.to_vec(),
-        drain: true,
-        closure: |key, value| Ok((key.to_vec(), value.to_vec())),
-    };
+	let iter = PrefixIterator {
+		prefix: from_prefix.to_vec(),
+		previous_key: from_prefix.to_vec(),
+		drain: true,
+		closure: |key, value| Ok((key.to_vec(), value.to_vec())),
+	};
 
-    for (key, value) in iter {
-        let full_key = [to_prefix, &key].concat();
-        unhashed::put_raw(&full_key, &value);
-    }
+	for (key, value) in iter {
+		let full_key = [to_prefix, &key].concat();
+		unhashed::put_raw(&full_key, &value);
+	}
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        pallet_prelude::{StorageValue, StorageMap, Twox64Concat, Twox128},
-        hash::StorageHasher,
-    };
-    use sp_io::TestExternalities;
-    use super::{move_prefix, move_pallet, move_storage_from_pallet};
+	use crate::{
+		pallet_prelude::{StorageValue, StorageMap, Twox64Concat, Twox128},
+		hash::StorageHasher,
+	};
+	use sp_io::TestExternalities;
+	use super::{move_prefix, move_pallet, move_storage_from_pallet};
 
-    struct OldPalletStorageValuePrefix;
+	struct OldPalletStorageValuePrefix;
+	impl frame_support::traits::StorageInstance for OldPalletStorageValuePrefix {
+		const STORAGE_PREFIX: &'static str = "foo_value";
+		fn pallet_prefix() -> &'static str {
+			"my_old_pallet"
+		}
+	}
+	type OldStorageValue = StorageValue<OldPalletStorageValuePrefix, u32>;
 
-    impl frame_support::traits::StorageInstance for OldPalletStorageValuePrefix {
-        const STORAGE_PREFIX: &'static str = "foo_value";
-        fn pallet_prefix() -> &'static str {
-            "my_old_pallet"
-        }
-    }
+	struct OldPalletStorageMapPrefix;
+	impl frame_support::traits::StorageInstance for OldPalletStorageMapPrefix {
+		const STORAGE_PREFIX: &'static str = "foo_map";
+		fn pallet_prefix() -> &'static str {
+			"my_old_pallet"
+		}
+	}
+	type OldStorageMap = StorageMap<OldPalletStorageMapPrefix, Twox64Concat, u32, u32>;
 
-    type OldStorageValue = StorageValue<OldPalletStorageValuePrefix, u32>;
+	struct NewPalletStorageValuePrefix;
+	impl frame_support::traits::StorageInstance for NewPalletStorageValuePrefix {
+		const STORAGE_PREFIX: &'static str = "foo_value";
+		fn pallet_prefix() -> &'static str {
+			"my_new_pallet"
+		}
+	}
+	type NewStorageValue = StorageValue<NewPalletStorageValuePrefix, u32>;
 
-    struct OldPalletStorageMapPrefix;
+	struct NewPalletStorageMapPrefix;
+	impl frame_support::traits::StorageInstance for NewPalletStorageMapPrefix {
+		const STORAGE_PREFIX: &'static str = "foo_map";
+		fn pallet_prefix() -> &'static str {
+			"my_new_pallet"
+		}
+	}
+	type NewStorageMap = StorageMap<NewPalletStorageMapPrefix, Twox64Concat, u32, u32>;
 
-    impl frame_support::traits::StorageInstance for OldPalletStorageMapPrefix {
-        const STORAGE_PREFIX: &'static str = "foo_map";
-        fn pallet_prefix() -> &'static str {
-            "my_old_pallet"
-        }
-    }
+	#[test]
+	fn test_move_prefix() {
+		TestExternalities::new_empty().execute_with(|| {
+			OldStorageValue::put(3);
+			OldStorageMap::insert(1, 2);
+			OldStorageMap::insert(3, 4);
 
-    type OldStorageMap = StorageMap<OldPalletStorageMapPrefix, Twox64Concat, u32, u32>;
+			move_prefix(&Twox128::hash(b"my_old_pallet"), &Twox128::hash(b"my_new_pallet"));
 
-    struct NewPalletStorageValuePrefix;
+			assert_eq!(OldStorageValue::get(), None);
+			assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
+			assert_eq!(NewStorageValue::get(), Some(3));
+			assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
+		})
+	}
 
-    impl frame_support::traits::StorageInstance for NewPalletStorageValuePrefix {
-        const STORAGE_PREFIX: &'static str = "foo_value";
-        fn pallet_prefix() -> &'static str {
-            "my_new_pallet"
-        }
-    }
+	#[test]
+	fn test_move_storage() {
+		TestExternalities::new_empty().execute_with(|| {
+			OldStorageValue::put(3);
+			OldStorageMap::insert(1, 2);
+			OldStorageMap::insert(3, 4);
 
-    type NewStorageValue = StorageValue<NewPalletStorageValuePrefix, u32>;
+			move_storage_from_pallet(b"foo_map", b"my_old_pallet", b"my_new_pallet");
 
-    struct NewPalletStorageMapPrefix;
+			assert_eq!(OldStorageValue::get(), Some(3));
+			assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
+			assert_eq!(NewStorageValue::get(), None);
+			assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
 
-    impl frame_support::traits::StorageInstance for NewPalletStorageMapPrefix {
-        const STORAGE_PREFIX: &'static str = "foo_map";
-        fn pallet_prefix() -> &'static str {
-            "my_new_pallet"
-        }
-    }
+			move_storage_from_pallet(b"foo_value", b"my_old_pallet", b"my_new_pallet");
 
-    type NewStorageMap = StorageMap<NewPalletStorageMapPrefix, Twox64Concat, u32, u32>;
+			assert_eq!(OldStorageValue::get(), None);
+			assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
+			assert_eq!(NewStorageValue::get(), Some(3));
+			assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
+		})
+	}
 
-    #[test]
-    fn test_move_prefix() {
-        TestExternalities::new_empty().execute_with(|| {
-            OldStorageValue::put(3);
-            OldStorageMap::insert(1, 2);
-            OldStorageMap::insert(3, 4);
+	#[test]
+	fn test_move_pallet() {
+		TestExternalities::new_empty().execute_with(|| {
+			OldStorageValue::put(3);
+			OldStorageMap::insert(1, 2);
+			OldStorageMap::insert(3, 4);
 
-            move_prefix(&Twox128::hash(b"my_old_pallet"), &Twox128::hash(b"my_new_pallet"));
+			move_pallet(b"my_old_pallet", b"my_new_pallet");
 
-            assert_eq!(OldStorageValue::get(), None);
-            assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
-            assert_eq!(NewStorageValue::get(), Some(3));
-            assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
-        })
-    }
-
-    #[test]
-    fn test_move_storage() {
-        TestExternalities::new_empty().execute_with(|| {
-            OldStorageValue::put(3);
-            OldStorageMap::insert(1, 2);
-            OldStorageMap::insert(3, 4);
-
-            move_storage_from_pallet(b"foo_map", b"my_old_pallet", b"my_new_pallet");
-
-            assert_eq!(OldStorageValue::get(), Some(3));
-            assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
-            assert_eq!(NewStorageValue::get(), None);
-            assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
-
-            move_storage_from_pallet(b"foo_value", b"my_old_pallet", b"my_new_pallet");
-
-            assert_eq!(OldStorageValue::get(), None);
-            assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
-            assert_eq!(NewStorageValue::get(), Some(3));
-            assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
-        })
-    }
-
-    #[test]
-    fn test_move_pallet() {
-        TestExternalities::new_empty().execute_with(|| {
-            OldStorageValue::put(3);
-            OldStorageMap::insert(1, 2);
-            OldStorageMap::insert(3, 4);
-
-            move_pallet(b"my_old_pallet", b"my_new_pallet");
-
-            assert_eq!(OldStorageValue::get(), None);
-            assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
-            assert_eq!(NewStorageValue::get(), Some(3));
-            assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
-        })
-    }
+			assert_eq!(OldStorageValue::get(), None);
+			assert_eq!(OldStorageMap::iter().collect::<Vec<_>>(), vec![]);
+			assert_eq!(NewStorageValue::get(), Some(3));
+			assert_eq!(NewStorageMap::iter().collect::<Vec<_>>(), vec![(1, 2), (3, 4)]);
+		})
+	}
 }

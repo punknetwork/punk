@@ -20,7 +20,7 @@ use crate as multi_phase;
 pub use frame_support::{assert_noop, assert_ok};
 use frame_support::{
 	parameter_types,
-	traits::Hooks,
+	traits::{Hooks},
 	weights::Weight,
 };
 use parking_lot::RwLock;

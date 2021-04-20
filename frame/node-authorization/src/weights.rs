@@ -24,25 +24,25 @@ use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
 use sp_std::marker::PhantomData;
 
 pub trait WeightInfo {
-    fn add_well_known_node() -> Weight;
-    fn remove_well_known_node() -> Weight;
-    fn swap_well_known_node() -> Weight;
-    fn reset_well_known_nodes() -> Weight;
-    fn claim_node() -> Weight;
-    fn remove_claim() -> Weight;
-    fn transfer_node() -> Weight;
-    fn add_connections() -> Weight;
-    fn remove_connections() -> Weight;
+	fn add_well_known_node() -> Weight;
+	fn remove_well_known_node() -> Weight;
+	fn swap_well_known_node() -> Weight;
+	fn reset_well_known_nodes() -> Weight;
+	fn claim_node() -> Weight;
+	fn remove_claim() -> Weight;
+	fn transfer_node() -> Weight;
+	fn add_connections() -> Weight;
+	fn remove_connections() -> Weight;
 }
 
 impl WeightInfo for () {
-    fn add_well_known_node() -> Weight { 50_000_000 }
-    fn remove_well_known_node() -> Weight { 50_000_000 }
-    fn swap_well_known_node() -> Weight { 50_000_000 }
-    fn reset_well_known_nodes() -> Weight { 50_000_000 }
-    fn claim_node() -> Weight { 50_000_000 }
-    fn remove_claim() -> Weight { 50_000_000 }
-    fn transfer_node() -> Weight { 50_000_000 }
-    fn add_connections() -> Weight { 50_000_000 }
-    fn remove_connections() -> Weight { 50_000_000 }
+	fn add_well_known_node() -> Weight { 50_000_000 }
+	fn remove_well_known_node() -> Weight { 50_000_000 }
+	fn swap_well_known_node() -> Weight { 50_000_000 }
+	fn reset_well_known_nodes() -> Weight { 50_000_000 }
+	fn claim_node() -> Weight { 50_000_000 }
+	fn remove_claim() -> Weight { 50_000_000 }
+	fn transfer_node() -> Weight { 50_000_000 }
+	fn add_connections() -> Weight { 50_000_000 }
+	fn remove_connections() -> Weight { 50_000_000 }
 }

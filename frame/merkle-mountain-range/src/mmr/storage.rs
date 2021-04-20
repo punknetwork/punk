@@ -45,66 +45,66 @@ pub struct OffchainStorage;
 /// There are two different implementations depending on the use case.
 /// See docs for [RuntimeStorage] and [OffchainStorage].
 pub struct Storage<StorageType, T, I, L>(
-    sp_std::marker::PhantomData<(StorageType, T, I, L)>
+	sp_std::marker::PhantomData<(StorageType, T, I, L)>
 );
 
 impl<StorageType, T, I, L> Default for Storage<StorageType, T, I, L> {
-    fn default() -> Self {
-        Self(Default::default())
-    }
+	fn default() -> Self {
+		Self(Default::default())
+	}
 }
 
 impl<T, I, L> mmr_lib::MMRStore<NodeOf<T, I, L>> for Storage<OffchainStorage, T, I, L> where
-    T: Config<I>,
-    I: Instance,
-    L: primitives::FullLeaf + codec::Decode,
+	T: Config<I>,
+	I: Instance,
+	L: primitives::FullLeaf + codec::Decode,
 {
-    fn get_elem(&self, pos: u64) -> mmr_lib::Result<Option<NodeOf<T, I, L>>> {
-        let key = Module::<T, I>::offchain_key(pos);
-        // Retrieve the element from Off-chain DB.
-        Ok(sp_io::offchain
-        ::local_storage_get(sp_core::offchain::StorageKind::PERSISTENT, &key)
-            .and_then(|v| codec::Decode::decode(&mut &*v).ok()))
-    }
+	fn get_elem(&self, pos: u64) -> mmr_lib::Result<Option<NodeOf<T, I, L>>> {
+		let key = Module::<T, I>::offchain_key(pos);
+		// Retrieve the element from Off-chain DB.
+		Ok(sp_io::offchain
+			::local_storage_get(sp_core::offchain::StorageKind::PERSISTENT, &key)
+			.and_then(|v| codec::Decode::decode(&mut &*v).ok()))
+	}
 
-    fn append(&mut self, _: u64, _: Vec<NodeOf<T, I, L>>) -> mmr_lib::Result<()> {
-        panic!("MMR must not be altered in the off-chain context.")
-    }
+	fn append(&mut self, _: u64, _: Vec<NodeOf<T, I, L>>) -> mmr_lib::Result<()> {
+		panic!("MMR must not be altered in the off-chain context.")
+ 	}
 }
 
 impl<T, I, L> mmr_lib::MMRStore<NodeOf<T, I, L>> for Storage<RuntimeStorage, T, I, L> where
-    T: Config<I>,
-    I: Instance,
-    L: primitives::FullLeaf,
+	T: Config<I>,
+	I: Instance,
+	L: primitives::FullLeaf,
 {
-    fn get_elem(&self, pos: u64) -> mmr_lib::Result<Option<NodeOf<T, I, L>>> {
-        Ok(<Nodes<T, I>>::get(pos)
-            .map(Node::Hash)
-        )
-    }
+	fn get_elem(&self, pos: u64) -> mmr_lib::Result<Option<NodeOf<T, I, L>>> {
+		Ok(<Nodes<T, I>>::get(pos)
+			.map(Node::Hash)
+		)
+	}
 
-    fn append(&mut self, pos: u64, elems: Vec<NodeOf<T, I, L>>) -> mmr_lib::Result<()> {
-        let mut leaves = crate::NumberOfLeaves::<I>::get();
-        let mut size = crate::mmr::utils::NodesUtils::new(leaves).size();
-        if pos != size {
-            return Err(mmr_lib::Error::InconsistentStore);
-        }
+	fn append(&mut self, pos: u64, elems: Vec<NodeOf<T, I, L>>) -> mmr_lib::Result<()> {
+		let mut leaves = crate::NumberOfLeaves::<I>::get();
+		let mut size = crate::mmr::utils::NodesUtils::new(leaves).size();
+		if pos != size {
+			return Err(mmr_lib::Error::InconsistentStore);
+		}
 
-        for elem in elems {
-            // on-chain we only store the hash (even if it's a leaf)
-            <Nodes<T, I>>::insert(size, elem.hash());
-            // Indexing API is used to store the full leaf content.
-            let key = Module::<T, I>::offchain_key(size);
-            elem.using_encoded(|elem| sp_io::offchain_index::set(&key, elem));
-            size += 1;
+		for elem in elems {
+			// on-chain we only store the hash (even if it's a leaf)
+			<Nodes<T, I>>::insert(size, elem.hash());
+			// Indexing API is used to store the full leaf content.
+			let key = Module::<T, I>::offchain_key(size);
+			elem.using_encoded(|elem| sp_io::offchain_index::set(&key, elem));
+			size += 1;
 
-            if let Node::Data(..) = elem {
-                leaves += 1;
-            }
-        }
+			if let Node::Data(..) = elem {
+				leaves += 1;
+			}
+		}
 
-        NumberOfLeaves::<I>::put(leaves);
+		NumberOfLeaves::<I>::put(leaves);
 
-        Ok(())
-    }
+		Ok(())
+	}
 }

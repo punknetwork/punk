@@ -315,7 +315,7 @@ impl BigUint {
 			|| self.msb() == 0
 			|| self.len() <= other.len()
 		{
-			return None;
+			return None
 		}
 		let n = other.len();
 		let m = self.len() - n;

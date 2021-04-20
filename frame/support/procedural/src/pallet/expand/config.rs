@@ -19,25 +19,25 @@ use crate::pallet::{Def, parse::helper::get_doc_literals};
 
 /// * Generate default rust doc
 pub fn expand_config(def: &mut Def) -> proc_macro2::TokenStream {
-    let config = &def.config;
-    let config_item = {
-        let item = &mut def.item.content.as_mut().expect("Checked by def parser").1[config.index];
-        if let syn::Item::Trait(item) = item {
-            item
-        } else {
-            unreachable!("Checked by config parser")
-        }
-    };
+	let config = &def.config;
+	let config_item = {
+		let item = &mut def.item.content.as_mut().expect("Checked by def parser").1[config.index];
+		if let syn::Item::Trait(item) = item {
+			item
+		} else {
+			unreachable!("Checked by config parser")
+		}
+	};
 
-    if get_doc_literals(&config_item.attrs).is_empty() {
-        config_item.attrs.push(syn::parse_quote!(
+	if get_doc_literals(&config_item.attrs).is_empty() {
+		config_item.attrs.push(syn::parse_quote!(
 			#[doc = r"
 			Configuration trait of this pallet.
 
 			Implement this type for a runtime in order to customize this pallet.
 			"]
 		));
-    }
+	}
 
-    Default::default()
+	Default::default()
 }

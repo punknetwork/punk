@@ -24,7 +24,7 @@ impl SomeAssociation for u64 {
 
 mod pallet_old {
 	use frame_support::{
-		decl_storage, decl_error, decl_event, decl_module, weights::Weight, traits::Get, Parameter,
+		decl_storage, decl_error, decl_event, decl_module, weights::Weight, traits::Get, Parameter
 	};
 	use frame_system::ensure_root;
 	use super::SomeAssociation;
@@ -125,7 +125,7 @@ pub mod pallet {
 		#[pallet::weight(<T::Balance as Into<Weight>>::into(new_value.clone()))]
 		fn set_dummy(
 			origin: OriginFor<T>,
-			#[pallet::compact] new_value: T::Balance,
+			#[pallet::compact] new_value: T::Balance
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 

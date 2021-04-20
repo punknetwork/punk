@@ -29,11 +29,11 @@ pub use self::gen_client::Client as OffchainClient;
 /// Substrate offchain RPC API
 #[rpc]
 pub trait OffchainApi {
-    /// Set offchain local storage under given key and prefix.
-    #[rpc(name = "offchain_localStorageSet")]
-    fn set_local_storage(&self, kind: StorageKind, key: Bytes, value: Bytes) -> Result<()>;
+	/// Set offchain local storage under given key and prefix.
+	#[rpc(name = "offchain_localStorageSet")]
+	fn set_local_storage(&self, kind: StorageKind, key: Bytes, value: Bytes) -> Result<()>;
 
-    /// Get offchain local storage under given key and prefix.
-    #[rpc(name = "offchain_localStorageGet")]
-    fn get_local_storage(&self, kind: StorageKind, key: Bytes) -> Result<Option<Bytes>>;
+	/// Get offchain local storage under given key and prefix.
+	#[rpc(name = "offchain_localStorageGet")]
+	fn get_local_storage(&self, kind: StorageKind, key: Bytes) -> Result<Option<Bytes>>;
 }

@@ -726,7 +726,7 @@ impl<T: Config> Module<T> {
 				T::ChangeMembers::change_members_sorted(
 					&[incoming.who],
 					outgoing,
-					&remaining_member_ids_sorted[..],
+					&remaining_member_ids_sorted[..]
 				);
 				true
 			}
@@ -734,7 +734,7 @@ impl<T: Config> Module<T> {
 				T::ChangeMembers::change_members_sorted(
 					&[],
 					outgoing,
-					&remaining_member_ids_sorted[..],
+					&remaining_member_ids_sorted[..]
 				);
 				false
 			}

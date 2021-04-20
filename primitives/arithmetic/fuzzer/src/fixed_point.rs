@@ -31,8 +31,8 @@ use honggfuzz::fuzz;
 use sp_arithmetic::{FixedPointNumber, FixedI64, traits::Saturating};
 
 fn main() {
-    loop {
-        fuzz!(|data: (i32, i32)| {
+	loop {
+		fuzz!(|data: (i32, i32)| {
 			let x: i128 = data.0.into();
 			let y: i128 = data.1.into();
 
@@ -78,5 +78,5 @@ fn main() {
 			let d = a.saturating_mul(xx).saturating_add(xx).into_inner() as i128 / FixedI64::accuracy() as i128;
 			assert_eq!(b, d);
 		});
-    }
+	}
 }

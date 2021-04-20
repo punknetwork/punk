@@ -83,17 +83,17 @@ use sp_std::prelude::*;
 use frame_support::{decl_module, decl_storage, decl_event, ensure, decl_error};
 
 use frame_support::traits::{
-	Currency, Get, Imbalance, OnUnbalanced, ExistenceRequirement::AllowDeath,
+	Currency, Get, Imbalance, OnUnbalanced, ExistenceRequirement::{AllowDeath},
 	ReservableCurrency};
 
 use sp_runtime::{Permill, RuntimeDebug, DispatchResult, traits::{
-	Zero, StaticLookup, AccountIdConversion, Saturating, BadOrigin,
+	Zero, StaticLookup, AccountIdConversion, Saturating, BadOrigin
 }};
 
 use frame_support::dispatch::DispatchResultWithPostInfo;
-use frame_support::traits::EnsureOrigin;
+use frame_support::traits::{EnsureOrigin};
 
-use frame_support::weights::Weight;
+use frame_support::weights::{Weight};
 
 use codec::{Encode, Decode};
 use frame_system::{self as system, ensure_signed};
@@ -729,7 +729,7 @@ impl<T: Config> pallet_treasury::SpendFunds<T> for Module<T> {
 		budget_remaining: &mut BalanceOf<T>,
 		imbalance: &mut PositiveImbalanceOf<T>,
 		total_weight: &mut Weight,
-		missed_any: &mut bool,
+		missed_any: &mut bool
 	) {
 		let bounties_len = BountyApprovals::mutate(|v| {
 			let bounties_approval_len = v.len() as u32;

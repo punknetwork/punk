@@ -692,7 +692,7 @@ fn lookup_throttling() {
 			let (key, value) = build_dht_event(
 				vec![remote_multiaddr.clone()],
 				remote_key,
-				&remote_key_store,
+				&remote_key_store
 			).await;
 			sc_network::DhtEvent::ValueFound(vec![(key, value)])
 		};

@@ -24,7 +24,7 @@ use super::*;
 use sp_runtime::traits::Bounded;
 use frame_system::RawOrigin as SystemOrigin;
 use frame_benchmarking::{
-	benchmarks, account, whitelisted_caller, whitelist_account, impl_benchmark_test_suite,
+	benchmarks, account, whitelisted_caller, whitelist_account, impl_benchmark_test_suite
 };
 use frame_support::traits::Get;
 use frame_support::{traits::EnsureOrigin, dispatch::UnfilteredDispatchable};
@@ -67,7 +67,7 @@ fn create_default_minted_asset<T: Config>(is_sufficient: bool, amount: T::Balanc
 
 fn swap_is_sufficient<T: Config>(s: &mut bool) {
 	Asset::<T>::mutate(&T::AssetId::default(), |maybe_a|
-		if let Some(ref mut a) = maybe_a { sp_std::mem::swap(s, &mut a.is_sufficient) },
+		if let Some(ref mut a) = maybe_a { sp_std::mem::swap(s, &mut a.is_sufficient) }
 	);
 }
 

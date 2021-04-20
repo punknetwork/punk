@@ -34,12 +34,12 @@ pub type Node<H, L> = crate::primitives::DataOrHash<H, L>;
 pub struct Hasher<H, L>(sp_std::marker::PhantomData<(H, L)>);
 
 impl<H: traits::Hash, L: FullLeaf> mmr_lib::Merge for Hasher<H, L> {
-    type Item = Node<H, L>;
+	type Item = Node<H, L>;
 
-    fn merge(left: &Self::Item, right: &Self::Item) -> Self::Item {
-        let mut concat = left.hash().as_ref().to_vec();
-        concat.extend_from_slice(right.hash().as_ref());
+	fn merge(left: &Self::Item, right: &Self::Item) -> Self::Item {
+		let mut concat = left.hash().as_ref().to_vec();
+		concat.extend_from_slice(right.hash().as_ref());
 
-        Node::Hash(<H as traits::Hash>::hash(&concat))
-    }
+		Node::Hash(<H as traits::Hash>::hash(&concat))
+	}
 }

@@ -333,7 +333,7 @@ pub mod generic {
 			let chain_status = match <Vec<u8>>::decode(value) {
 				Ok(v) => v,
 				Err(e) => if compact.version <= LAST_CHAIN_STATUS_VERSION {
-					return Err(e);
+					return Err(e)
 				} else {
 					Vec::new()
 				}

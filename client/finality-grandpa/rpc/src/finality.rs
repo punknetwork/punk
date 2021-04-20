@@ -26,25 +26,25 @@ pub struct EncodedFinalityProof(pub sp_core::Bytes);
 
 /// Local trait mainly to allow mocking in tests.
 pub trait RpcFinalityProofProvider<Block: BlockT> {
-    /// Prove finality for the given block number by returning a Justification for the last block of
-    /// the authority set.
-    fn rpc_prove_finality(
-        &self,
-        block: NumberFor<Block>,
-    ) -> Result<Option<EncodedFinalityProof>, sc_finality_grandpa::FinalityProofError>;
+	/// Prove finality for the given block number by returning a Justification for the last block of
+	/// the authority set.
+	fn rpc_prove_finality(
+		&self,
+		block: NumberFor<Block>,
+	) -> Result<Option<EncodedFinalityProof>, sc_finality_grandpa::FinalityProofError>;
 }
 
 impl<B, Block> RpcFinalityProofProvider<Block> for FinalityProofProvider<B, Block>
-    where
-        Block: BlockT,
-        NumberFor<Block>: finality_grandpa::BlockNumberOps,
-        B: sc_client_api::backend::Backend<Block> + Send + Sync + 'static,
+where
+	Block: BlockT,
+	NumberFor<Block>: finality_grandpa::BlockNumberOps,
+	B: sc_client_api::backend::Backend<Block> + Send + Sync + 'static,
 {
-    fn rpc_prove_finality(
-        &self,
-        block: NumberFor<Block>,
-    ) -> Result<Option<EncodedFinalityProof>, sc_finality_grandpa::FinalityProofError> {
-        self.prove_finality(block)
-            .map(|x| x.map(|y| EncodedFinalityProof(y.into())))
-    }
+	fn rpc_prove_finality(
+		&self,
+		block: NumberFor<Block>,
+	) -> Result<Option<EncodedFinalityProof>, sc_finality_grandpa::FinalityProofError> {
+		self.prove_finality(block)
+			.map(|x| x.map(|y| EncodedFinalityProof(y.into())))
+	}
 }

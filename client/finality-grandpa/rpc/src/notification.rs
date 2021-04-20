@@ -26,7 +26,7 @@ use sc_finality_grandpa::GrandpaJustification;
 pub struct JustificationNotification(sp_core::Bytes);
 
 impl<Block: BlockT> From<GrandpaJustification<Block>> for JustificationNotification {
-    fn from(notification: GrandpaJustification<Block>) -> Self {
-        JustificationNotification(notification.encode().into())
-    }
+	fn from(notification: GrandpaJustification<Block>) -> Self {
+		JustificationNotification(notification.encode().into())
+	}
 }

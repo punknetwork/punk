@@ -514,12 +514,12 @@ impl<T: Config> Module<T> {
 
 				let result = call.dispatch(RawOrigin::Signed(id.clone()).into());
 				Self::deposit_event(RawEvent::MultisigExecuted(
-					who, timepoint, id, call_hash, result.map(|_| ()).map_err(|e| e.error),
+					who, timepoint, id, call_hash, result.map(|_| ()).map_err(|e| e.error)
 				));
 				Ok(get_result_weight(result).map(|actual_weight|
 					T::WeightInfo::as_multi_complete(
 						other_signatories_len as u32,
-						call_len as u32,
+						call_len as u32
 					).saturating_add(actual_weight)
 				).into())
 			} else {

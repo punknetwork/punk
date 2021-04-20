@@ -160,7 +160,7 @@ impl ChainExtension<Test> for TestExtension {
 				env.write(&input, false, None)?;
 				TEST_EXTENSION.with(|e| e.borrow_mut().last_seen_buffer = input);
 				Ok(RetVal::Converging(func_id))
-			}
+			},
 			1 => {
 				let env = env.only_in();
 				TEST_EXTENSION.with(|e|
@@ -169,19 +169,19 @@ impl ChainExtension<Test> for TestExtension {
 					)
 				);
 				Ok(RetVal::Converging(func_id))
-			}
+			},
 			2 => {
 				let mut env = env.buf_in_buf_out();
 				let weight = env.read(2)?[1].into();
 				env.charge_weight(weight)?;
 				Ok(RetVal::Converging(func_id))
-			}
+			},
 			3 => {
 				Ok(RetVal::Diverging{
 					flags: ReturnFlags::REVERT,
 					data: vec![42, 99],
 				})
-			}
+			},
 			_ => {
 				panic!("Passed unknown func_id to test chain extension: {}", func_id);
 			}
@@ -1176,7 +1176,7 @@ fn restoration_success() {
 fn restoration(
 	test_different_storage: bool,
 	test_restore_to_with_dirty_storage: bool,
-	test_code_evicted: bool,
+	test_code_evicted: bool
 ) {
 	let (set_rent_wasm, set_rent_code_hash) = compile_module::<Test>("set_rent").unwrap();
 	let (restoration_wasm, restoration_code_hash) = compile_module::<Test>("restoration").unwrap();
@@ -1457,14 +1457,14 @@ fn restoration(
 							},
 
 						]);
-					}
+					},
 					(false, false, true) => {
 						assert_err_ignore_postinfo!(
 							result, Error::<Test>::CodeNotFound,
 						);
 						assert_refcount!(set_rent_code_hash, 0);
 						assert_eq!(System::events(), vec![]);
-					}
+					},
 					_ => unreachable!(),
 				}
 			} else {
@@ -1496,7 +1496,7 @@ fn restoration(
 						phase: Phase::Initialization,
 						event: Event::pallet_contracts(
 							crate::Event::Restored(
-								addr_django, addr_bob, bob_contract.code_hash, 50,
+								addr_django, addr_bob, bob_contract.code_hash, 50
 							)
 						),
 						topics: vec![],
@@ -1791,7 +1791,7 @@ fn destroy_contract_and_transfer_funds() {
 			));
 			let addr_bob = Contracts::contract_address(&ALICE, &caller_code_hash, &[]);
 			let addr_charlie = Contracts::contract_address(
-				&addr_bob, &callee_code_hash, &[0x47, 0x11],
+				&addr_bob, &callee_code_hash, &[0x47, 0x11]
 			);
 
 			// Check that the CHARLIE contract has been instantiated.

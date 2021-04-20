@@ -24,7 +24,7 @@ use super::*;
 use std::cell::RefCell;
 
 use frame_support::{
-	assert_noop, assert_ok, parameter_types, weights::Weight, traits::OnInitialize,
+	assert_noop, assert_ok, parameter_types, weights::Weight, traits::OnInitialize
 };
 
 use sp_core::H256;
@@ -641,7 +641,7 @@ fn award_and_claim_bounty_works() {
 			status: BountyStatus::PendingPayout {
 				curator: 4,
 				beneficiary: 3,
-				unlock_at: 5,
+				unlock_at: 5
 			},
 		});
 

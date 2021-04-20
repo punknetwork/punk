@@ -41,7 +41,7 @@ fn rpc_call(method: &str) -> String {
 		jsonrpc: Some(Version::V2),
 		method: method.into(),
 		params: Params::None,
-		id: Id::Num(1),
+		id: Id::Num(1)
 	}).unwrap()
 }
 

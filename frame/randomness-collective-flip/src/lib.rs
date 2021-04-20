@@ -59,7 +59,7 @@ use sp_std::{prelude::*, convert::TryInto};
 use sp_runtime::traits::{Hash, Saturating};
 use frame_support::{
 	decl_module, decl_storage, traits::Randomness,
-	weights::Weight,
+	weights::Weight
 };
 use safe_mix::TripletMix;
 use codec::Encode;

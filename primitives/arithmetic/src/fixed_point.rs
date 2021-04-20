@@ -23,7 +23,7 @@ use crate::{
 	helpers_128bit::multiply_by_rational, PerThing,
 	traits::{
 		SaturatedConversion, CheckedSub, CheckedAdd, CheckedMul, CheckedDiv, CheckedNeg,
-		Bounded, Saturating, UniqueSaturatedInto, Zero, One,
+		Bounded, Saturating, UniqueSaturatedInto, Zero, One
 	},
 };
 
@@ -110,7 +110,7 @@ pub trait FixedPointNumber:
 	/// Returns `None` if `d == 0` or `n / d` exceeds accuracy.
 	fn checked_from_rational<N: FixedPointOperand, D: FixedPointOperand>(n: N, d: D) -> Option<Self> {
 		if d == D::zero() {
-			return None;
+			return None
 		}
 
 		let n: I129 = n.into();

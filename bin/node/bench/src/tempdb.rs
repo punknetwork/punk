@@ -92,7 +92,7 @@ impl TempDatabase {
 				let db_cfg = DatabaseConfig::with_columns(1);
 				let db = Database::open(&db_cfg, &self.0.path().to_string_lossy()).expect("Database backend error");
 				Arc::new(db)
-			}
+			},
 			DatabaseType::ParityDb => {
 				Arc::new(ParityDbWrapper({
 					let mut options = parity_db::Options::with_columns(self.0.path(), 1);

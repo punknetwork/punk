@@ -18,11 +18,11 @@
 //! Environment definition of the wasm smart-contract runtime.
 
 use crate::{
-    Config, CodeHash, BalanceOf, Error,
-    exec::{Ext, StorageKey, TopicOf},
-    gas::{GasMeter, Token, ChargedAmount},
-    wasm::env_def::ConvertibleToWasm,
-    schedule::HostFnWeights,
+	Config, CodeHash, BalanceOf, Error,
+	exec::{Ext, StorageKey, TopicOf},
+	gas::{GasMeter, Token, ChargedAmount},
+	wasm::env_def::ConvertibleToWasm,
+	schedule::HostFnWeights,
 };
 use parity_wasm::elements::ValueType;
 use frame_support::{dispatch::DispatchError, ensure, traits::Get, weights::Weight};
@@ -31,10 +31,10 @@ use codec::{Decode, DecodeAll, Encode};
 use sp_runtime::traits::SaturatedConversion;
 use sp_core::crypto::UncheckedFrom;
 use sp_io::hashing::{
-    keccak_256,
-    blake2_256,
-    blake2_128,
-    sha2_256,
+	keccak_256,
+	blake2_256,
+	blake2_128,
+	sha2_256,
 };
 use pallet_contracts_primitives::{ExecResult, ExecReturnValue, ReturnFlags, ExecError};
 
@@ -48,61 +48,61 @@ use pallet_contracts_primitives::{ExecResult, ExecReturnValue, ReturnFlags, Exec
 /// those errors gracefuly in order to be forward compatible.
 #[repr(u32)]
 pub enum ReturnCode {
-    /// API call successful.
-    Success = 0,
-    /// The called function trapped and has its state changes reverted.
-    /// In this case no output buffer is returned.
-    CalleeTrapped = 1,
-    /// The called function ran to completion but decided to revert its state.
-    /// An output buffer is returned when one was supplied.
-    CalleeReverted = 2,
-    /// The passed key does not exist in storage.
-    KeyNotFound = 3,
-    /// Transfer failed because it would have brought the sender's total balance below the
-    /// subsistence threshold.
-    BelowSubsistenceThreshold = 4,
-    /// Transfer failed for other reasons. Most probably reserved or locked balance of the
-    /// sender prevents the transfer.
-    TransferFailed = 5,
-    /// The newly created contract is below the subsistence threshold after executing
-    /// its constructor.
-    NewContractNotFunded = 6,
-    /// No code could be found at the supplied code hash.
-    CodeNotFound = 7,
-    /// The contract that was called is either no contract at all (a plain account)
-    /// or is a tombstone.
-    NotCallable = 8,
+	/// API call successful.
+	Success = 0,
+	/// The called function trapped and has its state changes reverted.
+	/// In this case no output buffer is returned.
+	CalleeTrapped = 1,
+	/// The called function ran to completion but decided to revert its state.
+	/// An output buffer is returned when one was supplied.
+	CalleeReverted = 2,
+	/// The passed key does not exist in storage.
+	KeyNotFound = 3,
+	/// Transfer failed because it would have brought the sender's total balance below the
+	/// subsistence threshold.
+	BelowSubsistenceThreshold = 4,
+	/// Transfer failed for other reasons. Most probably reserved or locked balance of the
+	/// sender prevents the transfer.
+	TransferFailed = 5,
+	/// The newly created contract is below the subsistence threshold after executing
+	/// its constructor.
+	NewContractNotFunded = 6,
+	/// No code could be found at the supplied code hash.
+	CodeNotFound = 7,
+	/// The contract that was called is either no contract at all (a plain account)
+	/// or is a tombstone.
+	NotCallable = 8,
 }
 
 impl ConvertibleToWasm for ReturnCode {
-    type NativeType = Self;
-    const VALUE_TYPE: ValueType = ValueType::I32;
-    fn to_typed_value(self) -> sp_sandbox::Value {
-        sp_sandbox::Value::I32(self as i32)
-    }
-    fn from_typed_value(_: sp_sandbox::Value) -> Option<Self> {
-        debug_assert!(false, "We will never receive a ReturnCode but only send it to wasm.");
-        None
-    }
+	type NativeType = Self;
+	const VALUE_TYPE: ValueType = ValueType::I32;
+	fn to_typed_value(self) -> sp_sandbox::Value {
+		sp_sandbox::Value::I32(self as i32)
+	}
+	fn from_typed_value(_: sp_sandbox::Value) -> Option<Self> {
+		debug_assert!(false, "We will never receive a ReturnCode but only send it to wasm.");
+		None
+	}
 }
 
 impl From<ExecReturnValue> for ReturnCode {
-    fn from(from: ExecReturnValue) -> Self {
-        if from.flags.contains(ReturnFlags::REVERT) {
-            Self::CalleeReverted
-        } else {
-            Self::Success
-        }
-    }
+	fn from(from: ExecReturnValue) -> Self {
+		if from.flags.contains(ReturnFlags::REVERT) {
+			Self::CalleeReverted
+		} else {
+			Self::Success
+		}
+	}
 }
 
 /// The data passed through when a contract uses `seal_return`.
 pub struct ReturnData {
-    /// The flags as passed through by the contract. They are still unchecked and
-    /// will later be parsed into a `ReturnFlags` bitflags struct.
-    flags: u32,
-    /// The output buffer passed by the contract as return data.
-    data: Vec<u8>,
+	/// The flags as passed through by the contract. They are still unchecked and
+	/// will later be parsed into a `ReturnFlags` bitflags struct.
+	flags: u32,
+	/// The output buffer passed by the contract as return data.
+	data: Vec<u8>,
 }
 
 /// Enumerates all possible reasons why a trap was generated.
@@ -112,502 +112,502 @@ pub struct ReturnData {
 /// The other case is where the trap does not constitute an error but rather was invoked
 /// as a quick way to terminate the application (all other variants).
 pub enum TrapReason {
-    /// The supervisor trapped the contract because of an error condition occurred during
-    /// execution in privileged code.
-    SupervisorError(DispatchError),
-    /// Signals that trap was generated in response to call `seal_return` host function.
-    Return(ReturnData),
-    /// Signals that a trap was generated in response to a successful call to the
-    /// `seal_terminate` host function.
-    Termination,
-    /// Signals that a trap was generated because of a successful restoration.
-    Restoration,
+	/// The supervisor trapped the contract because of an error condition occurred during
+	/// execution in privileged code.
+	SupervisorError(DispatchError),
+	/// Signals that trap was generated in response to call `seal_return` host function.
+	Return(ReturnData),
+	/// Signals that a trap was generated in response to a successful call to the
+	/// `seal_terminate` host function.
+	Termination,
+	/// Signals that a trap was generated because of a successful restoration.
+	Restoration,
 }
 
 impl<T: Into<DispatchError>> From<T> for TrapReason {
-    fn from(from: T) -> Self {
-        Self::SupervisorError(from.into())
-    }
+	fn from(from: T) -> Self {
+		Self::SupervisorError(from.into())
+	}
 }
 
 #[cfg_attr(test, derive(Debug, PartialEq, Eq))]
 #[derive(Copy, Clone)]
 pub enum RuntimeToken {
-    /// Charge the gas meter with the cost of a metering block. The charged costs are
-    /// the supplied cost of the block plus the overhead of the metering itself.
-    MeteringBlock(u32),
-    /// Weight of calling `seal_caller`.
-    Caller,
-    /// Weight of calling `seal_address`.
-    Address,
-    /// Weight of calling `seal_gas_left`.
-    GasLeft,
-    /// Weight of calling `seal_balance`.
-    Balance,
-    /// Weight of calling `seal_value_transferred`.
-    ValueTransferred,
-    /// Weight of calling `seal_minimum_balance`.
-    MinimumBalance,
-    /// Weight of calling `seal_tombstone_deposit`.
-    TombstoneDeposit,
-    /// Weight of calling `seal_rent_allowance`.
-    RentAllowance,
-    /// Weight of calling `seal_block_number`.
-    BlockNumber,
-    /// Weight of calling `seal_now`.
-    Now,
-    /// Weight of calling `seal_weight_to_fee`.
-    WeightToFee,
-    /// Weight of calling `seal_input` without the weight of copying the input.
-    InputBase,
-    /// Weight of copying the input data for the given size.
-    InputCopyOut(u32),
-    /// Weight of calling `seal_return` for the given output size.
-    Return(u32),
-    /// Weight of calling `seal_terminate`.
-    Terminate,
-    /// Weight that is added to `seal_terminate` for every byte of the terminated contract.
-    TerminateSurchargeCodeSize(u32),
-    /// Weight of calling `seal_restore_to` per number of supplied delta entries.
-    RestoreTo(u32),
-    /// Weight that is added to `seal_restore_to` for the involved code sizes.
-    RestoreToSurchargeCodeSize { caller_code: u32, tombstone_code: u32 },
-    /// Weight of calling `seal_random`. It includes the weight for copying the subject.
-    Random,
-    /// Weight of calling `seal_deposit_event` with the given number of topics and event size.
-    DepositEvent { num_topic: u32, len: u32 },
-    /// Weight of calling `seal_set_rent_allowance`.
-    SetRentAllowance,
-    /// Weight of calling `seal_set_storage` for the given storage item size.
-    SetStorage(u32),
-    /// Weight of calling `seal_clear_storage`.
-    ClearStorage,
-    /// Weight of calling `seal_get_storage` without output weight.
-    GetStorageBase,
-    /// Weight of an item received via `seal_get_storage` for the given size.
-    GetStorageCopyOut(u32),
-    /// Weight of calling `seal_transfer`.
-    Transfer,
-    /// Weight of calling `seal_call` for the given input size.
-    CallBase(u32),
-    /// Weight that is added to `seal_call` for every byte of the called contract.
-    CallSurchargeCodeSize(u32),
-    /// Weight of the transfer performed during a call.
-    CallSurchargeTransfer,
-    /// Weight of output received through `seal_call` for the given size.
-    CallCopyOut(u32),
-    /// Weight of calling `seal_instantiate` for the given input and salt without output weight.
-    /// This includes the transfer as an instantiate without a value will always be below
-    /// the existential deposit and is disregarded as corner case.
-    InstantiateBase { input_data_len: u32, salt_len: u32 },
-    /// Weight that is added to `seal_instantiate` for every byte of the instantiated contract.
-    InstantiateSurchargeCodeSize(u32),
-    /// Weight of output received through `seal_instantiate` for the given size.
-    InstantiateCopyOut(u32),
-    /// Weight of calling `seal_hash_sha_256` for the given input size.
-    HashSha256(u32),
-    /// Weight of calling `seal_hash_keccak_256` for the given input size.
-    HashKeccak256(u32),
-    /// Weight of calling `seal_hash_blake2_256` for the given input size.
-    HashBlake256(u32),
-    /// Weight of calling `seal_hash_blake2_128` for the given input size.
-    HashBlake128(u32),
-    /// Weight charged by a chain extension through `seal_call_chain_extension`.
-    ChainExtension(u64),
-    /// Weight charged for copying data from the sandbox.
-    CopyIn(u32),
-    /// Weight of calling `seal_rent_params`.
-    RentParams,
+	/// Charge the gas meter with the cost of a metering block. The charged costs are
+	/// the supplied cost of the block plus the overhead of the metering itself.
+	MeteringBlock(u32),
+	/// Weight of calling `seal_caller`.
+	Caller,
+	/// Weight of calling `seal_address`.
+	Address,
+	/// Weight of calling `seal_gas_left`.
+	GasLeft,
+	/// Weight of calling `seal_balance`.
+	Balance,
+	/// Weight of calling `seal_value_transferred`.
+	ValueTransferred,
+	/// Weight of calling `seal_minimum_balance`.
+	MinimumBalance,
+	/// Weight of calling `seal_tombstone_deposit`.
+	TombstoneDeposit,
+	/// Weight of calling `seal_rent_allowance`.
+	RentAllowance,
+	/// Weight of calling `seal_block_number`.
+	BlockNumber,
+	/// Weight of calling `seal_now`.
+	Now,
+	/// Weight of calling `seal_weight_to_fee`.
+	WeightToFee,
+	/// Weight of calling `seal_input` without the weight of copying the input.
+	InputBase,
+	/// Weight of copying the input data for the given size.
+	InputCopyOut(u32),
+	/// Weight of calling `seal_return` for the given output size.
+	Return(u32),
+	/// Weight of calling `seal_terminate`.
+	Terminate,
+	/// Weight that is added to `seal_terminate` for every byte of the terminated contract.
+	TerminateSurchargeCodeSize(u32),
+	/// Weight of calling `seal_restore_to` per number of supplied delta entries.
+	RestoreTo(u32),
+	/// Weight that is added to `seal_restore_to` for the involved code sizes.
+	RestoreToSurchargeCodeSize{caller_code: u32, tombstone_code: u32},
+	/// Weight of calling `seal_random`. It includes the weight for copying the subject.
+	Random,
+	/// Weight of calling `seal_deposit_event` with the given number of topics and event size.
+	DepositEvent{num_topic: u32, len: u32},
+	/// Weight of calling `seal_set_rent_allowance`.
+	SetRentAllowance,
+	/// Weight of calling `seal_set_storage` for the given storage item size.
+	SetStorage(u32),
+	/// Weight of calling `seal_clear_storage`.
+	ClearStorage,
+	/// Weight of calling `seal_get_storage` without output weight.
+	GetStorageBase,
+	/// Weight of an item received via `seal_get_storage` for the given size.
+	GetStorageCopyOut(u32),
+	/// Weight of calling `seal_transfer`.
+	Transfer,
+	/// Weight of calling `seal_call` for the given input size.
+	CallBase(u32),
+	/// Weight that is added to `seal_call` for every byte of the called contract.
+	CallSurchargeCodeSize(u32),
+	/// Weight of the transfer performed during a call.
+	CallSurchargeTransfer,
+	/// Weight of output received through `seal_call` for the given size.
+	CallCopyOut(u32),
+	/// Weight of calling `seal_instantiate` for the given input and salt without output weight.
+	/// This includes the transfer as an instantiate without a value will always be below
+	/// the existential deposit and is disregarded as corner case.
+	InstantiateBase{input_data_len: u32, salt_len: u32},
+	/// Weight that is added to `seal_instantiate` for every byte of the instantiated contract.
+	InstantiateSurchargeCodeSize(u32),
+	/// Weight of output received through `seal_instantiate` for the given size.
+	InstantiateCopyOut(u32),
+	/// Weight of calling `seal_hash_sha_256` for the given input size.
+	HashSha256(u32),
+	/// Weight of calling `seal_hash_keccak_256` for the given input size.
+	HashKeccak256(u32),
+	/// Weight of calling `seal_hash_blake2_256` for the given input size.
+	HashBlake256(u32),
+	/// Weight of calling `seal_hash_blake2_128` for the given input size.
+	HashBlake128(u32),
+	/// Weight charged by a chain extension through `seal_call_chain_extension`.
+	ChainExtension(u64),
+	/// Weight charged for copying data from the sandbox.
+	CopyIn(u32),
+	/// Weight of calling `seal_rent_params`.
+	RentParams,
 }
 
 impl<T: Config> Token<T> for RuntimeToken
-    where
-        T::AccountId: UncheckedFrom<T::Hash>, T::AccountId: AsRef<[u8]>
+where
+	T::AccountId: UncheckedFrom<T::Hash>, T::AccountId: AsRef<[u8]>
 {
-    type Metadata = HostFnWeights<T>;
+	type Metadata = HostFnWeights<T>;
 
-    fn calculate_amount(&self, s: &Self::Metadata) -> Weight {
-        use self::RuntimeToken::*;
-        match *self {
-            MeteringBlock(amount) => s.gas.saturating_add(amount.into()),
-            Caller => s.caller,
-            Address => s.address,
-            GasLeft => s.gas_left,
-            Balance => s.balance,
-            ValueTransferred => s.value_transferred,
-            MinimumBalance => s.minimum_balance,
-            TombstoneDeposit => s.tombstone_deposit,
-            RentAllowance => s.rent_allowance,
-            BlockNumber => s.block_number,
-            Now => s.now,
-            WeightToFee => s.weight_to_fee,
-            InputBase => s.input,
-            InputCopyOut(len) => s.input_per_byte.saturating_mul(len.into()),
-            Return(len) => s.r#return
-                .saturating_add(s.return_per_byte.saturating_mul(len.into())),
-            Terminate => s.terminate,
-            TerminateSurchargeCodeSize(len) => s.terminate_per_code_byte.saturating_mul(len.into()),
-            RestoreTo(delta) => s.restore_to
-                .saturating_add(s.restore_to_per_delta.saturating_mul(delta.into())),
-            RestoreToSurchargeCodeSize { caller_code, tombstone_code } =>
-                s.restore_to_per_caller_code_byte.saturating_mul(caller_code.into()).saturating_add(
-                    s.restore_to_per_tombstone_code_byte.saturating_mul(tombstone_code.into())
-                ),
-            Random => s.random,
-            DepositEvent { num_topic, len } => s.deposit_event
-                .saturating_add(s.deposit_event_per_topic.saturating_mul(num_topic.into()))
-                .saturating_add(s.deposit_event_per_byte.saturating_mul(len.into())),
-            SetRentAllowance => s.set_rent_allowance,
-            SetStorage(len) => s.set_storage
-                .saturating_add(s.set_storage_per_byte.saturating_mul(len.into())),
-            ClearStorage => s.clear_storage,
-            GetStorageBase => s.get_storage,
-            GetStorageCopyOut(len) => s.get_storage_per_byte.saturating_mul(len.into()),
-            Transfer => s.transfer,
-            CallBase(len) => s.call
-                .saturating_add(s.call_per_input_byte.saturating_mul(len.into())),
-            CallSurchargeCodeSize(len) => s.call_per_code_byte.saturating_mul(len.into()),
-            CallSurchargeTransfer => s.call_transfer_surcharge,
-            CallCopyOut(len) => s.call_per_output_byte.saturating_mul(len.into()),
-            InstantiateBase { input_data_len, salt_len } => s.instantiate
-                .saturating_add(s.instantiate_per_input_byte.saturating_mul(input_data_len.into()))
-                .saturating_add(s.instantiate_per_salt_byte.saturating_mul(salt_len.into())),
-            InstantiateSurchargeCodeSize(len) =>
-                s.instantiate_per_code_byte.saturating_mul(len.into()),
-            InstantiateCopyOut(len) => s.instantiate_per_output_byte
-                .saturating_mul(len.into()),
-            HashSha256(len) => s.hash_sha2_256
-                .saturating_add(s.hash_sha2_256_per_byte.saturating_mul(len.into())),
-            HashKeccak256(len) => s.hash_keccak_256
-                .saturating_add(s.hash_keccak_256_per_byte.saturating_mul(len.into())),
-            HashBlake256(len) => s.hash_blake2_256
-                .saturating_add(s.hash_blake2_256_per_byte.saturating_mul(len.into())),
-            HashBlake128(len) => s.hash_blake2_128
-                .saturating_add(s.hash_blake2_128_per_byte.saturating_mul(len.into())),
-            ChainExtension(amount) => amount,
-            CopyIn(len) => s.return_per_byte.saturating_mul(len.into()),
-            RentParams => s.rent_params,
-        }
-    }
+	fn calculate_amount(&self, s: &Self::Metadata) -> Weight {
+		use self::RuntimeToken::*;
+		match *self {
+			MeteringBlock(amount) => s.gas.saturating_add(amount.into()),
+			Caller => s.caller,
+			Address => s.address,
+			GasLeft => s.gas_left,
+			Balance => s.balance,
+			ValueTransferred => s.value_transferred,
+			MinimumBalance => s.minimum_balance,
+			TombstoneDeposit => s.tombstone_deposit,
+			RentAllowance => s.rent_allowance,
+			BlockNumber => s.block_number,
+			Now => s.now,
+			WeightToFee => s.weight_to_fee,
+			InputBase => s.input,
+			InputCopyOut(len) => s.input_per_byte.saturating_mul(len.into()),
+			Return(len) => s.r#return
+				.saturating_add(s.return_per_byte.saturating_mul(len.into())),
+			Terminate => s.terminate,
+			TerminateSurchargeCodeSize(len) => s.terminate_per_code_byte.saturating_mul(len.into()),
+			RestoreTo(delta) => s.restore_to
+				.saturating_add(s.restore_to_per_delta.saturating_mul(delta.into())),
+			RestoreToSurchargeCodeSize{caller_code, tombstone_code} =>
+				s.restore_to_per_caller_code_byte.saturating_mul(caller_code.into()).saturating_add(
+					s.restore_to_per_tombstone_code_byte.saturating_mul(tombstone_code.into())
+				),
+			Random => s.random,
+			DepositEvent{num_topic, len} => s.deposit_event
+				.saturating_add(s.deposit_event_per_topic.saturating_mul(num_topic.into()))
+				.saturating_add(s.deposit_event_per_byte.saturating_mul(len.into())),
+			SetRentAllowance => s.set_rent_allowance,
+			SetStorage(len) => s.set_storage
+				.saturating_add(s.set_storage_per_byte.saturating_mul(len.into())),
+			ClearStorage => s.clear_storage,
+			GetStorageBase => s.get_storage,
+			GetStorageCopyOut(len) => s.get_storage_per_byte.saturating_mul(len.into()),
+			Transfer => s.transfer,
+			CallBase(len) => s.call
+				.saturating_add(s.call_per_input_byte.saturating_mul(len.into())),
+			CallSurchargeCodeSize(len) => s.call_per_code_byte.saturating_mul(len.into()),
+			CallSurchargeTransfer => s.call_transfer_surcharge,
+			CallCopyOut(len) => s.call_per_output_byte.saturating_mul(len.into()),
+			InstantiateBase{input_data_len, salt_len} => s.instantiate
+				.saturating_add(s.instantiate_per_input_byte.saturating_mul(input_data_len.into()))
+				.saturating_add(s.instantiate_per_salt_byte.saturating_mul(salt_len.into())),
+			InstantiateSurchargeCodeSize(len) =>
+				s.instantiate_per_code_byte.saturating_mul(len.into()),
+			InstantiateCopyOut(len) => s.instantiate_per_output_byte
+				.saturating_mul(len.into()),
+			HashSha256(len) => s.hash_sha2_256
+				.saturating_add(s.hash_sha2_256_per_byte.saturating_mul(len.into())),
+			HashKeccak256(len) => s.hash_keccak_256
+				.saturating_add(s.hash_keccak_256_per_byte.saturating_mul(len.into())),
+			HashBlake256(len) => s.hash_blake2_256
+				.saturating_add(s.hash_blake2_256_per_byte.saturating_mul(len.into())),
+			HashBlake128(len) => s.hash_blake2_128
+				.saturating_add(s.hash_blake2_128_per_byte.saturating_mul(len.into())),
+			ChainExtension(amount) => amount,
+			CopyIn(len) => s.return_per_byte.saturating_mul(len.into()),
+			RentParams => s.rent_params,
+		}
+	}
 }
 
 /// This is only appropriate when writing out data of constant size that does not depend on user
 /// input. In this case the costs for this copy was already charged as part of the token at
 /// the beginning of the API entry point.
 fn already_charged(_: u32) -> Option<RuntimeToken> {
-    None
+	None
 }
 
 /// Can only be used for one call.
 pub struct Runtime<'a, E: Ext + 'a> {
-    ext: &'a mut E,
-    input_data: Option<Vec<u8>>,
-    memory: sp_sandbox::Memory,
-    gas_meter: &'a mut GasMeter<E::T>,
-    trap_reason: Option<TrapReason>,
+	ext: &'a mut E,
+	input_data: Option<Vec<u8>>,
+	memory: sp_sandbox::Memory,
+	gas_meter: &'a mut GasMeter<E::T>,
+	trap_reason: Option<TrapReason>,
 }
 
 impl<'a, E> Runtime<'a, E>
-    where
-        E: Ext + 'a,
-        <E::T as frame_system::Config>::AccountId:
-        UncheckedFrom<<E::T as frame_system::Config>::Hash> + AsRef<[u8]>
+where
+	E: Ext + 'a,
+	<E::T as frame_system::Config>::AccountId:
+		UncheckedFrom<<E::T as frame_system::Config>::Hash> + AsRef<[u8]>
 {
-    pub fn new(
-        ext: &'a mut E,
-        input_data: Vec<u8>,
-        memory: sp_sandbox::Memory,
-        gas_meter: &'a mut GasMeter<E::T>,
-    ) -> Self {
-        Runtime {
-            ext,
-            input_data: Some(input_data),
-            memory,
-            gas_meter,
-            trap_reason: None,
-        }
-    }
+	pub fn new(
+		ext: &'a mut E,
+		input_data: Vec<u8>,
+		memory: sp_sandbox::Memory,
+		gas_meter: &'a mut GasMeter<E::T>,
+	) -> Self {
+		Runtime {
+			ext,
+			input_data: Some(input_data),
+			memory,
+			gas_meter,
+			trap_reason: None,
+		}
+	}
 
-    /// Converts the sandbox result and the runtime state into the execution outcome.
-    ///
-    /// It evaluates information stored in the `trap_reason` variable of the runtime and
-    /// bases the outcome on the value if this variable. Only if `trap_reason` is `None`
-    /// the result of the sandbox is evaluated.
-    pub fn to_execution_result(
-        self,
-        sandbox_result: Result<sp_sandbox::ReturnValue, sp_sandbox::Error>,
-    ) -> ExecResult {
-        // If a trap reason is set we base our decision solely on that.
-        if let Some(trap_reason) = self.trap_reason {
-            return match trap_reason {
-                // The trap was the result of the execution `return` host function.
-                TrapReason::Return(ReturnData { flags, data }) => {
-                    let flags = ReturnFlags::from_bits(flags).ok_or_else(||
-                        "used reserved bit in return flags"
-                    )?;
-                    Ok(ExecReturnValue {
-                        flags,
-                        data,
-                    })
-                }
-                TrapReason::Termination => {
-                    Ok(ExecReturnValue {
-                        flags: ReturnFlags::empty(),
-                        data: Vec::new(),
-                    })
-                }
-                TrapReason::Restoration => {
-                    Ok(ExecReturnValue {
-                        flags: ReturnFlags::empty(),
-                        data: Vec::new(),
-                    })
-                }
-                TrapReason::SupervisorError(error) => Err(error)?,
-            };
-        }
+	/// Converts the sandbox result and the runtime state into the execution outcome.
+	///
+	/// It evaluates information stored in the `trap_reason` variable of the runtime and
+	/// bases the outcome on the value if this variable. Only if `trap_reason` is `None`
+	/// the result of the sandbox is evaluated.
+	pub fn to_execution_result(
+		self,
+		sandbox_result: Result<sp_sandbox::ReturnValue, sp_sandbox::Error>,
+	) -> ExecResult {
+		// If a trap reason is set we base our decision solely on that.
+		if let Some(trap_reason) = self.trap_reason {
+			return match trap_reason {
+				// The trap was the result of the execution `return` host function.
+				TrapReason::Return(ReturnData{ flags, data }) => {
+					let flags = ReturnFlags::from_bits(flags).ok_or_else(||
+						"used reserved bit in return flags"
+					)?;
+					Ok(ExecReturnValue {
+						flags,
+						data,
+					})
+				},
+				TrapReason::Termination => {
+					Ok(ExecReturnValue {
+						flags: ReturnFlags::empty(),
+						data: Vec::new(),
+					})
+				},
+				TrapReason::Restoration => {
+					Ok(ExecReturnValue {
+						flags: ReturnFlags::empty(),
+						data: Vec::new(),
+					})
+				},
+				TrapReason::SupervisorError(error) => Err(error)?,
+			}
+		}
 
-        // Check the exact type of the error.
-        match sandbox_result {
-            // No traps were generated. Proceed normally.
-            Ok(_) => {
-                Ok(ExecReturnValue { flags: ReturnFlags::empty(), data: Vec::new() })
-            }
-            // `Error::Module` is returned only if instantiation or linking failed (i.e.
-            // wasm binary tried to import a function that is not provided by the host).
-            // This shouldn't happen because validation process ought to reject such binaries.
-            //
-            // Because panics are really undesirable in the runtime code, we treat this as
-            // a trap for now. Eventually, we might want to revisit this.
-            Err(sp_sandbox::Error::Module) =>
-                Err("validation error")?,
-            // Any other kind of a trap should result in a failure.
-            Err(sp_sandbox::Error::Execution) | Err(sp_sandbox::Error::OutOfBounds) =>
-                Err(Error::<E::T>::ContractTrapped)?
-        }
-    }
+		// Check the exact type of the error.
+		match sandbox_result {
+			// No traps were generated. Proceed normally.
+			Ok(_) => {
+				Ok(ExecReturnValue { flags: ReturnFlags::empty(), data: Vec::new() })
+			}
+			// `Error::Module` is returned only if instantiation or linking failed (i.e.
+			// wasm binary tried to import a function that is not provided by the host).
+			// This shouldn't happen because validation process ought to reject such binaries.
+			//
+			// Because panics are really undesirable in the runtime code, we treat this as
+			// a trap for now. Eventually, we might want to revisit this.
+			Err(sp_sandbox::Error::Module) =>
+				Err("validation error")?,
+			// Any other kind of a trap should result in a failure.
+			Err(sp_sandbox::Error::Execution) | Err(sp_sandbox::Error::OutOfBounds) =>
+				Err(Error::<E::T>::ContractTrapped)?
+		}
+	}
 
-    /// Get a mutable reference to the inner `Ext`.
-    ///
-    /// This is mainly for the chain extension to have access to the environment the
-    /// contract is executing in.
-    pub fn ext(&mut self) -> &mut E {
-        self.ext
-    }
+	/// Get a mutable reference to the inner `Ext`.
+	///
+	/// This is mainly for the chain extension to have access to the environment the
+	/// contract is executing in.
+	pub fn ext(&mut self) -> &mut E {
+		self.ext
+	}
 
-    /// Store the reason for a host function triggered trap.
-    ///
-    /// This is called by the `define_env` macro in order to store any error returned by
-    /// the host functions defined through the said macro. It should **not** be called
-    /// manually.
-    pub fn set_trap_reason(&mut self, reason: TrapReason) {
-        self.trap_reason = Some(reason);
-    }
+	/// Store the reason for a host function triggered trap.
+	///
+	/// This is called by the `define_env` macro in order to store any error returned by
+	/// the host functions defined through the said macro. It should **not** be called
+	/// manually.
+	pub fn set_trap_reason(&mut self, reason: TrapReason) {
+		self.trap_reason = Some(reason);
+	}
 
-    /// Charge the gas meter with the specified token.
-    ///
-    /// Returns `Err(HostError)` if there is not enough gas.
-    pub fn charge_gas<Tok>(&mut self, token: Tok) -> Result<ChargedAmount, DispatchError>
-        where
-            Tok: Token<E::T, Metadata=HostFnWeights<E::T>>,
-    {
-        self.gas_meter.charge(&self.ext.schedule().host_fn_weights, token)
-    }
+	/// Charge the gas meter with the specified token.
+	///
+	/// Returns `Err(HostError)` if there is not enough gas.
+	pub fn charge_gas<Tok>(&mut self, token: Tok) -> Result<ChargedAmount, DispatchError>
+	where
+		Tok: Token<E::T, Metadata=HostFnWeights<E::T>>,
+	{
+		self.gas_meter.charge(&self.ext.schedule().host_fn_weights, token)
+	}
 
-    /// Correct previously charged gas amount.
-    pub fn adjust_gas<Tok>(&mut self, charged_amount: ChargedAmount, adjusted_amount: Tok)
-        where
-            Tok: Token<E::T, Metadata=HostFnWeights<E::T>>,
-    {
-        self.gas_meter.adjust_gas(
-            charged_amount,
-            &self.ext.schedule().host_fn_weights,
-            adjusted_amount,
-        );
-    }
+	/// Correct previously charged gas amount.
+	pub fn adjust_gas<Tok>(&mut self, charged_amount: ChargedAmount, adjusted_amount: Tok)
+	where
+		Tok: Token<E::T, Metadata=HostFnWeights<E::T>>,
+	{
+		self.gas_meter.adjust_gas(
+			charged_amount,
+			&self.ext.schedule().host_fn_weights,
+			adjusted_amount,
+		);
+	}
 
-    /// Read designated chunk from the sandbox memory.
-    ///
-    /// Returns `Err` if one of the following conditions occurs:
-    ///
-    /// - requested buffer is not within the bounds of the sandbox memory.
-    pub fn read_sandbox_memory(&self, ptr: u32, len: u32)
-                               -> Result<Vec<u8>, DispatchError>
-    {
-        ensure!(len <= self.ext.schedule().limits.max_memory_size(), Error::<E::T>::OutOfBounds);
-        let mut buf = vec![0u8; len as usize];
-        self.memory.get(ptr, buf.as_mut_slice())
-            .map_err(|_| Error::<E::T>::OutOfBounds)?;
-        Ok(buf)
-    }
+	/// Read designated chunk from the sandbox memory.
+	///
+	/// Returns `Err` if one of the following conditions occurs:
+	///
+	/// - requested buffer is not within the bounds of the sandbox memory.
+	pub fn read_sandbox_memory(&self, ptr: u32, len: u32)
+	-> Result<Vec<u8>, DispatchError>
+	{
+		ensure!(len <= self.ext.schedule().limits.max_memory_size(), Error::<E::T>::OutOfBounds);
+		let mut buf = vec![0u8; len as usize];
+		self.memory.get(ptr, buf.as_mut_slice())
+			.map_err(|_| Error::<E::T>::OutOfBounds)?;
+		Ok(buf)
+	}
 
-    /// Read designated chunk from the sandbox memory into the supplied buffer.
-    ///
-    /// Returns `Err` if one of the following conditions occurs:
-    ///
-    /// - requested buffer is not within the bounds of the sandbox memory.
-    pub fn read_sandbox_memory_into_buf(&self, ptr: u32, buf: &mut [u8])
-                                        -> Result<(), DispatchError>
-    {
-        self.memory.get(ptr, buf).map_err(|_| Error::<E::T>::OutOfBounds.into())
-    }
+	/// Read designated chunk from the sandbox memory into the supplied buffer.
+	///
+	/// Returns `Err` if one of the following conditions occurs:
+	///
+	/// - requested buffer is not within the bounds of the sandbox memory.
+	pub fn read_sandbox_memory_into_buf(&self, ptr: u32, buf: &mut [u8])
+	-> Result<(), DispatchError>
+	{
+		self.memory.get(ptr, buf).map_err(|_| Error::<E::T>::OutOfBounds.into())
+	}
 
-    /// Read designated chunk from the sandbox memory and attempt to decode into the specified type.
-    ///
-    /// Returns `Err` if one of the following conditions occurs:
-    ///
-    /// - requested buffer is not within the bounds of the sandbox memory.
-    /// - the buffer contents cannot be decoded as the required type.
-    ///
-    /// # Note
-    ///
-    /// It is safe to forgo benchmarking and charging weight relative to `len` for fixed
-    /// size types (basically everything not containing a heap collection):
-    /// Despite the fact that we are usually about to read the encoding of a fixed size
-    /// type, we cannot know the encoded size of that type. We therefore are required to
-    /// use the length provided by the contract. This length is untrusted and therefore
-    /// we charge weight relative to the provided size upfront that covers the copy costs.
-    /// On success this cost is refunded as the copying was already covered in the
-    /// overall cost of the host function. This is different from `read_sandbox_memory`
-    /// where the size is dynamic and the costs resulting from that dynamic size must
-    /// be charged relative to this dynamic size anyways (before reading) by constructing
-    /// the benchmark for that.
-    pub fn read_sandbox_memory_as<D: Decode>(&mut self, ptr: u32, len: u32)
-                                             -> Result<D, DispatchError>
-    {
-        let amount = self.charge_gas(RuntimeToken::CopyIn(len))?;
-        let buf = self.read_sandbox_memory(ptr, len)?;
-        let decoded = D::decode_all(&mut &buf[..])
-            .map_err(|_| DispatchError::from(Error::<E::T>::DecodingFailed))?;
-        self.gas_meter.refund(amount);
-        Ok(decoded)
-    }
+	/// Read designated chunk from the sandbox memory and attempt to decode into the specified type.
+	///
+	/// Returns `Err` if one of the following conditions occurs:
+	///
+	/// - requested buffer is not within the bounds of the sandbox memory.
+	/// - the buffer contents cannot be decoded as the required type.
+	///
+	/// # Note
+	///
+	/// It is safe to forgo benchmarking and charging weight relative to `len` for fixed
+	/// size types (basically everything not containing a heap collection):
+	/// Despite the fact that we are usually about to read the encoding of a fixed size
+	/// type, we cannot know the encoded size of that type. We therefore are required to
+	/// use the length provided by the contract. This length is untrusted and therefore
+	/// we charge weight relative to the provided size upfront that covers the copy costs.
+	/// On success this cost is refunded as the copying was already covered in the
+	/// overall cost of the host function. This is different from `read_sandbox_memory`
+	/// where the size is dynamic and the costs resulting from that dynamic size must
+	/// be charged relative to this dynamic size anyways (before reading) by constructing
+	/// the benchmark for that.
+	pub fn read_sandbox_memory_as<D: Decode>(&mut self, ptr: u32, len: u32)
+	-> Result<D, DispatchError>
+	{
+		let amount = self.charge_gas(RuntimeToken::CopyIn(len))?;
+		let buf = self.read_sandbox_memory(ptr, len)?;
+		let decoded = D::decode_all(&mut &buf[..])
+			.map_err(|_| DispatchError::from(Error::<E::T>::DecodingFailed))?;
+		self.gas_meter.refund(amount);
+		Ok(decoded)
+	}
 
-    /// Write the given buffer and its length to the designated locations in sandbox memory and
-    /// charge gas according to the token returned by `create_token`.
-    //
-    /// `out_ptr` is the location in sandbox memory where `buf` should be written to.
-    /// `out_len_ptr` is an in-out location in sandbox memory. It is read to determine the
-    /// length of the buffer located at `out_ptr`. If that buffer is large enough the actual
-    /// `buf.len()` is written to this location.
-    ///
-    /// If `out_ptr` is set to the sentinel value of `u32::max_value()` and `allow_skip` is true the
-    /// operation is skipped and `Ok` is returned. This is supposed to help callers to make copying
-    /// output optional. For example to skip copying back the output buffer of an `seal_call`
-    /// when the caller is not interested in the result.
-    ///
-    /// `create_token` can optionally instruct this function to charge the gas meter with the token
-    /// it returns. `create_token` receives the variable amount of bytes that are about to be copied by
-    /// this function.
-    ///
-    /// In addition to the error conditions of `write_sandbox_memory` this functions returns
-    /// `Err` if the size of the buffer located at `out_ptr` is too small to fit `buf`.
-    pub fn write_sandbox_output(
-        &mut self,
-        out_ptr: u32,
-        out_len_ptr: u32,
-        buf: &[u8],
-        allow_skip: bool,
-        create_token: impl FnOnce(u32) -> Option<RuntimeToken>,
-    ) -> Result<(), DispatchError>
-    {
-        if allow_skip && out_ptr == u32::max_value() {
-            return Ok(());
-        }
+	/// Write the given buffer and its length to the designated locations in sandbox memory and
+	/// charge gas according to the token returned by `create_token`.
+	//
+	/// `out_ptr` is the location in sandbox memory where `buf` should be written to.
+	/// `out_len_ptr` is an in-out location in sandbox memory. It is read to determine the
+	/// length of the buffer located at `out_ptr`. If that buffer is large enough the actual
+	/// `buf.len()` is written to this location.
+	///
+	/// If `out_ptr` is set to the sentinel value of `u32::max_value()` and `allow_skip` is true the
+	/// operation is skipped and `Ok` is returned. This is supposed to help callers to make copying
+	/// output optional. For example to skip copying back the output buffer of an `seal_call`
+	/// when the caller is not interested in the result.
+	///
+	/// `create_token` can optionally instruct this function to charge the gas meter with the token
+	/// it returns. `create_token` receives the variable amount of bytes that are about to be copied by
+	/// this function.
+	///
+	/// In addition to the error conditions of `write_sandbox_memory` this functions returns
+	/// `Err` if the size of the buffer located at `out_ptr` is too small to fit `buf`.
+	pub fn write_sandbox_output(
+		&mut self,
+		out_ptr: u32,
+		out_len_ptr: u32,
+		buf: &[u8],
+		allow_skip: bool,
+		create_token: impl FnOnce(u32) -> Option<RuntimeToken>,
+	) -> Result<(), DispatchError>
+	{
+		if allow_skip && out_ptr == u32::max_value() {
+			return Ok(());
+		}
 
-        let buf_len = buf.len() as u32;
-        let len: u32 = self.read_sandbox_memory_as(out_len_ptr, 4)?;
+		let buf_len = buf.len() as u32;
+		let len: u32 = self.read_sandbox_memory_as(out_len_ptr, 4)?;
 
-        if len < buf_len {
-            Err(Error::<E::T>::OutputBufferTooSmall)?
-        }
+		if len < buf_len {
+			Err(Error::<E::T>::OutputBufferTooSmall)?
+		}
 
-        if let Some(token) = create_token(buf_len) {
-            self.charge_gas(token)?;
-        }
+		if let Some(token) = create_token(buf_len) {
+			self.charge_gas(token)?;
+		}
 
-        self.memory.set(out_ptr, buf).and_then(|_| {
-            self.memory.set(out_len_ptr, &buf_len.encode())
-        })
-            .map_err(|_| Error::<E::T>::OutOfBounds)?;
+		self.memory.set(out_ptr, buf).and_then(|_| {
+			self.memory.set(out_len_ptr, &buf_len.encode())
+		})
+		.map_err(|_| Error::<E::T>::OutOfBounds)?;
 
-        Ok(())
-    }
+		Ok(())
+	}
 
-    /// Write the given buffer to the designated location in the sandbox memory.
-    ///
-    /// Returns `Err` if one of the following conditions occurs:
-    ///
-    /// - designated area is not within the bounds of the sandbox memory.
-    fn write_sandbox_memory(&mut self, ptr: u32, buf: &[u8]) -> Result<(), DispatchError> {
-        self.memory.set(ptr, buf).map_err(|_| Error::<E::T>::OutOfBounds.into())
-    }
+	/// Write the given buffer to the designated location in the sandbox memory.
+	///
+	/// Returns `Err` if one of the following conditions occurs:
+	///
+	/// - designated area is not within the bounds of the sandbox memory.
+	fn write_sandbox_memory(&mut self, ptr: u32, buf: &[u8]) -> Result<(), DispatchError> {
+		self.memory.set(ptr, buf).map_err(|_| Error::<E::T>::OutOfBounds.into())
+	}
 
-    /// Computes the given hash function on the supplied input.
-    ///
-    /// Reads from the sandboxed input buffer into an intermediate buffer.
-    /// Returns the result directly to the output buffer of the sandboxed memory.
-    ///
-    /// It is the callers responsibility to provide an output buffer that
-    /// is large enough to hold the expected amount of bytes returned by the
-    /// chosen hash function.
-    ///
-    /// # Note
-    ///
-    /// The `input` and `output` buffers may overlap.
-    fn compute_hash_on_intermediate_buffer<F, R>(
-        &mut self,
-        hash_fn: F,
-        input_ptr: u32,
-        input_len: u32,
-        output_ptr: u32,
-    ) -> Result<(), DispatchError>
-        where
-            F: FnOnce(&[u8]) -> R,
-            R: AsRef<[u8]>,
-    {
-        // Copy input into supervisor memory.
-        let input = self.read_sandbox_memory(input_ptr, input_len)?;
-        // Compute the hash on the input buffer using the given hash function.
-        let hash = hash_fn(&input);
-        // Write the resulting hash back into the sandboxed output buffer.
-        self.write_sandbox_memory(output_ptr, hash.as_ref())?;
-        Ok(())
-    }
+	/// Computes the given hash function on the supplied input.
+	///
+	/// Reads from the sandboxed input buffer into an intermediate buffer.
+	/// Returns the result directly to the output buffer of the sandboxed memory.
+	///
+	/// It is the callers responsibility to provide an output buffer that
+	/// is large enough to hold the expected amount of bytes returned by the
+	/// chosen hash function.
+	///
+	/// # Note
+	///
+	/// The `input` and `output` buffers may overlap.
+	fn compute_hash_on_intermediate_buffer<F, R>(
+		&mut self,
+		hash_fn: F,
+		input_ptr: u32,
+		input_len: u32,
+		output_ptr: u32,
+	) -> Result<(), DispatchError>
+	where
+		F: FnOnce(&[u8]) -> R,
+		R: AsRef<[u8]>,
+	{
+		// Copy input into supervisor memory.
+		let input = self.read_sandbox_memory(input_ptr, input_len)?;
+		// Compute the hash on the input buffer using the given hash function.
+		let hash = hash_fn(&input);
+		// Write the resulting hash back into the sandboxed output buffer.
+		self.write_sandbox_memory(output_ptr, hash.as_ref())?;
+		Ok(())
+	}
 
-    /// Fallible conversion of `DispatchError` to `ReturnCode`.
-    fn err_into_return_code(from: DispatchError) -> Result<ReturnCode, DispatchError> {
-        use ReturnCode::*;
+	/// Fallible conversion of `DispatchError` to `ReturnCode`.
+	fn err_into_return_code(from: DispatchError) -> Result<ReturnCode, DispatchError> {
+		use ReturnCode::*;
 
-        let below_sub = Error::<E::T>::BelowSubsistenceThreshold.into();
-        let transfer_failed = Error::<E::T>::TransferFailed.into();
-        let not_funded = Error::<E::T>::NewContractNotFunded.into();
-        let no_code = Error::<E::T>::CodeNotFound.into();
-        let invalid_contract = Error::<E::T>::NotCallable.into();
+		let below_sub = Error::<E::T>::BelowSubsistenceThreshold.into();
+		let transfer_failed = Error::<E::T>::TransferFailed.into();
+		let not_funded = Error::<E::T>::NewContractNotFunded.into();
+		let no_code = Error::<E::T>::CodeNotFound.into();
+		let invalid_contract = Error::<E::T>::NotCallable.into();
 
-        match from {
-            x if x == below_sub => Ok(BelowSubsistenceThreshold),
-            x if x == transfer_failed => Ok(TransferFailed),
-            x if x == not_funded => Ok(NewContractNotFunded),
-            x if x == no_code => Ok(CodeNotFound),
-            x if x == invalid_contract => Ok(NotCallable),
-            err => Err(err)
-        }
-    }
+		match from {
+			x if x == below_sub => Ok(BelowSubsistenceThreshold),
+			x if x == transfer_failed => Ok(TransferFailed),
+			x if x == not_funded => Ok(NewContractNotFunded),
+			x if x == no_code => Ok(CodeNotFound),
+			x if x == invalid_contract => Ok(NotCallable),
+			err => Err(err)
+		}
+	}
 
-    /// Fallible conversion of a `ExecResult` to `ReturnCode`.
-    fn exec_into_return_code(from: ExecResult) -> Result<ReturnCode, DispatchError> {
-        use pallet_contracts_primitives::ErrorOrigin::Callee;
+	/// Fallible conversion of a `ExecResult` to `ReturnCode`.
+	fn exec_into_return_code(from: ExecResult) -> Result<ReturnCode, DispatchError> {
+		use pallet_contracts_primitives::ErrorOrigin::Callee;
 
-        let ExecError { error, origin } = match from {
-            Ok(retval) => return Ok(retval.into()),
-            Err(err) => err,
-        };
+		let ExecError { error, origin } = match from {
+			Ok(retval) => return Ok(retval.into()),
+			Err(err) => err,
+		};
 
-        match (error, origin) {
-            (_, Callee) => Ok(ReturnCode::CalleeTrapped),
-            (err, _) => Self::err_into_return_code(err)
-        }
-    }
+		match (error, origin) {
+			(_, Callee) => Ok(ReturnCode::CalleeTrapped),
+			(err, _) => Self::err_into_return_code(err)
+		}
+	}
 }
 
 // ***********************************************************

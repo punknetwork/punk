@@ -4,13 +4,13 @@ use sp_npos_elections::sp_arithmetic::Percent;
 use sp_runtime::codec::{Encode, Error};
 
 fn main() {
-    generate_solution_type!(#[compact] pub struct InnerTestSolutionCompact::<
+	generate_solution_type!(#[compact] pub struct InnerTestSolutionCompact::<
 		VoterIndex = u32,
 		TargetIndex = u32,
 		Accuracy = Percent,
 	>(16));
-    loop {
-        fuzz!(|fuzzer_data: &[u8]| {
+	loop {
+		fuzz!(|fuzzer_data: &[u8]| {
 			let result_decoded: Result<InnerTestSolutionCompact, Error> =
 				<InnerTestSolutionCompact as codec::Decode>::decode(&mut &fuzzer_data[..]);
 			// Ignore errors as not every random sequence of bytes can be decoded as InnerTestSolutionCompact
@@ -34,5 +34,5 @@ fn main() {
 				assert_eq!(decoded, decoded2);
 			}
 		});
-    }
+	}
 }

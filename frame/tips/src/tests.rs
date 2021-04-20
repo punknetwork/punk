@@ -407,7 +407,7 @@ fn test_last_reward_migration() {
 		who: 10,
 		finder: Some((20, 30)),
 		closes: Some(13),
-		tips: vec![(40, 50), (60, 70)],
+		tips: vec![(40, 50), (60, 70)]
 	};
 
 	let reason2 = BlakeTwo256::hash(b"reason2");
@@ -418,7 +418,7 @@ fn test_last_reward_migration() {
 		who: 20,
 		finder: None,
 		closes: Some(13),
-		tips: vec![(40, 50), (60, 70)],
+		tips: vec![(40, 50), (60, 70)]
 	};
 
 	let data = vec![

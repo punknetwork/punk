@@ -266,7 +266,7 @@ pub mod pallet {
 		type Call = Call<T>;
 		fn validate_unsigned(
 			_source: TransactionSource,
-			_call: &Self::Call,
+			_call: &Self::Call
 		) -> TransactionValidity {
 			T::AccountId::from(SomeType1); // Test for where clause
 			T::AccountId::from(SomeType5); // Test for where clause

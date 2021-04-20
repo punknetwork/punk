@@ -89,7 +89,7 @@ impl<T: Config> Module<T> {
 			let up_to = sp_std::cmp::min(up_to, end);
 
 			if up_to < start {
-				return; // out of bounds. harmless.
+				return // out of bounds. harmless.
 			}
 
 			(start..up_to).for_each(<Self as Store>::HistoricalSessions::remove);

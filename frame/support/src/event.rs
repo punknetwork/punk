@@ -550,60 +550,60 @@ macro_rules! __impl_outer_event_json_metadata {
 #[cfg(test)]
 #[allow(dead_code)]
 mod tests {
-    use super::*;
-    use serde::Serialize;
-    use codec::{Encode, Decode};
+	use super::*;
+	use serde::Serialize;
+	use codec::{Encode, Decode};
 
-    mod system {
-        pub trait Config: 'static {
-            type Origin;
-            type BlockNumber;
-            type PalletInfo: crate::traits::PalletInfo;
-            type DbWeight: crate::traits::Get<crate::weights::RuntimeDbWeight>;
-        }
+	mod system {
+		pub trait Config: 'static {
+			type Origin;
+			type BlockNumber;
+			type PalletInfo: crate::traits::PalletInfo;
+			type DbWeight: crate::traits::Get<crate::weights::RuntimeDbWeight>;
+		}
 
-        decl_module! {
+		decl_module! {
 			pub struct Module<T: Config> for enum Call where origin: T::Origin, system=self {}
 		}
 
-        decl_event!(
+		decl_event!(
 			pub enum Event {
 				SystemEvent,
 			}
 		);
-    }
+	}
 
-    mod system_renamed {
-        pub trait Config: 'static {
-            type Origin;
-            type BlockNumber;
-            type PalletInfo: crate::traits::PalletInfo;
-            type DbWeight: crate::traits::Get<crate::weights::RuntimeDbWeight>;
-        }
+	mod system_renamed {
+		pub trait Config: 'static {
+			type Origin;
+			type BlockNumber;
+			type PalletInfo: crate::traits::PalletInfo;
+			type DbWeight: crate::traits::Get<crate::weights::RuntimeDbWeight>;
+		}
 
-        decl_module! {
+		decl_module! {
 			pub struct Module<T: Config> for enum Call where origin: T::Origin, system=self {}
 		}
 
-        decl_event!(
+		decl_event!(
 			pub enum Event {
 				SystemEvent,
 			}
 		);
-    }
+	}
 
-    mod event_module {
-        use super::system;
+	mod event_module {
+		use super::system;
 
-        pub trait Config: system::Config {
-            type Balance;
-        }
+		pub trait Config: system::Config {
+			type Balance;
+		}
 
-        decl_module! {
+		decl_module! {
 			pub struct Module<T: Config> for enum Call where origin: T::Origin, system=system {}
 		}
 
-        decl_event!(
+		decl_event!(
 			/// Event without renaming the generic parameter `Balance` and `Origin`.
 			pub enum Event<T> where <T as Config>::Balance, <T as system::Config>::Origin
 			{
@@ -613,20 +613,20 @@ mod tests {
 				EventWithoutParams,
 			}
 		);
-    }
+	}
 
-    mod event_module2 {
-        use super::system;
+	mod event_module2 {
+		use super::system;
 
-        pub trait Config: system::Config {
-            type Balance;
-        }
+		pub trait Config: system::Config {
+			type Balance;
+		}
 
-        decl_module! {
+		decl_module! {
 			pub struct Module<T: Config> for enum Call where origin: T::Origin, system=system {}
 		}
 
-        decl_event!(
+		decl_event!(
 			/// Event with renamed generic parameter
 			pub enum Event<T> where
 				BalanceRenamed = <T as Config>::Balance,
@@ -636,28 +636,28 @@ mod tests {
 				TestOrigin(OriginRenamed),
 			}
 		);
-    }
+	}
 
-    mod event_module3 {
-        decl_event!(
+	mod event_module3 {
+		decl_event!(
 			pub enum Event {
 				HiEvent,
 			}
 		);
-    }
+	}
 
-    mod event_module4 {
-        use super::system;
+	mod event_module4 {
+		use super::system;
 
-        pub trait Config: system::Config {
-            type Balance;
-        }
+		pub trait Config: system::Config {
+			type Balance;
+		}
 
-        decl_module! {
+		decl_module! {
 			pub struct Module<T: Config> for enum Call where origin: T::Origin, system=system {}
 		}
 
-        decl_event!(
+		decl_event!(
 			/// Event finish formatting on an unnamed one with trailing comma
 			pub enum Event<T> where
 				<T as Config>::Balance,
@@ -666,20 +666,20 @@ mod tests {
 				TestEvent(Balance, Origin),
 			}
 		);
-    }
+	}
 
-    mod event_module5 {
-        use super::system;
+	mod event_module5 {
+		use super::system;
 
-        pub trait Config: system::Config {
-            type Balance;
-        }
+		pub trait Config: system::Config {
+			type Balance;
+		}
 
-        decl_module! {
+		decl_module! {
 			pub struct Module<T: Config> for enum Call where origin: T::Origin, system=system {}
 		}
 
-        decl_event!(
+		decl_event!(
 			/// Event finish formatting on an named one with trailing comma
 			pub enum Event<T> where
 				BalanceRenamed = <T as Config>::Balance,
@@ -692,12 +692,12 @@ mod tests {
 				),
 			}
 		);
-    }
+	}
 
-    #[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, Serialize)]
-    pub struct TestRuntime;
+	#[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, Serialize)]
+	pub struct TestRuntime;
 
-    impl_outer_event! {
+	impl_outer_event! {
 		pub enum TestEvent for TestRuntime {
 			system,
 			event_module<T>,
@@ -706,10 +706,10 @@ mod tests {
 		}
 	}
 
-    #[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, Serialize)]
-    pub struct TestRuntime2;
+	#[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, Serialize)]
+	pub struct TestRuntime2;
 
-    impl_outer_event! {
+	impl_outer_event! {
 		pub enum TestEventSystemRenamed for TestRuntime2 {
 			system_renamed,
 			event_module<T>,
@@ -718,119 +718,119 @@ mod tests {
 		}
 	}
 
-    impl event_module::Config for TestRuntime {
-        type Balance = u32;
-    }
+	impl event_module::Config for TestRuntime {
+		type Balance = u32;
+	}
 
-    impl event_module2::Config for TestRuntime {
-        type Balance = u32;
-    }
+	impl event_module2::Config for TestRuntime {
+		type Balance = u32;
+	}
 
-    impl system::Config for TestRuntime {
-        type Origin = u32;
-        type BlockNumber = u32;
-        type PalletInfo = crate::tests::PanicPalletInfo;
-        type DbWeight = ();
-    }
+	impl system::Config for TestRuntime {
+		type Origin = u32;
+		type BlockNumber = u32;
+		type PalletInfo = crate::tests::PanicPalletInfo;
+		type DbWeight = ();
+	}
 
-    impl event_module::Config for TestRuntime2 {
-        type Balance = u32;
-    }
+	impl event_module::Config for TestRuntime2 {
+		type Balance = u32;
+	}
 
-    impl event_module2::Config for TestRuntime2 {
-        type Balance = u32;
-    }
+	impl event_module2::Config for TestRuntime2 {
+		type Balance = u32;
+	}
 
-    impl system_renamed::Config for TestRuntime2 {
-        type Origin = u32;
-        type BlockNumber = u32;
-        type PalletInfo = crate::tests::PanicPalletInfo;
-        type DbWeight = ();
-    }
+	impl system_renamed::Config for TestRuntime2 {
+		type Origin = u32;
+		type BlockNumber = u32;
+		type PalletInfo = crate::tests::PanicPalletInfo;
+		type DbWeight = ();
+	}
 
-    impl system::Config for TestRuntime2 {
-        type Origin = u32;
-        type BlockNumber = u32;
-        type PalletInfo = crate::tests::PanicPalletInfo;
-        type DbWeight = ();
-    }
+	impl system::Config for TestRuntime2 {
+		type Origin = u32;
+		type BlockNumber = u32;
+		type PalletInfo = crate::tests::PanicPalletInfo;
+		type DbWeight = ();
+	}
 
-    const EXPECTED_METADATA: OuterEventMetadata = OuterEventMetadata {
-        name: DecodeDifferent::Encode("TestEvent"),
-        events: DecodeDifferent::Encode(&[
-            (
-                "system",
-                FnEncode(|| &[
-                    EventMetadata {
-                        name: DecodeDifferent::Encode("SystemEvent"),
-                        arguments: DecodeDifferent::Encode(&[]),
-                        documentation: DecodeDifferent::Encode(&[]),
-                    }
-                ])
-            ),
-            (
-                "event_module",
-                FnEncode(|| &[
-                    EventMetadata {
-                        name: DecodeDifferent::Encode("TestEvent"),
-                        arguments: DecodeDifferent::Encode(&["Balance", "Origin"]),
-                        documentation: DecodeDifferent::Encode(&[" Hi, I am a comment."]),
-                    },
-                    EventMetadata {
-                        name: DecodeDifferent::Encode("EventWithoutParams"),
-                        arguments: DecodeDifferent::Encode(&[]),
-                        documentation: DecodeDifferent::Encode(&[" Dog"]),
-                    },
-                ])
-            ),
-            (
-                "event_module2",
-                FnEncode(|| &[
-                    EventMetadata {
-                        name: DecodeDifferent::Encode("TestEvent"),
-                        arguments: DecodeDifferent::Encode(&["BalanceRenamed"]),
-                        documentation: DecodeDifferent::Encode(&[]),
-                    },
-                    EventMetadata {
-                        name: DecodeDifferent::Encode("TestOrigin"),
-                        arguments: DecodeDifferent::Encode(&["OriginRenamed"]),
-                        documentation: DecodeDifferent::Encode(&[]),
-                    },
-                ])
-            ),
-            (
-                "event_module3",
-                FnEncode(|| &[
-                    EventMetadata {
-                        name: DecodeDifferent::Encode("HiEvent"),
-                        arguments: DecodeDifferent::Encode(&[]),
-                        documentation: DecodeDifferent::Encode(&[]),
-                    }
-                ])
-            )
-        ]),
-    };
+	const EXPECTED_METADATA: OuterEventMetadata = OuterEventMetadata {
+		name: DecodeDifferent::Encode("TestEvent"),
+		events: DecodeDifferent::Encode(&[
+			(
+				"system",
+				FnEncode(|| &[
+					EventMetadata {
+						name: DecodeDifferent::Encode("SystemEvent"),
+						arguments: DecodeDifferent::Encode(&[]),
+						documentation: DecodeDifferent::Encode(&[]),
+					}
+				])
+			),
+			(
+				"event_module",
+				FnEncode(|| &[
+					EventMetadata {
+						name: DecodeDifferent::Encode("TestEvent"),
+						arguments: DecodeDifferent::Encode(&[ "Balance", "Origin" ]),
+						documentation: DecodeDifferent::Encode(&[ " Hi, I am a comment." ])
+					},
+					EventMetadata {
+						name: DecodeDifferent::Encode("EventWithoutParams"),
+						arguments: DecodeDifferent::Encode(&[]),
+						documentation: DecodeDifferent::Encode(&[ " Dog" ]),
+					},
+				])
+			),
+			(
+				"event_module2",
+				FnEncode(|| &[
+					EventMetadata {
+						name: DecodeDifferent::Encode("TestEvent"),
+						arguments: DecodeDifferent::Encode(&[ "BalanceRenamed" ]),
+						documentation: DecodeDifferent::Encode(&[])
+					},
+					EventMetadata {
+						name: DecodeDifferent::Encode("TestOrigin"),
+						arguments: DecodeDifferent::Encode(&[ "OriginRenamed" ]),
+						documentation: DecodeDifferent::Encode(&[]),
+					},
+				])
+			),
+			(
+				"event_module3",
+				FnEncode(|| &[
+					EventMetadata {
+						name: DecodeDifferent::Encode("HiEvent"),
+						arguments: DecodeDifferent::Encode(&[]),
+						documentation: DecodeDifferent::Encode(&[])
+					}
+				])
+			)
+		])
+	};
 
-    #[test]
-    fn outer_event_metadata() {
-        assert_eq!(EXPECTED_METADATA, TestRuntime::outer_event_metadata());
-    }
+	#[test]
+	fn outer_event_metadata() {
+		assert_eq!(EXPECTED_METADATA, TestRuntime::outer_event_metadata());
+	}
 
-    #[test]
-    fn test_codec() {
-        let runtime_1_event_module_2 = TestEvent::event_module2(
-            event_module2::Event::<TestRuntime>::TestEvent(3)
-        );
-        assert_eq!(runtime_1_event_module_2.encode()[0], 2);
+	#[test]
+	fn test_codec() {
+		let runtime_1_event_module_2 = TestEvent::event_module2(
+			event_module2::Event::<TestRuntime>::TestEvent(3)
+		);
+		assert_eq!(runtime_1_event_module_2.encode()[0], 2);
 
-        let runtime_2_event_module_2 = TestEventSystemRenamed::event_module2(
-            event_module2::Event::<TestRuntime2>::TestEvent(3)
-        );
-        assert_eq!(runtime_2_event_module_2.encode()[0], 5);
-
-        let runtime_2_event_module_3 = TestEventSystemRenamed::event_module3(
-            event_module3::Event::HiEvent
-        );
-        assert_eq!(runtime_2_event_module_3.encode()[0], 3);
-    }
+		let runtime_2_event_module_2 = TestEventSystemRenamed::event_module2(
+			event_module2::Event::<TestRuntime2>::TestEvent(3)
+		);
+		assert_eq!(runtime_2_event_module_2.encode()[0], 5);
+		
+		let runtime_2_event_module_3 = TestEventSystemRenamed::event_module3(
+			event_module3::Event::HiEvent
+		);
+		assert_eq!(runtime_2_event_module_3.encode()[0], 3);
+	}
 }

@@ -32,7 +32,7 @@ use sc_client_api::{
 	StorageProvider, BlockBackend, in_mem, BlockchainEvents,
 };
 use sc_client_db::{
-	Backend, DatabaseSettings, DatabaseSettingsSrc, PruningMode, KeepBlocks, TransactionStorageMode,
+	Backend, DatabaseSettings, DatabaseSettingsSrc, PruningMode, KeepBlocks, TransactionStorageMode
 };
 use sc_block_builder::BlockBuilderProvider;
 use sc_service::client::{self, Client, LocalCallExecutor, new_in_mem};

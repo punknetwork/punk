@@ -24,52 +24,52 @@ use crate::columns;
 struct DbAdapter(parity_db::Db);
 
 fn handle_err<T>(result: parity_db::Result<T>) -> T {
-    match result {
-        Ok(r) => r,
-        Err(e) => {
-            panic!("Critical database error: {:?}", e);
-        }
-    }
+	match result {
+		Ok(r) => r,
+		Err(e) =>  {
+			panic!("Critical database error: {:?}", e);
+		}
+	}
 }
 
 /// Wrap parity-db database into a trait object that implements `sp_database::Database`
 pub fn open<H: Clone + AsRef<[u8]>>(path: &std::path::Path, db_type: DatabaseType)
-                                    -> parity_db::Result<std::sync::Arc<dyn Database<H>>>
+	-> parity_db::Result<std::sync::Arc<dyn Database<H>>>
 {
-    let mut config = parity_db::Options::with_columns(path, NUM_COLUMNS as u8);
-    config.sync = true; // Flush each commit
-    if db_type == DatabaseType::Full {
-        let mut state_col = &mut config.columns[columns::STATE as usize];
-        state_col.ref_counted = true;
-        state_col.preimage = true;
-        state_col.uniform = true;
-    }
-    let db = parity_db::Db::open(&config)?;
-    Ok(std::sync::Arc::new(DbAdapter(db)))
+	let mut config = parity_db::Options::with_columns(path, NUM_COLUMNS as u8);
+	config.sync = true; // Flush each commit
+	if db_type == DatabaseType::Full {
+		let mut state_col = &mut config.columns[columns::STATE as usize];
+		state_col.ref_counted = true;
+		state_col.preimage = true;
+		state_col.uniform = true;
+	}
+	let db = parity_db::Db::open(&config)?;
+	Ok(std::sync::Arc::new(DbAdapter(db)))
 }
 
 impl<H: Clone + AsRef<[u8]>> Database<H> for DbAdapter {
-    fn commit(&self, transaction: Transaction<H>) -> Result<(), DatabaseError> {
-        handle_err(self.0.commit(transaction.0.into_iter().map(|change|
-            match change {
-                Change::Set(col, key, value) => (col as u8, key, Some(value)),
-                Change::Remove(col, key) => (col as u8, key, None),
-                _ => unimplemented!(),
-            }))
-        );
+	fn commit(&self, transaction: Transaction<H>) -> Result<(), DatabaseError> {
+		handle_err(self.0.commit(transaction.0.into_iter().map(|change|
+			match change {
+				Change::Set(col, key, value) => (col as u8, key, Some(value)),
+				Change::Remove(col, key) => (col as u8, key, None),
+				_ => unimplemented!(),
+			}))
+		);
 
-        Ok(())
-    }
+		Ok(())
+	}
 
-    fn get(&self, col: ColumnId, key: &[u8]) -> Option<Vec<u8>> {
-        handle_err(self.0.get(col as u8, key))
-    }
+	fn get(&self, col: ColumnId, key: &[u8]) -> Option<Vec<u8>> {
+		handle_err(self.0.get(col as u8, key))
+	}
 
-    fn contains(&self, col: ColumnId, key: &[u8]) -> bool {
-        handle_err(self.0.get_size(col as u8, key)).is_some()
-    }
+	fn contains(&self, col: ColumnId, key: &[u8]) -> bool {
+		handle_err(self.0.get_size(col as u8, key)).is_some()
+	}
 
-    fn value_size(&self, col: ColumnId, key: &[u8]) -> Option<usize> {
-        handle_err(self.0.get_size(col as u8, key)).map(|s| s as usize)
-    }
+	fn value_size(&self, col: ColumnId, key: &[u8]) -> Option<usize> {
+		handle_err(self.0.get_size(col as u8, key)).map(|s| s as usize)
+	}
 }

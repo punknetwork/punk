@@ -23,168 +23,167 @@ use crate::dispatch::Parameter;
 
 /// Anything that can have a `::len()` method.
 pub trait Len {
-    /// Return the length of data type.
-    fn len(&self) -> usize;
+	/// Return the length of data type.
+	fn len(&self) -> usize;
 }
 
-impl<T: IntoIterator + Clone, > Len for T where <T as IntoIterator>::IntoIter: ExactSizeIterator {
-    fn len(&self) -> usize {
-        self.clone().into_iter().len()
-    }
+impl<T: IntoIterator + Clone,> Len for T where <T as IntoIterator>::IntoIter: ExactSizeIterator {
+	fn len(&self) -> usize {
+		self.clone().into_iter().len()
+	}
 }
 
 /// A trait for querying a single value from a type.
 ///
 /// It is not required that the value is constant.
 pub trait Get<T> {
-    /// Return the current value.
-    fn get() -> T;
+	/// Return the current value.
+	fn get() -> T;
 }
 
 impl<T: Default> Get<T> for () {
-    fn get() -> T { T::default() }
+	fn get() -> T { T::default() }
 }
 
 /// Implement Get by returning Default for any type that implements Default.
 pub struct GetDefault;
-
 impl<T: Default> Get<T> for GetDefault {
-    fn get() -> T {
-        T::default()
-    }
+	fn get() -> T {
+		T::default()
+	}
 }
 
 /// A type for which some values make sense to be able to drop without further consideration.
 pub trait TryDrop: Sized {
-    /// Drop an instance cleanly. Only works if its value represents "no-operation".
-    fn try_drop(self) -> Result<(), Self>;
+	/// Drop an instance cleanly. Only works if its value represents "no-operation".
+	fn try_drop(self) -> Result<(), Self>;
 }
 
 /// Return type used when we need to return one of two items, each of the opposite direction or
 /// sign, with one (`Same`) being of the same type as the `self` or primary argument of the function
 /// that returned it.
 pub enum SameOrOther<A, B> {
-    /// No item.
-    None,
-    /// An item of the same type as the `Self` on which the return function was called.
-    Same(A),
-    /// An item of the opposite type to the `Self` on which the return function was called.
-    Other(B),
+	/// No item.
+	None,
+	/// An item of the same type as the `Self` on which the return function was called.
+	Same(A),
+	/// An item of the opposite type to the `Self` on which the return function was called.
+	Other(B),
 }
 
 impl<A, B> TryDrop for SameOrOther<A, B> {
-    fn try_drop(self) -> Result<(), Self> {
-        if let SameOrOther::None = self {
-            Ok(())
-        } else {
-            Err(self)
-        }
-    }
+	fn try_drop(self) -> Result<(), Self> {
+		if let SameOrOther::None = self {
+			Ok(())
+		} else {
+			Err(self)
+		}
+	}
 }
 
 impl<A, B> SameOrOther<A, B> {
-    /// Returns `Ok` with the inner value of `Same` if `self` is that, otherwise returns `Err` with
-    /// `self`.
-    pub fn try_same(self) -> Result<A, Self> {
-        match self {
-            SameOrOther::Same(a) => Ok(a),
-            x => Err(x),
-        }
-    }
+	/// Returns `Ok` with the inner value of `Same` if `self` is that, otherwise returns `Err` with
+	/// `self`.
+	pub fn try_same(self) -> Result<A, Self> {
+		match self {
+			SameOrOther::Same(a) => Ok(a),
+			x => Err(x),
+		}
+	}
 
-    /// Returns `Ok` with the inner value of `Other` if `self` is that, otherwise returns `Err` with
-    /// `self`.
-    pub fn try_other(self) -> Result<B, Self> {
-        match self {
-            SameOrOther::Other(b) => Ok(b),
-            x => Err(x),
-        }
-    }
+	/// Returns `Ok` with the inner value of `Other` if `self` is that, otherwise returns `Err` with
+	/// `self`.
+	pub fn try_other(self) -> Result<B, Self> {
+		match self {
+			SameOrOther::Other(b) => Ok(b),
+			x => Err(x),
+		}
+	}
 
-    /// Returns `Ok` if `self` is `None`, otherwise returns `Err` with `self`.
-    pub fn try_none(self) -> Result<(), Self> {
-        match self {
-            SameOrOther::None => Ok(()),
-            x => Err(x),
-        }
-    }
+	/// Returns `Ok` if `self` is `None`, otherwise returns `Err` with `self`.
+	pub fn try_none(self) -> Result<(), Self> {
+		match self {
+			SameOrOther::None => Ok(()),
+			x => Err(x),
+		}
+	}
 
-    pub fn same(self) -> Result<A, B> where A: Default {
-        match self {
-            SameOrOther::Same(a) => Ok(a),
-            SameOrOther::None => Ok(A::default()),
-            SameOrOther::Other(b) => Err(b),
-        }
-    }
+	pub fn same(self) -> Result<A, B> where A: Default {
+		match self {
+			SameOrOther::Same(a) => Ok(a),
+			SameOrOther::None => Ok(A::default()),
+			SameOrOther::Other(b) => Err(b),
+		}
+	}
 
-    pub fn other(self) -> Result<B, A> where B: Default {
-        match self {
-            SameOrOther::Same(a) => Err(a),
-            SameOrOther::None => Ok(B::default()),
-            SameOrOther::Other(b) => Ok(b),
-        }
-    }
+	pub fn other(self) -> Result<B, A> where B: Default {
+		match self {
+			SameOrOther::Same(a) => Err(a),
+			SameOrOther::None => Ok(B::default()),
+			SameOrOther::Other(b) => Ok(b),
+		}
+	}
 }
 
 /// Handler for when a new account has been created.
 #[impl_trait_for_tuples::impl_for_tuples(30)]
 pub trait OnNewAccount<AccountId> {
-    /// A new account `who` has been registered.
-    fn on_new_account(who: &AccountId);
+	/// A new account `who` has been registered.
+	fn on_new_account(who: &AccountId);
 }
 
 /// The account with the given id was reaped.
 #[impl_trait_for_tuples::impl_for_tuples(30)]
 pub trait OnKilledAccount<AccountId> {
-    /// The account with the given id was reaped.
-    fn on_killed_account(who: &AccountId);
+	/// The account with the given id was reaped.
+	fn on_killed_account(who: &AccountId);
 }
 
 /// A simple, generic one-parameter event notifier/handler.
 pub trait HandleLifetime<T> {
-    /// An account was created.
-    fn created(_t: &T) -> Result<(), StoredMapError> { Ok(()) }
+	/// An account was created.
+	fn created(_t: &T) -> Result<(), StoredMapError> { Ok(()) }
 
-    /// An account was killed.
-    fn killed(_t: &T) -> Result<(), StoredMapError> { Ok(()) }
+	/// An account was killed.
+	fn killed(_t: &T) -> Result<(), StoredMapError> { Ok(()) }
 }
 
 impl<T> HandleLifetime<T> for () {}
 
 pub trait Time {
-    type Moment: AtLeast32Bit + Parameter + Default + Copy;
+	type Moment: AtLeast32Bit + Parameter + Default + Copy;
 
-    fn now() -> Self::Moment;
+	fn now() -> Self::Moment;
 }
 
 /// Trait to deal with unix time.
 pub trait UnixTime {
-    /// Return duration since `SystemTime::UNIX_EPOCH`.
-    fn now() -> core::time::Duration;
+	/// Return duration since `SystemTime::UNIX_EPOCH`.
+	fn now() -> core::time::Duration;
 }
 
 /// Trait to be used when types are exactly same.
 ///
 /// This allow to convert back and forth from type, a reference and a mutable reference.
 pub trait IsType<T>: Into<T> + From<T> {
-    /// Cast reference.
-    fn from_ref(t: &T) -> &Self;
+	/// Cast reference.
+	fn from_ref(t: &T) -> &Self;
 
-    /// Cast reference.
-    fn into_ref(&self) -> &T;
+	/// Cast reference.
+	fn into_ref(&self) -> &T;
 
-    /// Cast mutable reference.
-    fn from_mut(t: &mut T) -> &mut Self;
+	/// Cast mutable reference.
+	fn from_mut(t: &mut T) -> &mut Self;
 
-    /// Cast mutable reference.
-    fn into_mut(&mut self) -> &mut T;
+	/// Cast mutable reference.
+	fn into_mut(&mut self) -> &mut T;
 }
 
 impl<T> IsType<T> for T {
-    fn from_ref(t: &T) -> &Self { t }
-    fn into_ref(&self) -> &T { self }
-    fn from_mut(t: &mut T) -> &mut Self { t }
-    fn into_mut(&mut self) -> &mut T { self }
+	fn from_ref(t: &T) -> &Self { t }
+	fn into_ref(&self) -> &T { self }
+	fn from_mut(t: &mut T) -> &mut Self { t }
+	fn into_mut(&mut self) -> &mut T { self }
 }
 
 /// Something that can be checked to be a of sub type `T`.
@@ -230,8 +229,8 @@ impl<T> IsType<T> for T {
 /// }
 /// ```
 pub trait IsSubType<T> {
-    /// Returns `Some(_)` if `self` is an instance of sub type `T`.
-    fn is_sub_type(&self) -> Option<&T>;
+	/// Returns `Some(_)` if `self` is an instance of sub type `T`.
+	fn is_sub_type(&self) -> Option<&T>;
 }
 
 /// Something that can execute a given block.
@@ -239,14 +238,14 @@ pub trait IsSubType<T> {
 /// Executing a block means that all extrinsics in a given block will be executed and the resulting
 /// header will be checked against the header of the given block.
 pub trait ExecuteBlock<Block: BlockT> {
-    /// Execute the given `block`.
-    ///
-    /// This will execute all extrinsics in the block and check that the resulting header is correct.
-    ///
-    /// # Panic
-    ///
-    /// Panics when an extrinsics panics or the resulting header doesn't match the expected header.
-    fn execute_block(block: Block);
+	/// Execute the given `block`.
+	///
+	/// This will execute all extrinsics in the block and check that the resulting header is correct.
+	///
+	/// # Panic
+	///
+	/// Panics when an extrinsics panics or the resulting header doesn't match the expected header.
+	fn execute_block(block: Block);
 }
 
 /// Off-chain computation trait.
@@ -261,12 +260,12 @@ pub trait ExecuteBlock<Block: BlockT> {
 /// has finished.
 #[impl_trait_for_tuples::impl_for_tuples(30)]
 pub trait OffchainWorker<BlockNumber> {
-    /// This function is being called after every block import (when fully synced).
-    ///
-    /// Implement this and use any of the `Offchain` `sp_io` set of APIs
-    /// to perform off-chain computations, calls and submit transactions
-    /// with results to trigger any on-chain changes.
-    /// Any state alterations are lost and are not persisted.
-    fn offchain_worker(_n: BlockNumber) {}
+	/// This function is being called after every block import (when fully synced).
+	///
+	/// Implement this and use any of the `Offchain` `sp_io` set of APIs
+	/// to perform off-chain computations, calls and submit transactions
+	/// with results to trigger any on-chain changes.
+	/// Any state alterations are lost and are not persisted.
+	fn offchain_worker(_n: BlockNumber) {}
 }
 
