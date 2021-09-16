@@ -7,8 +7,8 @@ build = "build.rs"
 edition = "2018"
 license = "GPL-3.0-or-later WITH Classpath-exception-2.0"
 default-run = "punk"
-homepage = "https://substrate.dev"
-repository = "https://github.com/paritytech/substrate/"
+homepage = "https://www.punk.network/"
+repository = "https://github.com/punknetwork/punk"
 
 [package.metadata.wasm-pack.profile.release]
 # `wasm-opt` has some problems on linux, see
