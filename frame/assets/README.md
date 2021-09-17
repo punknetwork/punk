@@ -11,9 +11,9 @@ with a fixed supply, including:
 * Asset Transfer
 * Asset Destruction
 
-To use it in your runtime, you need to implement the assets [`assets::Trait`](https://docs.rs/pallet-assets/latest/pallet_assets/trait.Trait.html).
+To use it in your runtime, you need to implement the assets [`assets::Config`](https://docs.rs/pallet-assets/latest/pallet_assets/pallet/trait.Config.html).
 
-The supported dispatchable functions are documented in the [`assets::Call`](https://docs.rs/pallet-assets/latest/pallet_assets/enum.Call.html) enum.
+The supported dispatchable functions are documented in the [`assets::Call`](https://docs.rs/pallet-assets/latest/pallet_assets/pallet/enum.Call.html) enum.
 
 ### Terminology
 
@@ -71,6 +71,7 @@ Import the Assets module and types and derive your runtime's configuration trait
 use pallet_assets as assets;
 use frame_support::{decl_module, dispatch, ensure};
 use frame_system::ensure_signed;
+use sp_runtime::ArithmeticError;
 
 pub trait Config: assets::Config { }
 
@@ -84,7 +85,7 @@ decl_module! {
 			const COUNT_AIRDROP_RECIPIENTS: u64 = 2;
 			const TOKENS_FIXED_SUPPLY: u64 = 100;
 
-			ensure!(!COUNT_AIRDROP_RECIPIENTS.is_zero(), "Divide by zero error.");
+			ensure!(!COUNT_AIRDROP_RECIPIENTS.is_zero(), ArithmeticError::DivisionByZero);
 
 			let asset_id = Self::next_asset_id();
 
