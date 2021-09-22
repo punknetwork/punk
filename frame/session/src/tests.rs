@@ -18,8 +18,9 @@
 // Tests for the Session Pallet
 
 use super::*;
+use mock::Test;
 use codec::Decode;
-use frame_support::{traits::OnInitialize, assert_ok};
+use frame_support::{traits::OnInitialize, assert_ok, assert_noop};
 use sp_core::crypto::key_types::DUMMY;
 use sp_runtime::testing::UintAuthorityId;
 use mock::{
@@ -181,11 +182,14 @@ fn duplicates_are_not_allowed() {
 	new_test_ext().execute_with(|| {
 		System::set_block_number(1);
 		Session::on_initialize(1);
-		assert!(Session::set_keys(Origin::signed(4), UintAuthorityId(1).into(), vec![]).is_err());
-		assert!(Session::set_keys(Origin::signed(1), UintAuthorityId(10).into(), vec![]).is_ok());
+		assert_noop!(
+			Session::set_keys(Origin::signed(4), UintAuthorityId(1).into(), vec![]),
+			Error::<Test>::DuplicatedKey,
+		);
+		assert_ok!(Session::set_keys(Origin::signed(1), UintAuthorityId(10).into(), vec![]));
 
 		// is fine now that 1 has migrated off.
-		assert!(Session::set_keys(Origin::signed(4), UintAuthorityId(1).into(), vec![]).is_ok());
+		assert_ok!(Session::set_keys(Origin::signed(4), UintAuthorityId(1).into(), vec![]));
 	});
 }
 
@@ -270,11 +274,11 @@ fn periodic_session_works() {
 		if P::estimate_next_session_rotation(i).0.unwrap() - 1 == i {
 			assert_eq!(
 				P::estimate_current_session_progress(i).0.unwrap(),
-				Percent::from_percent(100)
+				Permill::from_percent(100)
 			);
 		} else {
 			assert!(
-				P::estimate_current_session_progress(i).0.unwrap() < Percent::from_percent(100)
+				P::estimate_current_session_progress(i).0.unwrap() < Permill::from_percent(100)
 			);
 		}
 	}
@@ -286,7 +290,7 @@ fn periodic_session_works() {
 	assert_eq!(P::estimate_next_session_rotation(3u64).0.unwrap(), 3);
 	assert_eq!(
 		P::estimate_current_session_progress(3u64).0.unwrap(),
-		Percent::from_percent(10),
+		Permill::from_percent(10),
 	);
 
 	for i in (1u64..10).map(|i| 3 + i) {
@@ -298,11 +302,11 @@ fn periodic_session_works() {
 		if P::estimate_next_session_rotation(i).0.unwrap() - 1 == i {
 			assert_eq!(
 				P::estimate_current_session_progress(i).0.unwrap(),
-				Percent::from_percent(100)
+				Permill::from_percent(100)
 			);
 		} else {
 			assert!(
-				P::estimate_current_session_progress(i).0.unwrap() < Percent::from_percent(100)
+				P::estimate_current_session_progress(i).0.unwrap() < Permill::from_percent(100)
 			);
 		}
 	}
@@ -312,14 +316,14 @@ fn periodic_session_works() {
 	assert_eq!(P::estimate_next_session_rotation(13u64).0.unwrap(), 23);
 	assert_eq!(
 		P::estimate_current_session_progress(13u64).0.unwrap(),
-		Percent::from_percent(10)
+		Permill::from_percent(10)
 	);
 
 	assert!(!P::should_end_session(14u64));
 	assert_eq!(P::estimate_next_session_rotation(14u64).0.unwrap(), 23);
 	assert_eq!(
 		P::estimate_current_session_progress(14u64).0.unwrap(),
-		Percent::from_percent(20)
+		Permill::from_percent(20)
 	);
 }
 
@@ -357,7 +361,6 @@ fn return_true_if_more_than_third_is_disabled() {
 #[test]
 fn upgrade_keys() {
 	use frame_support::storage;
-	use mock::Test;
 	use sp_core::crypto::key_types::DUMMY;
 
 	// This test assumes certain mocks.
