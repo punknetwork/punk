@@ -20,8 +20,8 @@
 //! The Treasury module provides a "pot" of funds that can be managed by stakeholders in the system
 //! and a structure for making spending proposals from this pot.
 //!
-//! - [`Config`]
-//! - [`Call`]
+//! - [`treasury::Config`](./trait.Config.html)
+//! - [`Call`](./enum.Call.html)
 //!
 //! ## Overview
 //!
@@ -53,7 +53,7 @@
 //!
 //! ## GenesisConfig
 //!
-//! The Treasury module depends on the [`GenesisConfig`].
+//! The Treasury module depends on the [`GenesisConfig`](./struct.GenesisConfig.html).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -377,8 +377,7 @@ impl<T: Config<I>, I: Instance> Module<T, I> {
 						<Proposals<T, I>>::remove(index);
 
 						// return their deposit.
-						let err_amount = T::Currency::unreserve(&p.proposer, p.bond);
-						debug_assert!(err_amount.is_zero());
+						let _ = T::Currency::unreserve(&p.proposer, p.bond);
 
 						// provide the allocation.
 						imbalance.subsume(T::Currency::deposit_creating(&p.beneficiary, p.value));
